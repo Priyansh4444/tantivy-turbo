@@ -647,5 +647,40 @@
     }
   },
   "clean_archive_check": "Separate root verification runs after this documentation commit and before pushing. This record does not claim a result for an unexecuted future check.",
-  "limits": "Retained-byte consistency and rejection behavior. No engine rebuild, source-to-binary authenticity, universal speed win or full Lucene API parity."
+  "limits": "Retained-byte consistency and rejection behavior. No engine rebuild, source-to-binary authenticity, universal speed win or full Lucene API parity.",
+  "publication_correction": {
+    "original_documentation_commit": "827bd25e874fa760fff44f935b4cdc82a7addd5b",
+    "original_clean_archive_check": "failed exact packet inventory",
+    "original_clean_receipt": {
+      "phase": "clean",
+      "returncode": 1,
+      "seconds": 2.058980555999824,
+      "inputs_unchanged": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "7541aba9e6dcfc23142f3c4cc60f3c186c5c35d2b328e65461c444fa77fe8216",
+      "command": [
+        "/home/pronsh/.local/share/mise/installs/python/latest/bin/python3",
+        "-B",
+        "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/verify-clean-publication.py",
+        "/home/pronsh/Coding/playground/search/tantivy-pr2937",
+        "827bd25e874fa760fff44f935b4cdc82a7addd5b",
+        "doc/performance/lucene-10.4/results/2026-10-12-or-hillclimb-audit"
+      ]
+    },
+    "omitted_files": [
+      "doc/performance/lucene-10.4/results/2026-10-12-or-hillclimb-audit/common/baseline-rulers/harness/Cargo.lock",
+      "doc/performance/lucene-10.4/results/2026-10-12-or-hillclimb-audit/common/fixed-port-harness/harness/Cargo.lock",
+      "doc/performance/lucene-10.4/results/2026-10-12-or-hillclimb-audit/common/hillclimb-harness/harness/Cargo.lock",
+      "doc/performance/lucene-10.4/results/2026-10-12-or-hillclimb-audit/context/required-reach-run-retry-oct11/Cargo.lock",
+      "doc/performance/lucene-10.4/results/2026-10-12-or-hillclimb-audit/context/required-reach-run-retry-oct11/original-harness/Cargo.lock",
+      "doc/performance/lucene-10.4/results/2026-10-12-or-hillclimb-audit/context/required-reach-run/Cargo.lock",
+      "doc/performance/lucene-10.4/results/2026-10-12-or-hillclimb-audit/context/required-reach-run/original-harness/Cargo.lock",
+      "doc/performance/lucene-10.4/results/2026-10-12-or-hillclimb-audit/sources/fe7c68f0929950fb6d6f2ff7d0d023e4fca516ab63f2e3b56278d9d2b859a662/Cargo.lock"
+    ],
+    "cause": "Repository .gitignore ignores Cargo.lock inside evidence too.",
+    "fix": "Stage the eight exact audited files explicitly; require Git index and committed tree inventory equal the manifest before publication.",
+    "wrapper": "doc/performance/lucene-10.4/results/2026-10-12-or-hillclimb-publication.py",
+    "wrapper_sha256": "4370d42f21ec510bc4cc64a982b21987e770c951090eb868d3b7d15f78822ad5",
+    "packet_manifest_unchanged": true
+  }
 }
