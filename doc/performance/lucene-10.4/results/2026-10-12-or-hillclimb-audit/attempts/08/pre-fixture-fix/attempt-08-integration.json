@@ -1,0 +1,6 @@
+{
+  "parent": "a674aaf2f6187f3010a135dc25fdacf9cab27e53",
+  "source_sha256": "bf9d2a3c345e27a20bb3d974b5492f9b05ce780081f54bd811892e40ed774f5d",
+  "prepared_source_sha256": "40e9e0b194603b73907f7cc462650aa8b34ff19bb7e74c10fed1798d80869209",
+  "adaptation": "Reviewed bitmap patch applied unchanged; exact reversal of accepted-06 import/constructor reproduces prepared08 source."
+}

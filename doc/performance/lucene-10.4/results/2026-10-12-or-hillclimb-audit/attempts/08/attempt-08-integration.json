@@ -1,0 +1,7 @@
+{
+  "parent": "a674aaf2f6187f3010a135dc25fdacf9cab27e53",
+  "source_sha256": "45ff507293072fafc15fb1c67de84fdb43ef80807d781b6be4953688bfd1c259",
+  "prepared_source_sha256": "c4f7402f22938906d111472b690285074a01ea2e3a224f5a0102773f1855abf0",
+  "adaptation": "Accepted06 import/constructor retained; isolated fixture E0689 corrected by explicit Score annotation. Reversal of06 substitutions reproduces reviewed prepared08 source byte-exact.",
+  "failed_gate_preserved": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-08-pre-fixture-fix"
+}

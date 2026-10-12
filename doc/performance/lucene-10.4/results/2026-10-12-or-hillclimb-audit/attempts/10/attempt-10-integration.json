@@ -1,0 +1,5 @@
+{
+  "parent": "a674aaf2f6187f3010a135dc25fdacf9cab27e53",
+  "source_sha256": "81cb888e53e467a03515f0224aeefbe3bd3b05a25eaf6cd294491eea578a9729",
+  "adaptation": "None relative to corrected isolated source. Explicit score-order collector in new test; production unchanged."
+}

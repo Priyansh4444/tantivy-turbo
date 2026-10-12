@@ -1,0 +1,365 @@
+{
+  "seconds": 4.4101576850007405,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 118029.0455764075,
+        "baseline_mean_ns": 130851.84584450402,
+        "ratio_mean": 0.9020052014907431,
+        "median_ratio": 0.9933038509117681
+      },
+      "BA": {
+        "candidate_mean_ns": 118534.11930294907,
+        "baseline_mean_ns": 131119.43699731905,
+        "ratio_mean": 0.9040163839734356,
+        "median_ratio": 0.9949715472510776
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 274065.48058252427,
+        "baseline_mean_ns": 321090.67961165047,
+        "ratio_mean": 0.8535454249684177,
+        "median_ratio": 0.905831643098064
+      },
+      "BA": {
+        "candidate_mean_ns": 274032.72330097086,
+        "baseline_mean_ns": 321626.28155339806,
+        "ratio_mean": 0.8520221729935791,
+        "median_ratio": 0.8978073761257637
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 40028.24257425743,
+        "baseline_mean_ns": 39942.5099009901,
+        "ratio_mean": 1.0021464017529154,
+        "median_ratio": 1.0098042257947895
+      },
+      "BA": {
+        "candidate_mean_ns": 40580.65099009901,
+        "baseline_mean_ns": 40078.45297029703,
+        "ratio_mean": 1.0125303743678473,
+        "median_ratio": 1.015793219457499
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 335,
+      "kind": "OR",
+      "terms": [
+        "scottsdale",
+        "az"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 3.446600923206043,
+      "BA": 1.8005650818394388
+    },
+    {
+      "id": 381,
+      "kind": "OR",
+      "terms": [
+        "catholic",
+        "answers"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2644144548063128,
+      "BA": 1.190486561832992
+    },
+    {
+      "id": 529,
+      "kind": "OR",
+      "terms": [
+        "cheap",
+        "hotels"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1389418493803622,
+      "BA": 1.180830254292545
+    },
+    {
+      "id": 845,
+      "kind": "OR",
+      "terms": [
+        "perfume",
+        "bottles"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1944890315676833,
+      "BA": 1.138174127599577
+    },
+    {
+      "id": 935,
+      "kind": "PHRASE",
+      "terms": [
+        "milwaukee",
+        "newspaper"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1980482760849194,
+      "BA": 1.1302895494358327
+    },
+    {
+      "id": 475,
+      "kind": "OR",
+      "terms": [
+        "prayer",
+        "times"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.138105577606594,
+      "BA": 1.1163290436294275
+    },
+    {
+      "id": 571,
+      "kind": "OR",
+      "terms": [
+        "lost",
+        "episode"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0963383575139913,
+      "BA": 1.140884467239284
+    },
+    {
+      "id": 677,
+      "kind": "OR",
+      "terms": [
+        "western",
+        "herald"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2929538623617265,
+      "BA": 1.095217689406925
+    },
+    {
+      "id": 1105,
+      "kind": "PHRASE",
+      "terms": [
+        "bismarck",
+        "state",
+        "college"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1128029354250435,
+      "BA": 1.0789798273186646
+    },
+    {
+      "id": 863,
+      "kind": "OR",
+      "terms": [
+        "rolex",
+        "watches"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1344366645448758,
+      "BA": 1.0769992572418916
+    },
+    {
+      "id": 425,
+      "kind": "OR",
+      "terms": [
+        "oxford",
+        "dictionary"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.075916365513681,
+      "BA": 1.0766576657665767
+    },
+    {
+      "id": 429,
+      "kind": "OR",
+      "terms": [
+        "penny",
+        "stocks"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1465448768864177,
+      "BA": 1.0643653362099963
+    },
+    {
+      "id": 439,
+      "kind": "OR",
+      "terms": [
+        "sore",
+        "muscles"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.20726197321942,
+      "BA": 1.0637573740735138
+    },
+    {
+      "id": 795,
+      "kind": "OR",
+      "terms": [
+        "cartoon",
+        "network"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1638882822547378,
+      "BA": 1.059292364990689
+    },
+    {
+      "id": 577,
+      "kind": "OR",
+      "terms": [
+        "hurricane",
+        "wilma"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0517825311942959,
+      "BA": 1.0773363868580992
+    },
+    {
+      "id": 553,
+      "kind": "OR",
+      "terms": [
+        "elise",
+        "neal"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0492181760940287,
+      "BA": 1.0606386410063433
+    },
+    {
+      "id": 835,
+      "kind": "OR",
+      "terms": [
+        "rob",
+        "halford"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0468519791768982,
+      "BA": 1.068233435370791
+    },
+    {
+      "id": 501,
+      "kind": "OR",
+      "terms": [
+        "jonathan",
+        "daniel"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0462061841993044,
+      "BA": 1.0581028240405503
+    },
+    {
+      "id": 646,
+      "kind": "AND",
+      "terms": [
+        "william",
+        "wallace"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0537219282673516,
+      "BA": 1.0417643190746766
+    },
+    {
+      "id": 643,
+      "kind": "OR",
+      "terms": [
+        "microsoft",
+        "frontpage"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0535666218034994,
+      "BA": 1.041359067864449
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791418705.7912936,
+      "loadavg": [
+        2.98583984375,
+        2.60986328125,
+        2.80224609375
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 243829 python          84.1",
+        " 193666 helium          45.2",
+        " 240282 t3code          31.6",
+        " 243726 claude          17.3",
+        " 240292 t3code          13.7",
+        "   2192 helium          12.9",
+        " 240094 t3code          11.6",
+        "  44668 vesktop         11.0",
+        "  44549 vesktop          7.5",
+        " 240006 t3code           5.5",
+        "   2142 helium           5.3",
+        "   1439 Hyprland         4.8"
+      ]
+    },
+    {
+      "at": 1791418708.9242792,
+      "loadavg": [
+        3.2275390625,
+        2.66650390625,
+        2.81982421875
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 193666 helium          45.3",
+        " 240282 t3code          31.0",
+        " 243829 python          23.5",
+        " 243726 claude          14.9",
+        " 240292 t3code          13.6",
+        "   2192 helium          12.9",
+        " 240094 t3code          11.4",
+        "  44668 vesktop         11.0",
+        "  44549 vesktop          7.5",
+        " 240006 t3code           5.4",
+        "   2142 helium           5.3",
+        "   1439 Hyprland         4.8"
+      ]
+    }
+  ]
+}

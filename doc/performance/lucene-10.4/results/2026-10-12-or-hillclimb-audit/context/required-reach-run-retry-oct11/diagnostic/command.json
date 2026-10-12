@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/required-reach-run-retry-oct11/target/release/tantivy_worker",
+    "/home/pronsh/Coding/playground/search/bench/wiki-1m-native-aligned-v11-oct05.idx",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-balanced-oct06/queries.jsonl"
+  ],
+  "cpu_affinity": [
+    4
+  ],
+  "timeout_seconds": 3600,
+  "per_response_timeout_seconds": 120,
+  "requests": "one dump per all 103 frozen long OR cases",
+  "binary_sha256": "793da5c3af3dd0545b3e8e1be1e6c81c2c435361a55c9243011b08d4faae2bd0"
+}

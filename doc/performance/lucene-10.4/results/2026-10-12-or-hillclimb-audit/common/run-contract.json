@@ -1,0 +1,10 @@
+{
+  "base": "0e9329dfe782187a8feda0024102e4aabf517c28",
+  "baseline_binary_sha256": "2efc80ae6cc57c4163cab798f50bfb35ceb085c039bc4dd4b8fe31d22d387bbf",
+  "primary_target": "candidate/fixed-port mean query median ratio <1 in AB and BA for all OR (301) and 3+ OR (103), beyond group self controls",
+  "minimum_distinct_attempts": 3,
+  "correctness": "1227 exact default and two configured profiles, independent callback fixtures and integrations",
+  "scope": "OR first; whole 1201 suite retained as negative/regression gate",
+  "index_policy": "same index files and format; bound changes must preserve original leaf replay",
+  "publication": "fork/main only, normal fast-forward"
+}

@@ -1,0 +1,2 @@
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.203 MB /home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-06-or3-clean-before-pivot-perf.data (4372 samples) ]

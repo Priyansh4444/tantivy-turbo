@@ -1,0 +1,48 @@
+{
+  "base": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "source_sha256": "6c71f32394bac8d1c5998c511585904e09ac68757063b2f2bc96afb375258d1d",
+  "original12_source_sha256": "00fad7ecc30941fa72e6fbd002db5aff85b5b4e7a76b89403a9624ba65d56559",
+  "proofs": {
+    "accepted11_global_cache_observer_and_density": {
+      "byte_equal": true,
+      "sha256": "07136e553670fe6e6181cb9c52709a5856c83af4edcc00a8ae18073abc83302e",
+      "bytes": 3656
+    },
+    "accepted11_replay": {
+      "byte_equal": true,
+      "sha256": "4d126326d89b421cf75f0f068644558534550267e8fe48d476518b402192bd6f",
+      "bytes": 4234
+    },
+    "original12_widening_preparation": {
+      "byte_equal": true,
+      "sha256": "bf55a506ce2b41729bea6ecbb29a8b2118dbb344c580d780942119401cedb3b2",
+      "bytes": 5513
+    },
+    "original12_widening_helpers_and_ten_fixtures": {
+      "byte_equal": true,
+      "sha256": "42ca9ed1604858949ecc063d01421b8366fe6869dbd2221db70646e80919a245",
+      "bytes": 28519
+    },
+    "accepted11_existing_functions_except_two_density_geometries": {
+      "byte_equal": true,
+      "count": 15,
+      "sha256": "58fc776ea7c51118bdc8f5c977168f05c19fb1e3bdd85101caaeeb9664c1c6f0"
+    },
+    "original12_prior_density_geometry": {
+      "byte_equal": true,
+      "sha256": "a49030a52d199856bfdd0bb0955c06be6cf71e927f83973292251e4eb967f29f"
+    }
+  },
+  "changed_accepted11_fixture_functions": [
+    "cached_certificate_survives_density_rejection_widening_and_rejection_again",
+    "exhausted_high_cost_remainder_changes_live_density_choice"
+  ],
+  "diff_stat": "src/query/boolean_query/or_maxscore.rs | 977 ++++++++++++++++++++++++++++++++-\n 1 file changed, 959 insertions(+), 18 deletions(-)",
+  "diff_lines": 1114,
+  "static_checks": [
+    "rustfmt --edition 2021 --check",
+    "git diff --check"
+  ],
+  "runtime_checks": "none; root owns all runtime gates",
+  "source_stable": true
+}

@@ -1,0 +1,23 @@
+   Compiling ownedbytes v0.9.0 (/home/pronsh/Coding/playground/search/tantivy-or-hillclimb-oct07/ownedbytes)
+   Compiling tantivy-bitpacker v0.10.0 (/home/pronsh/Coding/playground/search/tantivy-or-hillclimb-oct07/bitpacker)
+   Compiling tantivy-common v0.11.0 (/home/pronsh/Coding/playground/search/tantivy-or-hillclimb-oct07/common)
+   Compiling tantivy-query-grammar v0.26.0 (/home/pronsh/Coding/playground/search/tantivy-or-hillclimb-oct07/query-grammar)
+   Compiling tantivy-sstable v0.7.0 (/home/pronsh/Coding/playground/search/tantivy-or-hillclimb-oct07/sstable)
+   Compiling tantivy-stacker v0.7.0 (/home/pronsh/Coding/playground/search/tantivy-or-hillclimb-oct07/stacker)
+   Compiling tantivy-columnar v0.7.0 (/home/pronsh/Coding/playground/search/tantivy-or-hillclimb-oct07/columnar)
+   Compiling tantivy-tokenizer-api v0.7.0 (/home/pronsh/Coding/playground/search/tantivy-or-hillclimb-oct07/tokenizer-api)
+   Compiling tantivy v0.27.0 (/home/pronsh/Coding/playground/search/tantivy-or-hillclimb-oct07)
+warning: method `phrase_count` is never used
+   --> /home/pronsh/Coding/playground/search/tantivy-or-hillclimb-oct07/src/query/phrase_query/phrase_scorer.rs:294:12
+    |
+153 | impl<TPostings: Postings> PhraseScorer<TPostings> {
+    | ------------------------------------------------- method in this implementation
+...
+294 |     pub fn phrase_count(&self) -> u32 {
+    |            ^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling balanced-search v0.0.0 (/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/harness)
+warning: `tantivy` (lib) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 1m 32s

@@ -1,0 +1,370 @@
+{
+  "seconds": 7.914737367000043,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 214226.58981233244,
+        "baseline_mean_ns": 210681.42627345843,
+        "ratio_mean": 1.0168271290050623,
+        "median_ratio": 0.9955938729110311
+      },
+      "BA": {
+        "candidate_mean_ns": 210873.36461126004,
+        "baseline_mean_ns": 213882.31233243967,
+        "ratio_mean": 0.9859317599086792,
+        "median_ratio": 1.0060452731836025
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 486831.8349514563,
+        "baseline_mean_ns": 472971.53883495147,
+        "ratio_mean": 1.029304714931994,
+        "median_ratio": 1.0047247753497601
+      },
+      "BA": {
+        "candidate_mean_ns": 479026.52427184465,
+        "baseline_mean_ns": 486848.82524271845,
+        "ratio_mean": 0.983932792757641,
+        "median_ratio": 1.011749633889764
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 75833.33168316832,
+        "baseline_mean_ns": 77628.61881188118,
+        "ratio_mean": 0.9768733856638179,
+        "median_ratio": 0.9868463635256404
+      },
+      "BA": {
+        "candidate_mean_ns": 75217.9405940594,
+        "baseline_mean_ns": 75215.68316831683,
+        "ratio_mean": 1.000030012700111,
+        "median_ratio": 1.0068306681161552
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 1003,
+      "kind": "PHRASE",
+      "terms": [
+        "ace",
+        "frehley"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2402317347924043,
+      "BA": 1.2210499874403415
+    },
+    {
+      "id": 675,
+      "kind": "OR",
+      "terms": [
+        "milan",
+        "tennessee"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.211651066078805,
+      "BA": 1.254470073559489
+    },
+    {
+      "id": 529,
+      "kind": "OR",
+      "terms": [
+        "cheap",
+        "hotels"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1946786807208432,
+      "BA": 1.310132144512088
+    },
+    {
+      "id": 439,
+      "kind": "OR",
+      "terms": [
+        "sore",
+        "muscles"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.177652733118971,
+      "BA": 1.2489763996871694
+    },
+    {
+      "id": 204,
+      "kind": "TERM",
+      "terms": [
+        "hot"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.209883967737371,
+      "BA": 1.1355397951142632
+    },
+    {
+      "id": 833,
+      "kind": "OR",
+      "terms": [
+        "usb",
+        "hub"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.108528910449718,
+      "BA": 1.2149062024674666
+    },
+    {
+      "id": 1190,
+      "kind": "PHRASE",
+      "terms": [
+        "new",
+        "england",
+        "aquarium"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1046095832520642,
+      "BA": 1.122077388894591
+    },
+    {
+      "id": 531,
+      "kind": "OR",
+      "terms": [
+        "walk",
+        "the",
+        "line"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.104427743738778,
+      "BA": 1.1290726817042607
+    },
+    {
+      "id": 6,
+      "kind": "TERM",
+      "terms": [
+        "york"
+      ],
+      "tags": [
+        "wiki20",
+        "term",
+        "med"
+      ],
+      "AB": 1.1028080204219668,
+      "BA": 1.17192776391132
+    },
+    {
+      "id": 781,
+      "kind": "OR",
+      "terms": [
+        "little",
+        "shop",
+        "of",
+        "horrors"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1121585709118929,
+      "BA": 1.1012292675984512
+    },
+    {
+      "id": 563,
+      "kind": "OR",
+      "terms": [
+        "evening",
+        "wear"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1411848984133275,
+      "BA": 1.094096008253396
+    },
+    {
+      "id": 647,
+      "kind": "OR",
+      "terms": [
+        "william",
+        "wallace"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0847121034077556,
+      "BA": 1.1090586069609145
+    },
+    {
+      "id": 847,
+      "kind": "OR",
+      "terms": [
+        "old",
+        "photos"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.091763950368111,
+      "BA": 1.0783943227220931
+    },
+    {
+      "id": 335,
+      "kind": "OR",
+      "terms": [
+        "scottsdale",
+        "az"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2332781848262822,
+      "BA": 1.0600945307224847
+    },
+    {
+      "id": 425,
+      "kind": "OR",
+      "terms": [
+        "oxford",
+        "dictionary"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.105713459284181,
+      "BA": 1.0522483840104544
+    },
+    {
+      "id": 1020,
+      "kind": "PHRASE",
+      "terms": [
+        "hotel",
+        "del",
+        "coronado"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.3416568396226416,
+      "BA": 1.052073191203626
+    },
+    {
+      "id": 597,
+      "kind": "OR",
+      "terms": [
+        "carolyn",
+        "jones"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0490542982969733,
+      "BA": 1.1457265341607459
+    },
+    {
+      "id": 535,
+      "kind": "OR",
+      "terms": [
+        "portrait",
+        "studio"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0480013510529118,
+      "BA": 1.051494711585545
+    },
+    {
+      "id": 1071,
+      "kind": "PHRASE",
+      "terms": [
+        "antonio",
+        "cromartie"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0478627145085804,
+      "BA": 1.2661054172767203
+    },
+    {
+      "id": 859,
+      "kind": "OR",
+      "terms": [
+        "new",
+        "england",
+        "aquarium"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.043986335257392,
+      "BA": 1.2949203040567332
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791809852.2126067,
+      "loadavg": [
+        5.01416015625,
+        3.16943359375,
+        1.62255859375
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        "   8912 python3         94.4",
+        "   4394 helium          45.8",
+        "   2374 helium          30.4",
+        "   8530 helium          27.6",
+        "   8429 helium          27.0",
+        "   2749 vesktop         17.6",
+        "   2267 helium          13.9",
+        "   3089 t3code          10.8",
+        "   2618 vesktop         10.3",
+        "   7548 helium           8.8",
+        "   2569 helium           8.6",
+        "   1511 Hyprland         7.7"
+      ]
+    },
+    {
+      "at": 1791809858.0127826,
+      "loadavg": [
+        4.71044921875,
+        3.1640625,
+        1.63818359375
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        "   4394 helium          45.6",
+        "   2374 helium          30.3",
+        "   8429 helium          25.1",
+        "   8530 helium          25.0",
+        "   8912 python3         23.9",
+        "   2749 vesktop         18.5",
+        "   2267 helium          13.8",
+        "   3089 t3code          10.8",
+        "   2618 vesktop         10.3",
+        "   7548 helium           8.6",
+        "   2569 helium           8.6",
+        "   1511 Hyprland         7.7"
+      ]
+    }
+  ]
+}

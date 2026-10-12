@@ -1,0 +1,5 @@
+{
+  "parent": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "source_sha256": "a53374a75b5dbedb3e8f148b94f8da92a6d4383142e69cc8b50a92330c2f96d1",
+  "adaptation": "Reviewed combined12 graft followed by ONLY two justified newtest witnessgeometry corrections. Independent rootreverse functionreplacement reconstructs entire failedsourceexactly; production/otherfixtures unchanged. Initial21pass2fail retained."
+}

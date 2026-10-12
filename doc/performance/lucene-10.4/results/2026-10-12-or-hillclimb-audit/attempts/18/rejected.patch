@@ -1,0 +1,160 @@
+diff --git i/src/query/boolean_query/or_maxscore.rs w/src/query/boolean_query/or_maxscore.rs
+index d5cf67739..d5bb395a2 100644
+--- i/src/query/boolean_query/or_maxscore.rs
++++ w/src/query/boolean_query/or_maxscore.rs
+@@ -57,6 +57,9 @@ type RegionChoice = (DocId, usize, usize, u64);
+ #[cfg(test)]
+ type GlobalPrefixState = (DocId, u32, usize, u64, usize);
+ 
++#[cfg(test)]
++type TwoEssentialHeads = (DocId, DocId, DocId, DocId);
++
+ #[cfg(test)]
+ thread_local! {
+     // Test-only region evidence; no observer or counter exists in release.
+@@ -66,6 +69,8 @@ thread_local! {
+         const { std::cell::RefCell::new(None) };
+     static BATCH_LENGTHS: std::cell::RefCell<Option<Vec<usize>>> =
+         const { std::cell::RefCell::new(None) };
++    static TWO_ESSENTIAL_HEADS: std::cell::RefCell<Option<Vec<TwoEssentialHeads>>> =
++        const { std::cell::RefCell::new(None) };
+ }
+ 
+ /// Merge only clauses whose local score bounds can exceed the optional prefix.
+@@ -290,6 +295,7 @@ pub(crate) fn or_maxscore(
+         // The buffered phase retains the current certified partition. Cursor
+         // docs always mean first unread; batch docs own the replay candidates.
+         let single_essential = num_terms - first_essential == 1;
++        let two_essential = num_terms - first_essential == 2;
+         let mut batch_len = 0;
+         let mut batch_index = 0;
+         loop {
+@@ -313,6 +319,17 @@ pub(crate) fn or_maxscore(
+                     }
+                 }
+                 batch.docs[batch_index]
++            } else if two_essential {
++                let left = clauses[first_essential].doc;
++                let right = clauses[first_essential + 1].doc;
++                let doc = left.min(right);
++                #[cfg(test)]
++                TWO_ESSENTIAL_HEADS.with(|heads| {
++                    if let Some(heads) = heads.borrow_mut().as_mut() {
++                        heads.push((left, right, doc, hi));
++                    }
++                });
++                doc
+             } else {
+                 clauses[first_essential..]
+                     .iter()
+@@ -615,6 +632,110 @@ mod tests {
+         assert_eq!(states.last().unwrap().4, 3);
+     }
+ 
++    #[test]
++    fn two_essential_min_preserves_equal_disjoint_exhausted_and_dynamic_traces() {
++        let norms = vec![1; 1024];
++        let dense: Vec<_> = (0..1024).map(|doc| (doc, 1)).collect();
++        let left: Vec<_> = (0..257)
++            .map(|i| (2 * i, if i == 240 { 30 } else { 1 }))
++            .collect();
++        let mut right: Vec<_> = (0..129).map(|i| (2 * i + 1, 1)).collect();
++        right.extend([(0, 1), (128, 1), (256, 1), (700, 50)]);
++        right.sort_unstable_by_key(|&(doc, _)| doc);
++        for num_terms in [3, 32] {
++            // The weak dense prefix fits .05 for either arity. Each strong
++            // serialized scorer independently exceeds it, leaving precisely
++            // two essential clauses in the fixed-threshold traversal.
++            let mut scorers: Vec<_> = (0..num_terms - 2)
++                .map(|_| fixture(&dense, &norms, 0.0001))
++                .collect();
++            scorers.push(fixture(&left, &norms, 1.0));
++            scorers.push(fixture(&right, &norms, 1.25));
++            for reversed in [false, true] {
++                let ordered: Vec<_> = if reversed {
++                    scorers.iter().rev().cloned().collect()
++                } else {
++                    scorers.clone()
++                };
++                TWO_ESSENTIAL_HEADS.with(|heads| *heads.borrow_mut() = Some(Vec::new()));
++                let accepted = check(ordered.clone(), 1024, 0.05, 0);
++                let heads = TWO_ESSENTIAL_HEADS.with(|heads| heads.borrow_mut().take().unwrap());
++                assert!(!heads.is_empty(), "arity={num_terms} reversed={reversed}");
++                for &(left, right, doc, _) in &heads {
++                    // Independent two-element sorted oracle checks the chosen
++                    // candidate, including the terminal break observation.
++                    let mut sorted = [left, right];
++                    sorted.sort_unstable();
++                    assert_eq!(doc, sorted[0]);
++                }
++                assert!(heads
++                    .iter()
++                    .any(|&(left, right, _, hi)| left == right && left < hi));
++                assert!(heads
++                    .iter()
++                    .any(|&(left, right, _, hi)| left != right && left < hi && right < hi));
++                assert!(heads.iter().any(|&(left, right, doc, hi)| {
++                    (left == TERMINATED || right == TERMINATED) && doc == 700 && doc < hi
++                }));
++                assert!(heads.iter().any(|&(left, right, doc, _)| {
++                    left == TERMINATED && right == TERMINATED && doc == TERMINATED
++                }));
++                assert!(accepted.iter().any(|&(doc, _)| doc == 512));
++                assert_eq!(accepted.last().unwrap().0, 700);
++
++                for limit in [1, 10] {
++                    check(ordered.clone(), 1024, 0.05, limit);
++                }
++                // Derive a strict tie from literal canonical leaves, without
++                // consulting local certificates or the new minimum route.
++                let tie = ordered
++                    .iter()
++                    .cloned()
++                    .map(|mut scorer| {
++                        if scorer.seek(2) == 2 {
++                            f64::from(scorer.score())
++                        } else {
++                            0.0
++                        }
++                    })
++                    .sum::<f64>() as Score;
++                for threshold in [tie.next_down(), tie, tie.next_up()] {
++                    let strict = check(ordered.clone(), 1024, threshold, 0);
++                    assert_eq!(strict.iter().any(|&(doc, _)| doc == 2), threshold < tie);
++                }
++                // Deletion ownership is represented by leaving the callback
++                // threshold unchanged for docs 0 and 128. Keep every callback
++                // and its score bits, then compare the independent union.
++                let run = |optimized: bool| {
++                    let mut accepted = Vec::new();
++                    let mut current: Score = 0.05;
++                    let mut callback = |doc, score: Score| {
++                        accepted.push((doc, score.to_bits()));
++                        if doc != 0 && doc != 128 {
++                            current = current.max(score);
++                        }
++                        current
++                    };
++                    if optimized {
++                        or_maxscore(ordered.clone(), 1024, 0.05, &mut callback);
++                    } else {
++                        let mut union =
++                            BufferedUnionScorer::build(ordered.clone(), SumCombiner::default, 1024);
++                        for_each_pruning_scorer(&mut union, 0.05, &mut callback);
++                    }
++                    assert!(accepted.windows(2).all(|pair| pair[0].0 < pair[1].0));
++                    accepted
++                };
++                let deleted = run(true);
++                assert_eq!(deleted, run(false));
++                assert_eq!(deleted.first().unwrap().0, 0);
++                assert!(deleted.iter().any(|&(doc, _)| doc == 128));
++                assert!(deleted.iter().any(|&(doc, _)| doc == 256));
++                assert_eq!(deleted.last().unwrap().0, 700);
++            }
++        }
++    }
++
+     #[test]
+     fn single_driver_batches_replay_every_dynamic_threshold_exactly() {
+         let norms = vec![1; 4096];

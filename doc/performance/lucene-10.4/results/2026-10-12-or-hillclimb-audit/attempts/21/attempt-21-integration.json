@@ -1,0 +1,8 @@
+{
+  "parent": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "source_sha256": {
+    "src/query/boolean_query/or_maxscore.rs": "4bb058a4dd125ee819776b50f4506b01419bf42bba8cb2d6a0994a30cceae136"
+  },
+  "patch_sha256": "b0c6cbd13fe4369270aa743a12489f05b61605049dd173f82f716b3d5b444c45",
+  "review": "Root read full authentic three-statement diff, exact reset/sequential-add proof and static identities. All parent13test bodies and helpers unchanged; no scoring/cursor/API change. Runtime owned by root."
+}

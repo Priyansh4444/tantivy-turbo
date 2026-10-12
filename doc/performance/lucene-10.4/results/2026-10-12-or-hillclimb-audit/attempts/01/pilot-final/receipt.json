@@ -1,0 +1,399 @@
+{
+  "seconds": 9.15196944499985,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 243206.6166219839,
+        "baseline_mean_ns": 292380.0844504021,
+        "ratio_mean": 0.8318166303260653,
+        "median_ratio": 0.8293863963077854
+      },
+      "BA": {
+        "candidate_mean_ns": 238922.45978552278,
+        "baseline_mean_ns": 297166.7131367292,
+        "ratio_mean": 0.8040014215037345,
+        "median_ratio": 0.7507916402786574
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 603687.1456310679,
+        "baseline_mean_ns": 584540.0291262136,
+        "ratio_mean": 1.0327558688041878,
+        "median_ratio": 1.0061384852794655
+      },
+      "BA": {
+        "candidate_mean_ns": 593099.2961165048,
+        "baseline_mean_ns": 596997.8009708738,
+        "ratio_mean": 0.9934698170612539,
+        "median_ratio": 0.9989774282811321
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 73226.32425742575,
+        "baseline_mean_ns": 175193.57673267327,
+        "ratio_mean": 0.41797379574686866,
+        "median_ratio": 0.4270017458874492
+      },
+      "BA": {
+        "candidate_mean_ns": 71396.52722772278,
+        "baseline_mean_ns": 176508.94059405942,
+        "ratio_mean": 0.40449241260771407,
+        "median_ratio": 0.43270442268404596
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 505,
+      "kind": "OR",
+      "terms": [
+        "xena",
+        "warrior",
+        "princess"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1080242197348817,
+      "BA": 1.1673951529821263
+    },
+    {
+      "id": 889,
+      "kind": "OR",
+      "terms": [
+        "david",
+        "lee",
+        "roth"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.061193096637133,
+      "BA": 1.0590649991492258
+    },
+    {
+      "id": 1071,
+      "kind": "PHRASE",
+      "terms": [
+        "antonio",
+        "cromartie"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.211207204631549,
+      "BA": 1.0522329959657442
+    },
+    {
+      "id": 759,
+      "kind": "OR",
+      "terms": [
+        "open",
+        "source",
+        "software"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0691657704265711,
+      "BA": 1.0492988310706162
+    },
+    {
+      "id": 761,
+      "kind": "OR",
+      "terms": [
+        "ambassador",
+        "of",
+        "italy"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0385466847948734,
+      "BA": 1.086664185491169
+    },
+    {
+      "id": 714,
+      "kind": "AND",
+      "terms": [
+        "roundabout",
+        "theatre"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.035589809042266,
+      "BA": 1.1016290043392691
+    },
+    {
+      "id": 1037,
+      "kind": "PHRASE",
+      "terms": [
+        "elise",
+        "neal"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.038753099539497,
+      "BA": 1.0298507462686568
+    },
+    {
+      "id": 920,
+      "kind": "OR",
+      "terms": [
+        "a",
+        "search",
+        "engine",
+        "is",
+        "an",
+        "information",
+        "retrieval",
+        "software",
+        "system",
+        "designed",
+        "to",
+        "help",
+        "find",
+        "information",
+        "stored",
+        "on",
+        "one",
+        "or",
+        "more",
+        "computer",
+        "systems"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.027869652952082,
+      "BA": 1.033653471281589
+    },
+    {
+      "id": 952,
+      "kind": "PHRASE",
+      "terms": [
+        "interest",
+        "only"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0324379203474316,
+      "BA": 1.0273240410612636
+    },
+    {
+      "id": 737,
+      "kind": "OR",
+      "terms": [
+        "playa",
+        "del",
+        "rey"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.054224768742234,
+      "BA": 1.0256458302103633
+    },
+    {
+      "id": 605,
+      "kind": "OR",
+      "terms": [
+        "mercedes",
+        "benz"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0252707581227436,
+      "BA": 1.0442151277365723
+    },
+    {
+      "id": 813,
+      "kind": "OR",
+      "terms": [
+        "becoming",
+        "a",
+        "widow"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0760610095683532,
+      "BA": 1.0238768022454514
+    },
+    {
+      "id": 861,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "book",
+        "of",
+        "life"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0828679750321848,
+      "BA": 1.0218117590654343
+    },
+    {
+      "id": 707,
+      "kind": "OR",
+      "terms": [
+        "zip",
+        "code"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0213187627338396,
+      "BA": 1.024646351886414
+    },
+    {
+      "id": 816,
+      "kind": "AND",
+      "terms": [
+        "centerville",
+        "high",
+        "school"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0197121279570145,
+      "BA": 1.0276801474608308
+    },
+    {
+      "id": 733,
+      "kind": "OR",
+      "terms": [
+        "us",
+        "coast",
+        "guard"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.10873192876315,
+      "BA": 1.0196269241193279
+    },
+    {
+      "id": 12,
+      "kind": "AND",
+      "terms": [
+        "the",
+        "saxophone"
+      ],
+      "tags": [
+        "wiki20",
+        "intersection",
+        "andHighLow",
+        "luceneutil:AndHighLow"
+      ],
+      "AB": 1.026395671109938,
+      "BA": 1.01752514294619
+    },
+    {
+      "id": 763,
+      "kind": "OR",
+      "terms": [
+        "los",
+        "angeles",
+        "daily",
+        "news"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0264629080828027,
+      "BA": 1.017197728386448
+    },
+    {
+      "id": 691,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "oregonian",
+        "newspaper"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0156249203200456,
+      "BA": 1.0354931727588839
+    },
+    {
+      "id": 884,
+      "kind": "AND",
+      "terms": [
+        "warren",
+        "county"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0132375079613225,
+      "BA": 1.0486657371438797
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791403285.9850247,
+      "loadavg": [
+        2.60888671875,
+        2.1748046875,
+        1.91064453125
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        "  69401 python          93.9",
+        "  59329 helium          18.8",
+        "   2192 helium           9.4",
+        "  15472 t3code           6.6",
+        "  44549 vesktop          4.5",
+        "  44668 vesktop          4.5",
+        "   1439 Hyprland         4.4",
+        "   2142 helium           4.3",
+        "  69400 python           4.1",
+        "  14870 helium           3.5",
+        "  15483 t3code           3.0",
+        "  65052 kworker/u64:0-i  2.6"
+      ]
+    },
+    {
+      "at": 1791403292.819969,
+      "loadavg": [
+        2.595703125,
+        2.18603515625,
+        1.9169921875
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        "  69401 python          19.7",
+        "  59329 helium          18.8",
+        "   2192 helium           9.4",
+        "  15472 t3code           6.6",
+        "  44549 vesktop          4.5",
+        "  44668 vesktop          4.5",
+        "   1439 Hyprland         4.4",
+        "   2142 helium           4.3",
+        "  14870 helium           3.5",
+        "  15483 t3code           3.0",
+        "  65052 kworker/u64:0-i  2.6",
+        "  15259 t3code           2.0"
+      ]
+    }
+  ]
+}

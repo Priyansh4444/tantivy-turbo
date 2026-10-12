@@ -1,0 +1,23 @@
+{
+  "original": {
+    "Cargo.toml": "f91587119b02f3f3b5105c8130b1c196b068adf4d704157fe6c857971bf7df7d",
+    "Cargo.lock": "21dfbb56abf6714579bdde51f28e1d708a0c82a3f61b3acd3853ec4835116e0c",
+    "src/lib.rs": "63aee1908ba57563748428a1bb42c2cbd079a3284907043f59744277a08359b0",
+    "src/bin/tantivy_worker.rs": "b502c978356e02f02171b68f5143ea1d05fb76beba5354c26e008ef16d45e562",
+    "src/bin/configured_worker.rs": "d63a488d294a42a238284eb4bf3936bb835d1fc8bc9a228997545c9561e91664"
+  },
+  "staged": {
+    "Cargo.toml": "01a3085658f857752c48424c4393021e4baa9fd95c4e9c7459344e9862f5411b",
+    "Cargo.lock": "21dfbb56abf6714579bdde51f28e1d708a0c82a3f61b3acd3853ec4835116e0c",
+    "src/lib.rs": "63aee1908ba57563748428a1bb42c2cbd079a3284907043f59744277a08359b0",
+    "src/bin/tantivy_worker.rs": "b502c978356e02f02171b68f5143ea1d05fb76beba5354c26e008ef16d45e562",
+    "src/bin/configured_worker.rs": "d63a488d294a42a238284eb4bf3936bb835d1fc8bc9a228997545c9561e91664"
+  },
+  "only_change": {
+    "file": "Cargo.toml",
+    "old": "tantivy = { path = \"../../../tantivy-or-hillclimb-oct07\" }",
+    "new": "tantivy = { path = \"/home/pronsh/Coding/playground/search/tantivy-or-required-diagnostic-oct11\" }"
+  },
+  "cargo_project": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/required-reach-run",
+  "port_dependency_resolves_to": "/home/pronsh/Coding/playground/search/lucene-rs-idf-fix-oct06"
+}

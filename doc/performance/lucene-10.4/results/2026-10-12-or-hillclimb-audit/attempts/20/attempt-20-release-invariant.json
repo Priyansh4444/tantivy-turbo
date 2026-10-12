@@ -1,0 +1,9 @@
+{
+  "schema": "tantivy-source-cfg-invariant-v1",
+  "pre_review_source_sha256": "20b487c5f16cee50973632930a4828805f3f3cd258009b8b6911da23f783e174",
+  "final_source_sha256": "8cecd8b7f48b70018c18bbced1800e7f057a3f99d6f576107afc2b156f32e8c3",
+  "release_kernel_cfg_test_removed_normalized_sha256": "f617185c604cdde53115619f4a5359a16264a2ff21e08f1e3cce7c617391bb9e",
+  "release_kernel_identical_after_removing_cfg_test_statements_and_normalizing_whitespace": true,
+  "method": "source comparison, not rustc derivation; cfg(test) statement scanner preserves non-test kernel text",
+  "runtime_run": false
+}

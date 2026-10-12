@@ -1,0 +1,92 @@
+{
+   "added_test_names" : [],
+   "all_parent_tests_retained" : true,
+   "attempt" : 23,
+   "branch" : "perf/or-cutoff-all-bounds-oct12",
+   "edited_tracked_files" : [
+      "src/query/boolean_query/or_maxscore.rs",
+      "src/query/score_combiner.rs"
+   ],
+   "independent_generic_certificate_oracle_byte_identical" : true,
+   "independent_generic_certificate_oracle_sha256" : "8eaffdf70b5dff1e12dd82f282bc7b1862f6d2e0919027580ba2c1c66cced160",
+   "integration" : {
+      "accepted_22_parent_only" : true,
+      "additional_cache_state_or_refresh" : false,
+      "constructor_and_at_most_helper_unchanged" : true,
+      "greater_uses_ordered_comparison_not_negated_at_most" : true,
+      "live_global_local_old_helper_assert_under_cfg_test" : true,
+      "local_prefix_evaluation_stays_short_circuited" : true,
+      "only_global_and_local_predicates_replaced" : true,
+      "optional_predicate_and_refresh_mechanically_renamed_only" : true,
+      "original_factor_multiply_unchanged" : true,
+      "production_quotient_shortcut" : false,
+      "unaccepted_attempt_21_not_stacked" : true
+   },
+   "notes" : [
+      "Root owns all runtime work; only source edits, rustfmt, diff checks and Git/source metadata operations ran here.",
+      "No root/production tree modified and no commit made.",
+      "Generated code, compiled frame/register placement, binary size, RSS and speed are unmeasured."
+   ],
+   "numeric_added_test_names" : [],
+   "numeric_parent_test_count" : 8,
+   "numeric_test_count" : 8,
+   "numeric_test_names" : [
+      "small_bound_cutoff_preserves_all_threshold_classes_and_signed_zeros",
+      "small_bound_cutoff_direct_products_witness_even_odd_midpoints_and_overflow",
+      "small_bound_cutoff_matches_rounded_products_near_every_exponent_boundary",
+      "small_bound_cutoff_matches_fixed_seed_valid_raw_bit_sums",
+      "small_score_sum_bound_matches_generic_at_cast_boundaries",
+      "small_score_sum_bound_matches_generic_for_disjoint_leaf_sums",
+      "score_sum_bound_covers_double_order_error_at_float_midpoint",
+      "score_sum_bound_handles_signed_pointwise_replacements_and_extremes"
+   ],
+   "original_numeric_helpers_and_tests_tail_byte_identical" : true,
+   "original_numeric_helpers_and_tests_tail_sha256" : "a6ad2cd5c7851284af43ab0c936402f015bae523e62285c9fb64d29b5a170551",
+   "parent_commit" : "3dff75c5cfddee6dab50c144839b4cec645d9dca",
+   "parent_source_sha256" : {
+      "src/query/boolean_query/or_maxscore.rs" : "590f6a2b0f493fe2c0b6ab7c17a41ab610c95e50a76c8f4a6ff42f44e544806e",
+      "src/query/score_combiner.rs" : "2679f2aab4434a4f4b75456185fee01d03506b5d40fb95f519e135664068997e"
+   },
+   "parent_test_count" : 13,
+   "parent_test_helpers_byte_identical" : true,
+   "parent_test_module_tail_byte_identical" : true,
+   "parent_test_module_tail_sha256" : "2ba2bfa05759a9e09bd387a412da9ab8f8738b0400f234a1ec73ebdabc96779c",
+   "patch_sha256" : "7f673aea60d7ce7248b06042b098e3c096a175d1d8f3b97ad066f8a4595f4ad2",
+   "runtime_checks" : {
+      "build" : false,
+      "codegen" : false,
+      "configured_oracles" : false,
+      "latency" : false,
+      "profiling" : false,
+      "tests" : false
+   },
+   "schema" : "tantivy-or-attempt-source-v1",
+   "source_sha256" : {
+      "src/query/boolean_query/or_maxscore.rs" : "e8936f114df5bb4c09b27960afc126832f07fab73863b061ab9e3d55a6be23bb",
+      "src/query/score_combiner.rs" : "67a8070a9abad0d107eaebfc8ef731793b2d0f016e5216afc98d1b6ff3ac93b7"
+   },
+   "static_checks" : {
+      "git_diff_check" : true,
+      "rustfmt_completed" : true,
+      "two_tracked_file_scope" : true
+   },
+   "status" : "source_only_ready_uncompiled",
+   "term_source_unchanged_sha256" : "dd1e18b5b1d273cf2c09959ea207997a1e93f854b0fc459fb0a1e76129b87277",
+   "test_count" : 13,
+   "test_names" : [
+      "cached_global_prefix_preserves_equality_neighbors_and_large_threshold_jumps",
+      "cached_certificate_survives_density_rejection_widening_and_rejection_again",
+      "single_driver_batches_replay_every_dynamic_threshold_exactly",
+      "exact_traces_at_full_block_and_tail_boundaries",
+      "deferred_optional_clause_becomes_essential_after_shallow_full_blocks",
+      "globally_optional_dense_terms_cover_sparse_essential_gaps_and_tails",
+      "threshold_growth_promotes_local_optionals_to_global_certificates",
+      "similar_density_terms_keep_local_certificates_until_both_are_optional",
+      "exhausted_high_cost_remainder_changes_live_density_choice",
+      "exact_midpoint_leaves_preserve_incoming_order_and_strict_ties",
+      "duplicates_disparate_boosts_exhaustion_and_sparse_regions",
+      "exact_growing_threshold_traces_for_mixed_dense_and_sparse_terms",
+      "unsafe_domains_use_exhaustive_canonical_sum_before_any_seek"
+   ],
+   "worktree" : "/home/pronsh/Coding/playground/search/tantivy-or-cutoff-all-bounds-oct12"
+}

@@ -1,0 +1,1153 @@
+diff --git a/src/query/boolean_query/or_maxscore.rs b/src/query/boolean_query/or_maxscore.rs
+--- a/src/query/boolean_query/or_maxscore.rs
++++ b/src/query/boolean_query/or_maxscore.rs
+@@ -42,13 +42,295 @@
+         self.assert_coherent(scorers);
+         len
+     }
+-
+-    #[inline]
+-    fn advance(&mut self, scorers: &mut [TermScorer]) {
+-        self.assert_coherent(scorers);
+-        self.doc = scorers[self.ordinal].advance();
+-        self.assert_coherent(scorers);
+-    }
++}
++
++const POSTING_BATCH: usize = crate::postings::compression::COMPRESSION_BLOCK_SIZE;
++const MAX_OR_TERMS: usize = 32;
++
++struct EssentialLeafBuffer {
++    docs: [DocId; POSTING_BATCH],
++    leaves: [Score; POSTING_BATCH],
++    next: usize,
++    len: usize,
++}
++
++#[derive(Clone, Copy)]
++struct Head {
++    doc: DocId,
++    slot: usize,
++}
++
++impl Head {
++    fn precedes(self, other: Self) -> bool {
++        (self.doc, self.slot) < (other.doc, other.slot)
++    }
++}
++
++struct EssentialMergeScratch {
++    buffers: Vec<EssentialLeafBuffer>,
++    heap: [Head; MAX_OR_TERMS],
++}
++
++/// A fixed certified suffix owns retained leaves until its heap drains. Actual
++/// ClauseState docs remain first unread, even when all are beyond pending hits.
++struct EssentialRegion<'a> {
++    scratch: &'a mut EssentialMergeScratch,
++    essentials: &'a mut [ClauseState],
++    floor: DocId,
++    hi: DocId,
++    heap_len: usize,
++}
++
++// Mutually exclusive metadata borrows keep one optional/publication body and
++// leave the accepted single-essential scored batch protocol unchanged.
++enum EssentialReplay<'a> {
++    Single(&'a mut ClauseState),
++    Heap(EssentialRegion<'a>),
++}
++
++impl EssentialMergeScratch {
++    fn new(num_terms: usize) -> Self {
++        Self {
++            buffers: (0..num_terms)
++                .map(|_| EssentialLeafBuffer {
++                    docs: [0; POSTING_BATCH],
++                    leaves: [0.0; POSTING_BATCH],
++                    next: 0,
++                    len: 0,
++                })
++                .collect(),
++            heap: [Head { doc: 0, slot: 0 }; MAX_OR_TERMS],
++        }
++    }
++
++    fn region<'a>(
++        &'a mut self,
++        essentials: &'a mut [ClauseState],
++        lo: DocId,
++        hi: DocId,
++        scorers: &mut [TermScorer],
++        shared: &mut ScoredTermBatch,
++    ) -> EssentialRegion<'a> {
++        debug_assert!((2..=MAX_OR_TERMS).contains(&essentials.len()));
++        debug_assert!(essentials.len() <= self.buffers.len());
++        debug_assert!(lo < hi);
++        let mut region = EssentialRegion {
++            scratch: self,
++            essentials,
++            floor: lo,
++            hi,
++            heap_len: 0,
++        };
++        for slot in 0..region.essentials.len() {
++            let buffer = &mut region.scratch.buffers[slot];
++            debug_assert_eq!(buffer.next, buffer.len, "previous region must drain");
++            buffer.next = 0;
++            buffer.len = 0;
++            region.refill(slot, scorers, shared);
++            if let Some(head) = region.head(slot) {
++                region.scratch.heap[region.heap_len] = head;
++                region.heap_len += 1;
++            }
++        }
++        for parent in (0..region.heap_len / 2).rev() {
++            region.sift_down(parent);
++        }
++        region
++    }
++}
++
++impl EssentialRegion<'_> {
++    fn refill(&mut self, slot: usize, scorers: &mut [TermScorer], shared: &mut ScoredTermBatch) {
++        let lo = self.floor;
++        let hi = self.hi;
++        let buffer = &mut self.scratch.buffers[slot];
++        debug_assert_eq!(buffer.next, buffer.len, "only a drained owner may refill");
++        buffer.next = 0;
++        buffer.len = 0;
++        let clause = &mut self.essentials[slot];
++        if clause.doc >= hi {
++            return;
++        }
++        let previous_doc = clause.doc;
++        let floor = lo.max(previous_doc);
++        let len = clause.fill_scored_batch(scorers, floor, hi, shared);
++        debug_assert!(len <= POSTING_BATCH);
++        debug_assert!(clause.doc > previous_doc);
++        debug_assert!(len > 0 || clause.doc >= hi);
++        debug_assert!(shared.docs[..len]
++            .iter()
++            .all(|&doc| floor <= doc && doc < hi));
++        debug_assert!(shared.docs[..len].windows(2).all(|pair| pair[0] < pair[1]));
++        buffer.docs[..len].copy_from_slice(&shared.docs[..len]);
++        buffer.leaves[..len].copy_from_slice(&shared.scores[..len]);
++        buffer.len = len;
++        #[cfg(test)]
++        HEAP_EVIDENCE.with(|evidence| {
++            if let Some(evidence) = evidence.borrow_mut().as_mut() {
++                evidence.fills.push(HeapFillEvidence {
++                    lo,
++                    hi,
++                    slot,
++                    ordinal: clause.ordinal,
++                    docs: buffer.docs[..len].to_vec(),
++                    leaves: buffer.leaves[..len].to_vec(),
++                    unread: clause.doc,
++                });
++            }
++        });
++    }
++
++    fn head(&self, slot: usize) -> Option<Head> {
++        let buffer = &self.scratch.buffers[slot];
++        (buffer.next < buffer.len).then(|| Head {
++            doc: buffer.docs[buffer.next],
++            slot,
++        })
++    }
++
++    fn sift_down(&mut self, mut parent: usize) {
++        let head = self.scratch.heap[parent];
++        loop {
++            let left = 2 * parent + 1;
++            if left >= self.heap_len {
++                break;
++            }
++            let right = left + 1;
++            let child = if right < self.heap_len
++                && self.scratch.heap[right].precedes(self.scratch.heap[left])
++            {
++                right
++            } else {
++                left
++            };
++            if !self.scratch.heap[child].precedes(head) {
++                break;
++            }
++            self.scratch.heap[parent] = self.scratch.heap[child];
++            parent = child;
++        }
++        self.scratch.heap[parent] = head;
++    }
++
++    fn replace_or_remove_top(&mut self, next: Option<Head>) {
++        if let Some(next) = next {
++            self.scratch.heap[0] = next;
++        } else {
++            self.heap_len -= 1;
++            if self.heap_len == 0 {
++                return;
++            }
++            self.scratch.heap[0] = self.scratch.heap[self.heap_len];
++        }
++        self.sift_down(0);
++    }
++
++    fn next_candidate(
++        &mut self,
++        scorers: &mut [TermScorer],
++        shared: &mut ScoredTermBatch,
++        row: &mut [Score],
++    ) -> Option<(DocId, f64)> {
++        if self.heap_len == 0 {
++            debug_assert!(self.essentials.iter().all(|clause| clause.doc >= self.hi));
++            debug_assert!(self.scratch.buffers[..self.essentials.len()]
++                .iter()
++                .all(|buffer| buffer.next == buffer.len));
++            return None;
++        }
++        let doc = self.scratch.heap[0].doc;
++        debug_assert!(self.floor <= doc && doc < self.hi);
++        row.fill(0.0);
++        let mut known = 0.0f64;
++        #[cfg(test)]
++        let mut matched_slots = Vec::new();
++        while self.heap_len > 0 && self.scratch.heap[0].doc == doc {
++            let slot = self.scratch.heap[0].slot;
++            let buffer = &mut self.scratch.buffers[slot];
++            let leaf = buffer.leaves[buffer.next];
++            row[self.essentials[slot].ordinal] = leaf;
++            known += f64::from(leaf);
++            #[cfg(test)]
++            matched_slots.push(slot);
++            buffer.next += 1;
++            if buffer.next == buffer.len {
++                self.refill(slot, scorers, shared);
++            }
++            let next = self.head(slot);
++            debug_assert!(next.is_none_or(|head| head.doc > doc));
++            self.replace_or_remove_top(next);
++        }
++        #[cfg(test)]
++        HEAP_EVIDENCE.with(|evidence| {
++            if let Some(evidence) = evidence.borrow_mut().as_mut() {
++                evidence.candidates.push(HeapCandidateEvidence {
++                    lo: self.floor,
++                    hi: self.hi,
++                    doc,
++                    ordinals: self
++                        .essentials
++                        .iter()
++                        .map(|clause| clause.ordinal)
++                        .collect(),
++                    matched_slots,
++                    incoming_leaves: row.to_vec(),
++                    known,
++                    unread: self.essentials.iter().map(|clause| clause.doc).collect(),
++                    heads: self.scratch.heap[..self.heap_len]
++                        .iter()
++                        .map(|head| (head.doc, head.slot))
++                        .collect(),
++                });
++            }
++        });
++        Some((doc, known))
++    }
++}
++
++impl Drop for EssentialRegion<'_> {
++    fn drop(&mut self) {
++        // Preserve the original panic diagnostic if an invariant fails mid-drain.
++        #[cfg(debug_assertions)]
++        if !std::thread::panicking() {
++            debug_assert_eq!(
++                self.heap_len, 0,
++                "pending leaves must drain before a new certificate"
++            );
++        }
++    }
++}
++
++#[cfg(test)]
++#[derive(Debug, Default)]
++struct HeapEvidence {
++    fills: Vec<HeapFillEvidence>,
++    candidates: Vec<HeapCandidateEvidence>,
++}
++
++#[cfg(test)]
++#[derive(Debug)]
++struct HeapFillEvidence {
++    lo: DocId,
++    hi: DocId,
++    slot: usize,
++    ordinal: usize,
++    docs: Vec<DocId>,
++    leaves: Vec<Score>,
++    unread: DocId,
++}
++
++#[cfg(test)]
++#[derive(Debug)]
++struct HeapCandidateEvidence {
++    lo: DocId,
++    hi: DocId,
++    doc: DocId,
++    ordinals: Vec<usize>,
++    matched_slots: Vec<usize>,
++    incoming_leaves: Vec<Score>,
++    known: f64,
++    unread: Vec<DocId>,
++    heads: Vec<(DocId, usize)>,
+ }
+ 
+ #[cfg(test)]
+@@ -60,6 +342,8 @@
+     static GLOBAL_CHOICES: std::cell::RefCell<Option<Vec<RegionChoice>>> =
+         const { std::cell::RefCell::new(None) };
+     static BATCH_LENGTHS: std::cell::RefCell<Option<Vec<usize>>> =
++        const { std::cell::RefCell::new(None) };
++    static HEAP_EVIDENCE: std::cell::RefCell<Option<HeapEvidence>> =
+         const { std::cell::RefCell::new(None) };
+ }
+ 
+@@ -117,6 +401,7 @@
+     let mut prefix = vec![0.0f64; num_terms + 1];
+     let mut contributions = vec![0.0; num_terms];
+     let mut batch = ScoredTermBatch::new();
++    let mut heap_scratch: Option<EssentialMergeScratch> = None;
+     let mut lo = clauses
+         .iter()
+         .map(|clause| clause.doc)
+@@ -242,64 +527,58 @@
+         }
+         // The buffered phase retains the current certified partition. Cursor
+         // docs always mean first unread; batch docs own the replay candidates.
+-        let single_essential = num_terms - first_essential == 1;
++        let (optionals, essentials) = clauses.split_at_mut(first_essential);
++        let mut replay = match essentials {
++            [single] => EssentialReplay::Single(single),
++            multiple => EssentialReplay::Heap(
++                heap_scratch
++                    .get_or_insert_with(|| EssentialMergeScratch::new(num_terms))
++                    .region(multiple, lo, hi, &mut scorers, &mut batch),
++            ),
++        };
+         let mut batch_len = 0;
+         let mut batch_index = 0;
+         loop {
+-            let doc = if single_essential {
+-                if batch_index == batch_len {
+-                    batch_len = clauses[first_essential].fill_scored_batch(
+-                        &mut scorers,
+-                        lo,
+-                        hi,
+-                        &mut batch,
+-                    );
+-                    batch_index = 0;
+-                    #[cfg(test)]
+-                    BATCH_LENGTHS.with(|lengths| {
+-                        if let Some(lengths) = lengths.borrow_mut().as_mut() {
+-                            lengths.push(batch_len);
++            let (doc, mut known) = match &mut replay {
++                EssentialReplay::Single(clause) => {
++                    if batch_index == batch_len {
++                        batch_len = clause.fill_scored_batch(&mut scorers, lo, hi, &mut batch);
++                        batch_index = 0;
++                        #[cfg(test)]
++                        BATCH_LENGTHS.with(|lengths| {
++                            if let Some(lengths) = lengths.borrow_mut().as_mut() {
++                                lengths.push(batch_len);
++                            }
++                        });
++                        if batch_len == 0 {
++                            break;
+                         }
+-                    });
+-                    if batch_len == 0 {
++                    }
++                    let doc = batch.docs[batch_index];
++                    if doc >= hi {
+                         break;
+                     }
+-                }
+-                batch.docs[batch_index]
+-            } else {
+-                clauses[first_essential..]
+-                    .iter()
+-                    .map(|clause| clause.doc)
+-                    .min()
+-                    .unwrap_or(TERMINATED)
++                    contributions.fill(0.0);
++                    let leaf = batch.scores[batch_index];
++                    contributions[clause.ordinal] = leaf;
++                    (doc, f64::from(leaf))
++                }
++                EssentialReplay::Heap(region) => {
++                    let Some(candidate) =
++                        region.next_candidate(&mut scorers, &mut batch, &mut contributions)
++                    else {
++                        break;
++                    };
++                    candidate
++                }
+             };
+-            if doc >= hi {
+-                break;
+-            }
+-            contributions.fill(0.0);
+-            let mut known = 0.0f64;
+-            if single_essential {
+-                let leaf = batch.scores[batch_index];
+-                contributions[clauses[first_essential].ordinal] = leaf;
+-                known = f64::from(leaf);
+-            } else {
+-                for clause in &clauses[first_essential..] {
+-                    if clause.doc == doc {
+-                        clause.assert_coherent(&scorers);
+-                        let leaf = scorers[clause.ordinal].score();
+-                        clause.assert_coherent(&scorers);
+-                        contributions[clause.ordinal] = leaf;
+-                        known += f64::from(leaf);
+-                    }
+-                }
+-            }
+             let mut competitive = true;
+             for rank in (0..first_essential).rev() {
+                 if upper_bound.score(known + prefix[rank + 1]) <= threshold {
+                     competitive = false;
+                     break;
+                 }
+-                let clause = &mut clauses[rank];
++                let clause = &mut optionals[rank];
+                 if clause.doc < doc {
+                     clause.seek(&mut scorers, doc);
+                 }
+@@ -322,16 +601,11 @@
+                     threshold = next_threshold;
+                 }
+             }
+-            if single_essential {
++            if matches!(&replay, EssentialReplay::Single(_)) {
+                 batch_index += 1;
+-            } else {
+-                for clause in &mut clauses[first_essential..] {
+-                    if clause.doc == doc {
+-                        clause.advance(&mut scorers);
+-                    }
+-                }
+-            }
+-        }
++            }
++        }
++        drop(replay);
+         debug_assert!(clauses
+             .iter()
+             .all(|clause| clause.doc == scorers[clause.ordinal].doc()));
+@@ -401,6 +675,687 @@
+         });
+         assert_eq!(actual, expected, "threshold={threshold:?} limit={limit}");
+         actual
++    }
++
++    fn assert_heap_evidence(evidence: &HeapEvidence, originals: &[TermScorer]) {
++        for fill in &evidence.fills {
++            assert!(fill.slot < originals.len());
++            assert!(fill.docs.len() <= POSTING_BATCH);
++            assert_eq!(fill.docs.len(), fill.leaves.len());
++            assert!(fill.docs.iter().all(|&doc| fill.lo <= doc && doc < fill.hi));
++            assert!(fill.docs.windows(2).all(|pair| pair[0] < pair[1]));
++            assert!(fill.docs.is_empty() || fill.unread > *fill.docs.last().unwrap());
++            assert!(!fill.docs.is_empty() || fill.unread >= fill.hi);
++            for (&doc, &leaf) in fill.docs.iter().zip(&fill.leaves) {
++                let mut scorer = originals[fill.ordinal].clone();
++                assert_eq!(scorer.seek(doc), doc);
++                assert_eq!(leaf.to_bits(), scorer.score().to_bits());
++            }
++        }
++        for candidate in &evidence.candidates {
++            assert!(candidate.ordinals.len() >= 2);
++            assert!(candidate.lo <= candidate.doc && candidate.doc < candidate.hi);
++            assert_eq!(candidate.incoming_leaves.len(), originals.len());
++            assert_eq!(candidate.unread.len(), candidate.ordinals.len());
++            let mut expected_row = vec![0.0; originals.len()];
++            let mut expected_slots = Vec::new();
++            let mut known = 0.0f64;
++            for (slot, &ordinal) in candidate.ordinals.iter().enumerate() {
++                let mut scorer = originals[ordinal].clone();
++                if scorer.seek(candidate.doc) == candidate.doc {
++                    let leaf = scorer.score();
++                    expected_row[ordinal] = leaf;
++                    expected_slots.push(slot);
++                    known += f64::from(leaf);
++                    scorer.advance();
++                }
++                // Independent postings establish that no absent head can hide
++                // an unconsumed essential candidate inside the certificate.
++                let expected_head = (scorer.doc() < candidate.hi).then_some(scorer.doc());
++                let actual_head = candidate
++                    .heads
++                    .iter()
++                    .find(|&&(_, head_slot)| head_slot == slot)
++                    .map(|&(doc, _)| doc);
++                assert_eq!(actual_head, expected_head);
++            }
++            assert_eq!(candidate.matched_slots, expected_slots);
++            assert_eq!(candidate.known.to_bits(), known.to_bits());
++            assert_eq!(
++                candidate
++                    .incoming_leaves
++                    .iter()
++                    .map(|leaf| leaf.to_bits())
++                    .collect::<Vec<_>>(),
++                expected_row
++                    .iter()
++                    .map(|leaf| leaf.to_bits())
++                    .collect::<Vec<_>>(),
++            );
++            let mut head_slots = Vec::new();
++            for (index, &(doc, slot)) in candidate.heads.iter().enumerate() {
++                assert!(candidate.doc < doc && doc < candidate.hi);
++                assert!(slot < candidate.ordinals.len());
++                assert!(!head_slots.contains(&slot));
++                head_slots.push(slot);
++                if index > 0 {
++                    assert!(candidate.heads[(index - 1) / 2] <= (doc, slot));
++                }
++            }
++        }
++    }
++
++    fn observed_heap_check(
++        scorers: Vec<TermScorer>,
++        max_doc: DocId,
++        threshold: Score,
++        limit: usize,
++    ) -> (Vec<(DocId, u32)>, HeapEvidence) {
++        HEAP_EVIDENCE.with(|evidence| *evidence.borrow_mut() = Some(HeapEvidence::default()));
++        let accepted = check(scorers.clone(), max_doc, threshold, limit);
++        let evidence = HEAP_EVIDENCE.with(|evidence| evidence.borrow_mut().take().unwrap());
++        assert_heap_evidence(&evidence, &scorers);
++        (accepted, evidence)
++    }
++
++    #[test]
++    fn posting_heap_replays_pending_leaves_after_every_actual_cursor_exhausts() {
++        let norms = vec![1; 128];
++        let postings = [(0, 1), (7, 2), (63, 3), (64, 4), (127, 5)];
++        let (accepted, evidence) = observed_heap_check(
++            vec![
++                fixture(&postings, &norms, 0.7),
++                fixture(&postings, &norms, 0.3),
++                fixture(&postings, &norms, 0.5),
++            ],
++            128,
++            0.0,
++            0,
++        );
++        assert_eq!(
++            accepted.iter().map(|&(doc, _)| doc).collect::<Vec<_>>(),
++            [0, 7, 63, 64, 127]
++        );
++        assert_eq!(evidence.fills.len(), 3);
++        assert!(evidence.fills.iter().all(|fill| fill.unread == TERMINATED));
++        assert_eq!(evidence.candidates[0].ordinals, [1, 2, 0]);
++        assert_eq!(evidence.candidates[0].matched_slots, [0, 1, 2]);
++        assert!(evidence.candidates[0]
++            .unread
++            .iter()
++            .all(|&doc| doc == TERMINATED));
++        assert_eq!(evidence.candidates[0].heads.len(), 3);
++        let scratch = EssentialMergeScratch::new(32);
++        let foundation = 32 * std::mem::size_of::<ClauseState>()
++            + 33 * std::mem::size_of::<f64>()
++            + 32 * std::mem::size_of::<Score>()
++            + std::mem::size_of::<ScoredTermBatch>();
++        let payload = foundation
++            + scratch.buffers.len() * std::mem::size_of::<EssentialLeafBuffer>()
++            + std::mem::size_of_val(&scratch.heap);
++        eprintln!(
++            "OR_POSTING_HEAP_LAYOUT buffer={} head={} scratch={} region={} buffers_len={} \
++             buffers_capacity={} foundation={} array_record_payload={}",
++            std::mem::size_of::<EssentialLeafBuffer>(),
++            std::mem::size_of::<Head>(),
++            std::mem::size_of::<EssentialMergeScratch>(),
++            std::mem::size_of::<EssentialRegion<'_>>(),
++            scratch.buffers.len(),
++            scratch.buffers.capacity(),
++            foundation,
++            payload
++        );
++        assert_eq!(scratch.buffers.len(), 32);
++        assert_eq!(scratch.heap.len(), 32);
++        assert!(scratch.buffers.capacity() >= scratch.buffers.len());
++    }
++
++    #[test]
++    fn posting_heap_full_callback_oracle_covers_n3_n32_disjoint_overlap_and_tails() {
++        let norms: Vec<u32> = (0..1024).map(|doc| 1 + doc % 11).collect();
++        for count in [3, 32] {
++            for length in [127, 128, 129, 255, 256, 257] {
++                for disjoint in [false, true] {
++                    let scorers: Vec<_> = (0..count)
++                        .map(|ordinal| {
++                            let postings: Vec<_> = (0..length)
++                                .filter(|&doc| !disjoint || doc as usize % count == ordinal)
++                                .map(|doc| (doc, 1 + (doc + ordinal as u32) % 17))
++                                .collect();
++                            fixture(&postings, &norms, 0.5 + ordinal as Score / 16.0)
++                        })
++                        .collect();
++                    let (accepted, evidence) = observed_heap_check(scorers.clone(), 1024, 0.0, 0);
++                    assert_eq!(accepted.len(), length as usize);
++                    assert!(
++                        evidence
++                            .fills
++                            .iter()
++                            .filter(|fill| !fill.docs.is_empty())
++                            .count()
++                            >= 2
++                    );
++                    assert!(!evidence.candidates.is_empty());
++                    for limit in [1, 10] {
++                        observed_heap_check(scorers.clone(), 1024, 0.0, limit);
++                    }
++                }
++            }
++        }
++    }
++
++    #[test]
++    fn posting_heap_clears_old_essential_and_optional_leaves() {
++        let norms = vec![1; 256];
++        let essentials = [(0, 1), (7, 1), (128, 1), (135, 1)];
++        let optional = [(7, 1)];
++        let (accepted, evidence) = observed_heap_check(
++            vec![
++                fixture(&essentials, &norms, 1.0),
++                fixture(&optional, &norms, 2.0f32.powi(-10)),
++                fixture(&essentials, &norms, 2.0),
++            ],
++            256,
++            0.1,
++            0,
++        );
++        assert!(evidence
++            .candidates
++            .iter()
++            .all(|candidate| candidate.ordinals == [0, 2]));
++        assert_eq!(
++            accepted,
++            [
++                (0, 0x4040_0000),
++                (7, 0x4040_1000),
++                (128, 0x4040_0000),
++                (135, 0x4040_0000)
++            ]
++        );
++        let first = [(0, 1), (7, 1), (127, 1), (128, 1), (256, 1)];
++        let second = [
++            (0, 1),
++            (7, 1),
++            (127, 1),
++            (128, 1),
++            (135, 1),
++            (255, 1),
++            (256, 1),
++        ];
++        let norms = vec![1; 384];
++        let weak: Vec<_> = (0..384).map(|doc| (doc, 1)).collect();
++        let (accepted, _) = observed_heap_check(
++            vec![
++                fixture(&first, &norms, 1.0),
++                fixture(&weak, &norms, 2.0f32.powi(-10)),
++                fixture(&second, &norms, 2.0),
++            ],
++            384,
++            0.1,
++            0,
++        );
++        let expected = (f64::from(2.0f32.powi(-10)) + f64::from(2.0f32)) as Score;
++        for doc in [135, 255] {
++            assert_eq!(
++                accepted
++                    .iter()
++                    .find(|&&(actual, _)| actual == doc)
++                    .unwrap()
++                    .1,
++                expected.to_bits()
++            );
++        }
++    }
++
++    #[test]
++    fn posting_heap_reuses_dirty_buffers_when_fixed_suffix_grows_then_shrinks() {
++        let norms = vec![1; 800];
++        let a: Vec<_> = (0..384)
++            .map(|doc| (doc, if (128..256).contains(&doc) { 1000 } else { 1 }))
++            .collect();
++        let b: Vec<_> = (0..384)
++            .map(|doc| (doc, if (128..256).contains(&doc) { 1 } else { 1000 }))
++            .collect();
++        let rare = [(0, 1), (128, 1), (256, 1), (700, 1)];
++        let scorers = vec![
++            fixture(&a, &norms, 0.1),
++            fixture(&b, &norms, 0.1),
++            fixture(&rare, &norms, 1.0),
++        ];
++        let (_, evidence) = observed_heap_check(scorers.clone(), 800, 0.15, 0);
++        for (lo, ordinals) in [(0, &[1, 2][..]), (128, &[0, 1, 2][..]), (256, &[1, 2][..])] {
++            assert!(
++                evidence
++                    .candidates
++                    .iter()
++                    .any(|candidate| candidate.lo == lo && candidate.ordinals == ordinals),
++                "{evidence:?}"
++            );
++        }
++        for limit in [1, 10] {
++            observed_heap_check(scorers.clone(), 800, 0.15, limit);
++        }
++    }
++
++    #[test]
++    fn posting_heap_jumps_huge_gaps_without_physical_window_refills() {
++        let norms = vec![1; 1_000_001];
++        let a = [
++            (0, 1),
++            (63, 1),
++            (64, 1),
++            (127, 1),
++            (500_000, 1),
++            (1_000_000, 1),
++        ];
++        let b = [(0, 1), (7, 1), (128, 1), (500_001, 1), (999_999, 1)];
++        let c = [(7, 1), (129, 1), (500_064, 1), (1_000_000, 1)];
++        let (accepted, evidence) = observed_heap_check(
++            vec![
++                fixture(&a, &norms, 1.0),
++                fixture(&b, &norms, 2.0),
++                fixture(&c, &norms, 0.5),
++            ],
++            1_000_001,
++            0.0,
++            0,
++        );
++        assert_eq!(accepted.len(), 12);
++        assert_eq!(
++            evidence.fills.len(),
++            3,
++            "one posting suffix per owner, not per physical gap"
++        );
++        assert!(evidence.fills.iter().all(|fill| fill.hi == 1_000_001));
++    }
++
++    #[test]
++    fn posting_heap_runner_up_ties_below_hi_and_at_next_region_boundary() {
++        let norms = vec![1; 512];
++        for length in [127, 128, 129] {
++            let lead: Vec<_> = (0..length).map(|doc| (doc, 1 + doc % 7)).collect();
++            let last = length - 1;
++            let other = [(last, 3), (last + 1, 4), (300, 5)];
++            let scorers = vec![
++                fixture(&lead, &norms, 0.7),
++                fixture(&other, &norms, 0.3),
++                fixture(&other, &norms, 0.5),
++            ];
++            let (accepted, evidence) = observed_heap_check(scorers.clone(), 512, 0.0, 0);
++            assert_eq!(accepted.iter().filter(|&&(doc, _)| doc == last).count(), 1);
++            assert_eq!(
++                accepted.iter().filter(|&&(doc, _)| doc == last + 1).count(),
++                1
++            );
++            assert!(accepted.iter().any(|&(doc, _)| doc == 300));
++            assert!(evidence
++                .candidates
++                .iter()
++                .any(|candidate| candidate.doc == last && candidate.matched_slots.len() == 3));
++            for limit in [1, 10] {
++                observed_heap_check(scorers.clone(), 512, 0.0, limit);
++            }
++
++            // Exercise the owner directly at an explicit certificate edge.
++            // All clauses remain essential; the lead's 127/128/129-posting stream
++            // meets both runners once below hi, then exactly at next region lo.
++            let lead: Vec<_> = (0..length)
++                .map(|doc| (doc, 1 + doc % 7))
++                .chain([(length, 8), (300, 9)])
++                .collect();
++            let other = [(last, 3), (length, 4), (300, 5)];
++            let mut scorers = vec![
++                fixture(&lead, &norms, 0.7),
++                fixture(&other, &norms, 0.3),
++                fixture(&other, &norms, 0.5),
++            ];
++            let originals = scorers.clone();
++            let mut clauses: Vec<_> = [1, 2, 0]
++                .into_iter()
++                .map(|ordinal| ClauseState {
++                    ordinal,
++                    global_max: scorers[ordinal].max_score(),
++                    cost: scorers[ordinal].size_hint(),
++                    doc: scorers[ordinal].doc(),
++                    local_max: scorers[ordinal].max_score(),
++                })
++                .collect();
++            let mut scratch = EssentialMergeScratch::new(3);
++            let mut shared = ScoredTermBatch::new();
++            let mut row = vec![0.0; 3];
++            let mut published = Vec::new();
++            HEAP_EVIDENCE.with(|evidence| *evidence.borrow_mut() = Some(HeapEvidence::default()));
++            for (lo, hi) in [(0, length), (length, 512)] {
++                let mut region = scratch.region(&mut clauses, lo, hi, &mut scorers, &mut shared);
++                while let Some((doc, _)) =
++                    region.next_candidate(&mut scorers, &mut shared, &mut row)
++                {
++                    let score = row.iter().map(|&leaf| f64::from(leaf)).sum::<f64>() as Score;
++                    published.push((doc, score.to_bits()));
++                }
++            }
++            let evidence = HEAP_EVIDENCE.with(|evidence| evidence.borrow_mut().take().unwrap());
++            assert_heap_evidence(&evidence, &originals);
++            for edge in [last, length] {
++                assert_eq!(published.iter().filter(|&&(doc, _)| doc == edge).count(), 1);
++                assert!(
++                    evidence
++                        .candidates
++                        .iter()
++                        .any(|candidate| candidate.doc == edge
++                            && candidate.matched_slots == [0, 1, 2])
++                );
++            }
++            assert!(evidence
++                .fills
++                .iter()
++                .filter(|fill| fill.lo == 0)
++                .all(|fill| fill.docs.iter().all(|&doc| doc < length)));
++            assert!(evidence
++                .candidates
++                .iter()
++                .any(|candidate| candidate.doc == last - 1
++                    && candidate.heads.iter().any(|&(doc, _)| doc == last)));
++            let expected = trace(0.0, 0, |callback| {
++                let mut union = BufferedUnionScorer::build(originals, SumCombiner::default, 512);
++                for_each_pruning_scorer(&mut union, 0.0, callback);
++            });
++            assert_eq!(published, expected);
++            assert!(evidence
++                .candidates
++                .iter()
++                .find(|candidate| candidate.doc == length)
++                .unwrap()
++                .heads
++                .iter()
++                .any(|&(doc, _)| doc == 300));
++        }
++    }
++
++    #[test]
++    fn posting_heap_midpoints_replay_incoming_order_in_legacy_and_native_profiles() {
++        let norms = vec![1; 257];
++        let postings: Vec<_> = (0..257).map(|doc| (doc, 1)).collect();
++        for native in [false, true] {
++            let leaves = [1.0, 2.0f32.powi(-24), 2.0f32.powi(-53), 2.0f32.powi(-53)];
++            let scorers: Vec<_> = leaves
++                .iter()
++                .map(|&boost| {
++                    if native {
++                        TermScorer::create_for_test(
++                            &postings,
++                            &norms,
++                            Bm25Weight::for_native_block_bounds(1.0).boost_by(boost),
++                        )
++                    } else {
++                        fixture(&postings, &norms, boost)
++                    }
++                })
++                .collect();
++            for order in [[0, 1, 2, 3], [2, 3, 1, 0], [1, 0, 3, 2]] {
++                let ordered: Vec<_> = order.iter().map(|&i| scorers[i].clone()).collect();
++                let expected = ordered
++                    .iter()
++                    .map(|scorer| f64::from(scorer.clone().score()))
++                    .sum::<f64>() as Score;
++                let (accepted, evidence) = observed_heap_check(ordered.clone(), 257, 0.0, 0);
++                assert_eq!(accepted.len(), 257);
++                assert!(accepted.iter().all(|&(_, bits)| bits == expected.to_bits()));
++                assert!(evidence
++                    .candidates
++                    .iter()
++                    .any(|candidate| candidate.matched_slots.len() == 4));
++                for threshold in [expected.next_down(), expected, expected.next_up()] {
++                    for limit in [0, 1, 10] {
++                        check(ordered.clone(), 257, threshold, limit);
++                    }
++                }
++            }
++        }
++
++        // Near the low-TF sum, two substantial terms must remain essential.
++        // Each full block and the tail contain a high-TF hit whose individual
++        // strong leaf exceeds that threshold, keeping both local bounds live.
++        // TF is strictly positive throughout; native uses DEFAULT parameters.
++        let boosts = [
++            0.5,
++            0.5,
++            2.0f32.powi(-24),
++            2.0f32.powi(-53),
++            2.0f32.powi(-53),
++        ];
++        let postings: Vec<_> = (0..257)
++            .map(|doc| {
++                (
++                    doc,
++                    if [127, 255, 256].contains(&doc) {
++                        1000
++                    } else {
++                        1
++                    },
++                )
++            })
++            .collect();
++        for native in [false, true] {
++            let scorers: Vec<_> = boosts
++                .iter()
++                .map(|&boost| {
++                    if native {
++                        TermScorer::create_for_test(
++                            &postings,
++                            &norms,
++                            Bm25Weight::for_native_block_bounds(1.0).boost_by(boost),
++                        )
++                    } else {
++                        fixture(&postings, &norms, boost)
++                    }
++                })
++                .collect();
++            if !native {
++                for (scorer, &leaf) in scorers.iter().zip(&boosts) {
++                    assert_eq!(scorer.clone().score().to_bits(), leaf.to_bits());
++                }
++            }
++            for order in [[0, 1, 2, 3, 4], [3, 4, 2, 0, 1], [2, 0, 1, 4, 3]] {
++                let ordered: Vec<_> = order.iter().map(|&i| scorers[i].clone()).collect();
++                // Derive native expectations from its actual scalar leaves;
++                // both profiles publish one f32 cast after the incoming fold.
++                let expected = ordered
++                    .iter()
++                    .map(|scorer| f64::from(scorer.clone().score()))
++                    .sum::<f64>() as Score;
++                let strong_ordinals: Vec<_> = order
++                    .iter()
++                    .enumerate()
++                    .filter_map(|(ordinal, &original)| (original < 2).then_some(ordinal))
++                    .collect();
++                for &ordinal in &strong_ordinals {
++                    for doc in [127, 255, 256] {
++                        let mut scorer = ordered[ordinal].clone();
++                        assert_eq!(scorer.seek(doc), doc);
++                        assert!(scorer.score() > expected.next_up());
++                    }
++                }
++                for threshold in [expected.next_down(), expected, expected.next_up()] {
++                    for limit in [0, 1, 10] {
++                        let (accepted, evidence) =
++                            observed_heap_check(ordered.clone(), 257, threshold, limit);
++                        assert!(
++                            evidence
++                                .candidates
++                                .iter()
++                                .any(|candidate| candidate.doc == 0
++                                    && candidate.matched_slots.len() >= 2
++                                    && strong_ordinals
++                                        .iter()
++                                        .all(|ordinal| candidate.ordinals.contains(ordinal))),
++                            "native={native} order={order:?} threshold={threshold:?} \
++                             limit={limit} evidence={evidence:?}"
++                        );
++                        assert!(accepted.iter().any(|&(doc, _)| doc == 127));
++                        let first_low = accepted.iter().find(|&&(doc, _)| doc == 0);
++                        if threshold < expected {
++                            assert_eq!(first_low.unwrap().1, expected.to_bits());
++                        } else {
++                            assert!(first_low.is_none());
++                        }
++                    }
++                }
++            }
++        }
++    }
++
++    #[test]
++    fn posting_heap_current_threshold_and_simulated_collector_deletion_rejection() {
++        let norms = vec![1; 128];
++        let postings = [(0, 1), (7, 3), (63, 5), (64, 8), (127, 20)];
++        let scorers = vec![
++            fixture(&postings, &norms, 0.3),
++            fixture(&postings, &norms, 0.5),
++            fixture(&postings, &norms, 0.001),
++        ];
++        for limit in [0, 1, 10] {
++            let (_, evidence) = observed_heap_check(scorers.clone(), 128, 0.1, limit);
++            assert!(evidence
++                .candidates
++                .iter()
++                .any(|candidate| candidate.matched_slots.len() >= 2));
++        }
++        let run = |heap: bool| {
++            let mut accepted = Vec::new();
++            let mut current: Score = 0.1;
++            let mut callback = |doc, score: Score| {
++                accepted.push((doc, score.to_bits()));
++                if doc != 0 && doc != 63 {
++                    current = current.max(score);
++                }
++                current
++            };
++            if heap {
++                or_maxscore(scorers.clone(), 128, 0.1, &mut callback);
++            } else {
++                let mut union =
++                    BufferedUnionScorer::build(scorers.clone(), SumCombiner::default, 128);
++                for_each_pruning_scorer(&mut union, 0.1, &mut callback);
++            }
++            accepted
++        };
++        assert_eq!(run(true), run(false));
++        assert_eq!(
++            run(true).iter().map(|&(doc, _)| doc).collect::<Vec<_>>(),
++            [0, 7, 63, 64, 127]
++        );
++    }
++
++    #[test]
++    fn posting_heap_actual_indexed_deletes_keep_physical_pending_candidates() -> crate::Result<()> {
++        use crate::collector::TopDocs;
++        use crate::indexer::NoMergePolicy;
++        use crate::query::{BooleanQuery, EnableScoring, Query, TermQuery};
++        use crate::schema::{IndexRecordOption, Schema, TEXT};
++        use crate::{DocAddress, Index, Term};
++
++        let mut schema = Schema::builder();
++        let text = schema.add_text_field("text", TEXT);
++        let marker = schema.add_text_field("marker", TEXT);
++        let index = Index::create_in_ram(schema.build());
++        let mut writer = index.writer_for_tests()?;
++        writer.set_merge_policy(Box::new(NoMergePolicy));
++        for doc in 0..160 {
++            let frequency = if [0, 63, 127].contains(&doc) { 30 } else { 1 };
++            let content = std::iter::repeat_n("alpha beta gamma", frequency)
++                .chain(std::iter::repeat_n("filler", 90 - frequency * 3))
++                .collect::<Vec<_>>()
++                .join(" ");
++            writer.add_document(doc!(text => content, marker => if [0, 63].contains(&doc) { "delete" } else { "keep" }))?;
++        }
++        writer.commit()?;
++        writer.delete_term(Term::from_field_text(marker, "delete"));
++        writer.commit()?;
++        let reader = index.reader()?;
++        let searcher = reader.searcher();
++        assert_eq!(searcher.segment_readers().len(), 1);
++        let segment = searcher.segment_reader(0);
++        assert_eq!(segment.max_doc(), 160);
++        assert_eq!(segment.num_docs(), 158);
++        let queries: Vec<_> = ["alpha", "beta", "gamma"]
++            .iter()
++            .map(|term| {
++                TermQuery::new(
++                    Term::from_field_text(text, term),
++                    IndexRecordOption::WithFreqs,
++                )
++            })
++            .collect();
++        let scorers: Vec<_> = queries
++            .iter()
++            .map(|query| {
++                query
++                    .specialized_weight(EnableScoring::enabled_from_searcher(&searcher))?
++                    .term_scorer_for_test(segment, 1.0)?
++                    .ok_or_else(|| crate::TantivyError::InvalidArgument("missing test term".into()))
++            })
++            .collect::<crate::Result<_>>()?;
++        let run = |heap: bool| {
++            let mut accepted = Vec::new();
++            let mut current = -Score::INFINITY;
++            let mut callback = |doc, score: Score| {
++                accepted.push((doc, score.to_bits()));
++                // This is the real index's deletion bitset, with the same
++                // threshold rejection ownership as the TopDocs collector.
++                if segment.alive_bitset().unwrap().is_alive(doc) {
++                    current = current.max(score);
++                }
++                current
++            };
++            if heap {
++                or_maxscore(
++                    scorers.clone(),
++                    segment.max_doc(),
++                    -Score::INFINITY,
++                    &mut callback,
++                );
++            } else {
++                let mut union = BufferedUnionScorer::build(
++                    scorers.clone(),
++                    SumCombiner::default,
++                    segment.max_doc(),
++                );
++                for_each_pruning_scorer(&mut union, -Score::INFINITY, &mut callback);
++            }
++            accepted
++        };
++        HEAP_EVIDENCE.with(|evidence| *evidence.borrow_mut() = Some(HeapEvidence::default()));
++        let actual = run(true);
++        let evidence = HEAP_EVIDENCE.with(|evidence| evidence.borrow_mut().take().unwrap());
++        assert_eq!(actual, run(false));
++        assert!(actual.iter().any(|&(doc, _)| doc == 0));
++        assert!(actual.iter().any(|&(doc, _)| doc == 63));
++        assert!(actual.iter().any(|&(doc, _)| doc == 127));
++        assert_heap_evidence(&evidence, &scorers);
++        assert!(evidence
++            .candidates
++            .iter()
++            .any(|candidate| candidate.matched_slots.len() == 3
++                && candidate.unread.iter().all(|&doc| doc >= candidate.hi)
++                && !candidate.heads.is_empty()));
++        let query = BooleanQuery::union(
++            queries
++                .into_iter()
++                .map(|query| Box::new(query) as Box<dyn Query>)
++                .collect(),
++        );
++        HEAP_EVIDENCE.with(|evidence| *evidence.borrow_mut() = Some(HeapEvidence::default()));
++        let top = searcher.search(&query, &TopDocs::with_limit(1).order_by_score())?;
++        let evidence = HEAP_EVIDENCE.with(|evidence| evidence.borrow_mut().take().unwrap());
++        assert!(evidence
++            .candidates
++            .iter()
++            .any(|candidate| candidate.matched_slots.len() == 3));
++        assert_eq!(top[0].1, DocAddress::new(0, 127));
++        let expected_bits = actual.iter().find(|&&(doc, _)| doc == 127).unwrap().1;
++        assert_eq!(top[0].0.to_bits(), expected_bits);
++        Ok(())
+     }
+ 
+     #[test]
+@@ -726,6 +1681,7 @@
+         let norms = vec![1; 300];
+         let postings: Vec<_> = (0..300).map(|doc| (doc, 1 + doc % 7)).collect();
+         let positive = fixture(&postings, &norms, 1.0);
++        HEAP_EVIDENCE.with(|evidence| *evidence.borrow_mut() = Some(HeapEvidence::default()));
+         for boost in [0.0, -1.0, Score::INFINITY, Score::NAN] {
+             let exceptional = fixture(&postings, &norms, boost);
+             check(
+@@ -747,5 +1703,8 @@
+             );
+         }
+         assert!(check(vec![positive; 3], 300, Score::NAN, 0).is_empty());
++        let evidence = HEAP_EVIDENCE.with(|evidence| evidence.borrow_mut().take().unwrap());
++        assert!(evidence.fills.is_empty());
++        assert!(evidence.candidates.is_empty());
+     }
+ }

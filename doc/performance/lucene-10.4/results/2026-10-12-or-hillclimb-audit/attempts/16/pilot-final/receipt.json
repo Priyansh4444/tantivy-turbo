@@ -1,0 +1,381 @@
+{
+  "seconds": 9.498867638001684,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 245567.6836461126,
+        "baseline_mean_ns": 248978.96514745307,
+        "ratio_mean": 0.9862989168610279,
+        "median_ratio": 1.0057121651889256
+      },
+      "BA": {
+        "candidate_mean_ns": 246424.9436997319,
+        "baseline_mean_ns": 247938.81903485255,
+        "ratio_mean": 0.9938941576756166,
+        "median_ratio": 1.008266982890056
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 564447.8203883495,
+        "baseline_mean_ns": 577568.6456310679,
+        "ratio_mean": 0.9772826566297028,
+        "median_ratio": 1.0139404169788442
+      },
+      "BA": {
+        "candidate_mean_ns": 561862.1407766991,
+        "baseline_mean_ns": 575277.8689320388,
+        "ratio_mean": 0.9766795684662003,
+        "median_ratio": 1.0117210315752854
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 83062.33415841585,
+        "baseline_mean_ns": 82636.37376237624,
+        "ratio_mean": 1.0051546356240713,
+        "median_ratio": 0.9990866838742452
+      },
+      "BA": {
+        "candidate_mean_ns": 84197.56435643564,
+        "baseline_mean_ns": 81742.06683168317,
+        "ratio_mean": 1.0300395820649928,
+        "median_ratio": 1.0062310537578645
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 847,
+      "kind": "OR",
+      "terms": [
+        "old",
+        "photos"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.4608079138672319,
+      "BA": 1.3335489521497959
+    },
+    {
+      "id": 521,
+      "kind": "OR",
+      "terms": [
+        "law",
+        "dictionary"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.3316447409439491,
+      "BA": 1.2690007328431951
+    },
+    {
+      "id": 439,
+      "kind": "OR",
+      "terms": [
+        "sore",
+        "muscles"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.26211562987105,
+      "BA": 1.2305244013337375
+    },
+    {
+      "id": 1139,
+      "kind": "PHRASE",
+      "terms": [
+        "business",
+        "consultants"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2029008657870355,
+      "BA": 1.4704264533872855
+    },
+    {
+      "id": 782,
+      "kind": "AND",
+      "terms": [
+        "abilene",
+        "tx"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2714425633132782,
+      "BA": 1.1878533892104037
+    },
+    {
+      "id": 767,
+      "kind": "OR",
+      "terms": [
+        "law",
+        "school",
+        "rankings"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.238914480596098,
+      "BA": 1.178247585255273
+    },
+    {
+      "id": 875,
+      "kind": "OR",
+      "terms": [
+        "canon",
+        "powershot"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.213593904696311,
+      "BA": 1.1697355491946853
+    },
+    {
+      "id": 657,
+      "kind": "OR",
+      "terms": [
+        "naked",
+        "news"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1645223673064937,
+      "BA": 1.4152281949573702
+    },
+    {
+      "id": 475,
+      "kind": "OR",
+      "terms": [
+        "prayer",
+        "times"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1473777872926882,
+      "BA": 1.1778883035851275
+    },
+    {
+      "id": 737,
+      "kind": "OR",
+      "terms": [
+        "playa",
+        "del",
+        "rey"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.175069649343474,
+      "BA": 1.1417423811655396
+    },
+    {
+      "id": 367,
+      "kind": "OR",
+      "terms": [
+        "glass",
+        "works"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1365958141242707,
+      "BA": 1.1983527598894148
+    },
+    {
+      "id": 917,
+      "kind": "OR",
+      "terms": [
+        "laborers",
+        "international",
+        "union",
+        "of",
+        "north",
+        "america"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1515882024654982,
+      "BA": 1.1334562354702664
+    },
+    {
+      "id": 819,
+      "kind": "OR",
+      "terms": [
+        "foam",
+        "mattress"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1770094562647755,
+      "BA": 1.1301242759939267
+    },
+    {
+      "id": 829,
+      "kind": "OR",
+      "terms": [
+        "eastern",
+        "mennonite",
+        "university"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1213956801444813,
+      "BA": 1.2733788276872282
+    },
+    {
+      "id": 363,
+      "kind": "OR",
+      "terms": [
+        "san",
+        "francisco"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1010276570797985,
+      "BA": 1.0966713857702566
+    },
+    {
+      "id": 601,
+      "kind": "OR",
+      "terms": [
+        "trendy",
+        "clothes"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0890477254113617,
+      "BA": 1.1445444319460067
+    },
+    {
+      "id": 493,
+      "kind": "OR",
+      "terms": [
+        "american",
+        "academy",
+        "of",
+        "child",
+        "and",
+        "adolescent",
+        "psychiatry"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0925219331542153,
+      "BA": 1.0884328201871318
+    },
+    {
+      "id": 919,
+      "kind": "OR",
+      "terms": [
+        "to",
+        "be",
+        "or",
+        "not",
+        "to",
+        "be"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1076870195441377,
+      "BA": 1.0844847275703196
+    },
+    {
+      "id": 633,
+      "kind": "OR",
+      "terms": [
+        "little",
+        "cars"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0799529049495087,
+      "BA": 1.1148990058566746
+    },
+    {
+      "id": 595,
+      "kind": "OR",
+      "terms": [
+        "books",
+        "on",
+        "cd"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1046254936047248,
+      "BA": 1.0798170535093028
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791715329.989017,
+      "loadavg": [
+        7.2978515625,
+        5.94970703125,
+        5.56689453125
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        "3475761 ps               100",
+        "3475660 python3         93.4",
+        "2886977 vesktop         85.2",
+        "3111450 helium          17.1",
+        "3443225 helium          16.5",
+        "3468704 helium          16.0",
+        "3465440 t3code          15.0",
+        "2886856 vesktop         11.1",
+        "3465431 t3code          10.4",
+        "2886914 vesktop         10.3",
+        "3470226 helium          10.2",
+        "3466544 codex            8.6"
+      ]
+    },
+    {
+      "at": 1791715336.715534,
+      "loadavg": [
+        7.19384765625,
+        5.95068359375,
+        5.5693359375
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        "2886977 vesktop         85.3",
+        "3475660 python3         24.8",
+        "3111450 helium          17.1",
+        "3443225 helium          16.3",
+        "3468704 helium          15.3",
+        "3465440 t3code          14.6",
+        "3470226 helium          11.6",
+        "2886856 vesktop         11.1",
+        "2886914 vesktop         10.3",
+        "3465431 t3code          10.2",
+        "3466544 codex            8.5",
+        "3233546 helium           7.1"
+      ]
+    }
+  ]
+}

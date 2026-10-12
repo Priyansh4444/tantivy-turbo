@@ -1,0 +1,182 @@
+[
+  {
+    "percent": 7.47,
+    "assembly": "29aad0: vmovsd %xmm0,(%r14,%rdi,8)"
+  },
+  {
+    "percent": 5.75,
+    "assembly": "29b002: vucomiss %xmm0,%xmm11"
+  },
+  {
+    "percent": 3.81,
+    "assembly": "29b006: jae    29ad54 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x34b4>"
+  },
+  {
+    "percent": 2.75,
+    "assembly": "29affe: vcvtsd2ss %xmm0,%xmm0,%xmm0"
+  },
+  {
+    "percent": 2.25,
+    "assembly": "29b00c: dec    %rbp"
+  },
+  {
+    "percent": 2.11,
+    "assembly": "29ad54: mov    0x18(%rsp),%r12"
+  },
+  {
+    "percent": 1.87,
+    "assembly": "29aad6: inc    %rdi"
+  },
+  {
+    "percent": 1.59,
+    "assembly": "29aff6: inc    %rax"
+  },
+  {
+    "percent": 1.52,
+    "assembly": "29b2e3: setb   %al"
+  },
+  {
+    "percent": 1.25,
+    "assembly": "29aff1: vmovq  %xmm0,%rax"
+  },
+  {
+    "percent": 1.07,
+    "assembly": "29a409: vucomiss %xmm11,%xmm1"
+  },
+  {
+    "percent": 1.04,
+    "assembly": "29aa43: jne    29aa4b <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x31ab>"
+  },
+  {
+    "percent": 1.01,
+    "assembly": "29b066: cmp    %r11d,%eax"
+  },
+  {
+    "percent": 1.0,
+    "assembly": "29b33a: mov    0x50(%rsp),%r15"
+  },
+  {
+    "percent": 0.97,
+    "assembly": "29a736: cmp    %eax,%ebp"
+  },
+  {
+    "percent": 0.97,
+    "assembly": "29b08e: cmp    %r11d,%eax"
+  },
+  {
+    "percent": 0.96,
+    "assembly": "29ad59: mov    0x20(%rsp),%rax"
+  },
+  {
+    "percent": 0.94,
+    "assembly": "29b291: vpinsrd $0x2,0x1c(%r15,%rax,1),%xmm0,%xmm0"
+  },
+  {
+    "percent": 0.9,
+    "assembly": "29aa4b: vmovss %xmm0,0x14(%r13)"
+  },
+  {
+    "percent": 0.9,
+    "assembly": "29b951: inc    %r15"
+  },
+  {
+    "percent": 0.87,
+    "assembly": "29b054: cmp    $0x7f,%rdi"
+  },
+  {
+    "percent": 0.86,
+    "assembly": "29b2f5: cmp    $0x7f,%rax"
+  },
+  {
+    "percent": 0.83,
+    "assembly": "29ab23: inc    %rcx"
+  },
+  {
+    "percent": 0.83,
+    "assembly": "29b00f: lea    0x0(,%rbp,2),%rax"
+  },
+  {
+    "percent": 0.83,
+    "assembly": "29b95e: vmovsd %xmm0,0xa38(%rsp,%r13,8)"
+  },
+  {
+    "percent": 0.8,
+    "assembly": "29ab2a: jae    29aaf0 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x3250>"
+  },
+  {
+    "percent": 0.79,
+    "assembly": "29b303: vmovss 0xc(%rsp),%xmm11"
+  },
+  {
+    "percent": 0.71,
+    "assembly": "29afba: mov    %r11,0x40(%rsp)"
+  },
+  {
+    "percent": 0.69,
+    "assembly": "29a9c3: mov    0x38(%rsp),%rsi"
+  },
+  {
+    "percent": 0.68,
+    "assembly": "29b1ce: vmovdqu %xmm0,0x478(%r13)"
+  },
+  {
+    "percent": 0.66,
+    "assembly": "29a9f7: mov    %ecx,%ebp"
+  },
+  {
+    "percent": 0.65,
+    "assembly": "29af36: mov    0xe8(%rsp),%rax"
+  },
+  {
+    "percent": 0.63,
+    "assembly": "29aa2a: test   %eax,%eax"
+  },
+  {
+    "percent": 0.63,
+    "assembly": "29af1f: call   *0x12e3a3(%rip)        # 3c92c8 <memset@GLIBC_2.2.5>"
+  },
+  {
+    "percent": 0.63,
+    "assembly": "29b2c8: cmp    %r11d,0x5c(%r13,%rax,1)"
+  },
+  {
+    "percent": 0.62,
+    "assembly": "29af7c: mov    %rdx,0x98(%rsp)"
+  },
+  {
+    "percent": 0.62,
+    "assembly": "29b017: add    %rbp,%rax"
+  },
+  {
+    "percent": 0.59,
+    "assembly": "29b359: cmp    %rdx,%rdi"
+  },
+  {
+    "percent": 0.59,
+    "assembly": "29b3bb: movzbl (%r9),%eax"
+  },
+  {
+    "percent": 0.59,
+    "assembly": "29b968: cmp    %r15,%rax"
+  },
+  {
+    "percent": 0.52,
+    "assembly": "29a405: vcvtsd2ss %xmm1,%xmm1,%xmm1"
+  },
+  {
+    "percent": 0.52,
+    "assembly": "29aa40: or     %sil,%cl"
+  },
+  {
+    "percent": 0.52,
+    "assembly": "29b02a: cmp    %r11d,%eax"
+  },
+  {
+    "percent": 0.52,
+    "assembly": "29b2b9: vpcmpeqd %xmm1,%xmm0,%xmm0"
+  },
+  {
+    "percent": 0.52,
+    "assembly": "29b3ed: vsubss %xmm0,%xmm1,%xmm0"
+  }
+]

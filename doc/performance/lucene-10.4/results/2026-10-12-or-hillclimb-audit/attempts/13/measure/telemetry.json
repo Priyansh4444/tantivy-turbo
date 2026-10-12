@@ -1,0 +1,485 @@
+[
+  {
+    "at": 1791529058.3675978,
+    "loadavg": [
+      5.33984375,
+      5.38916015625,
+      3.87158203125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  65845 xearch-search    100",
+      "  65833 python          95.7",
+      "  23296 helium          79.2",
+      "   5070 helium          34.2",
+      "   2264 helium          29.1",
+      "   6959 t3code          12.2",
+      "   2218 helium          11.7",
+      "   3759 vesktop         11.6",
+      "  13051 claude          11.0",
+      "   6969 t3code          10.5",
+      "   3624 vesktop          9.8",
+      "   1503 Hyprland         8.1"
+    ]
+  },
+  {
+    "at": 1791529085.7852964,
+    "loadavg": [
+      5.126953125,
+      5.3271484375,
+      3.8916015625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  67604 xearch-search    100",
+      "  23296 helium          72.5",
+      "  65862 tantivy_worker  43.9",
+      "  65861 tantivy_worker  43.7",
+      "   5070 helium          33.7",
+      "   2264 helium          28.9",
+      "  65833 python          14.3",
+      "   6959 t3code          12.1",
+      "   2218 helium          11.8",
+      "   3759 vesktop         11.6",
+      "  13051 claude          10.8",
+      "   6969 t3code          10.3"
+    ]
+  },
+  {
+    "at": 1791529102.1678362,
+    "loadavg": [
+      4.52294921875,
+      5.17529296875,
+      3.873046875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  67705 xearch-search    101",
+      "  23296 helium          67.2",
+      "  65862 tantivy_worker  44.3",
+      "  65861 tantivy_worker  43.9",
+      "   5070 helium          33.3",
+      "   2264 helium          28.7",
+      "   6959 t3code          12.0",
+      "   2218 helium          11.9",
+      "   3759 vesktop         11.5",
+      "  65833 python          11.4",
+      "  13051 claude          10.6",
+      "   6969 t3code          10.3"
+    ]
+  },
+  {
+    "at": 1791529120.3425362,
+    "loadavg": [
+      5.818359375,
+      5.41552734375,
+      3.97216796875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  69658 cc1              125",
+      "  69640 cc1              120",
+      "  69643 cc1              120",
+      "  69657 cc1              112",
+      "  69645 cc1              110",
+      "  69647 cc1              110",
+      "  69650 cc1              100",
+      "  69670 ps               100",
+      "  69627 rustc           95.0",
+      "  69397 xearch-search   94.5",
+      "  69059 rustc           90.0",
+      "  69652 cc1             88.8"
+    ]
+  },
+  {
+    "at": 1791529141.199996,
+    "loadavg": [
+      9.162109375,
+      6.2265625,
+      4.27197265625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  71869 ps               300",
+      "  71864 xearch-search    100",
+      "  71851 clippy-driver   97.4",
+      "  71850 clippy-driver   92.3",
+      "  23296 helium          58.7",
+      "  65862 tantivy_worker  41.7",
+      "  65861 tantivy_worker  41.1",
+      "   5070 helium          33.7",
+      "   2264 helium          28.9",
+      "  68095 helium          20.4",
+      "  67627 helium          19.6",
+      "   2218 helium          12.3"
+    ]
+  },
+  {
+    "at": 1791529160.1624527,
+    "loadavg": [
+      13.09033203125,
+      7.314453125,
+      4.67236328125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  72474 ps               200",
+      "  72251 MainThread       122",
+      "  72470 xearch-search    101",
+      "  23296 helium          54.8",
+      "  71874 helium          46.7",
+      "  65862 tantivy_worker  41.2",
+      "  65861 tantivy_worker  40.8",
+      "   5070 helium          33.8",
+      "  71984 helium          31.4",
+      "   2264 helium          29.2",
+      "  72188 helium          28.6",
+      "  68095 helium          23.8"
+    ]
+  },
+  {
+    "at": 1791529177.253658,
+    "loadavg": [
+      13.080078125,
+      7.6708984375,
+      4.845703125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  72779 xearch-search    100",
+      "  23296 helium          51.8",
+      "  65862 tantivy_worker  41.6",
+      "  65861 tantivy_worker  41.1",
+      "   5070 helium          34.2",
+      "  71874 helium          33.4",
+      "   2264 helium          29.3",
+      "  68095 helium          20.4",
+      "   2218 helium          12.7",
+      "  67627 helium          12.4",
+      "   6959 t3code          11.4",
+      "   3759 vesktop         11.0"
+    ]
+  },
+  {
+    "at": 1791529177.3841746,
+    "loadavg": [
+      13.080078125,
+      7.6708984375,
+      4.845703125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  72779 xearch-search   98.4",
+      "  23296 helium          51.8",
+      "   5070 helium          34.2",
+      "  71874 helium          33.9",
+      "   2264 helium          29.3",
+      "  68095 helium          20.4",
+      "   2218 helium          12.7",
+      "  67627 helium          12.4",
+      "   6959 t3code          11.4",
+      "   3759 vesktop         11.0",
+      "  13051 claude           9.8",
+      "   6969 t3code           9.8"
+    ]
+  },
+  {
+    "at": 1791529206.1256013,
+    "loadavg": [
+      10.64990234375,
+      7.53564453125,
+      4.876953125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  73074 helium           119",
+      "  73202 xearch-search    100",
+      "  73208 cargo           77.4",
+      "  23296 helium          47.2",
+      "  72784 tantivy_worker  42.0",
+      "  72785 tantivy_worker  40.9",
+      "   5070 helium          34.3",
+      "   2264 helium          29.5",
+      "  68095 helium          15.5",
+      "   2218 helium          12.8",
+      "   6959 t3code          11.2",
+      "   3759 vesktop         10.8"
+    ]
+  },
+  {
+    "at": 1791529227.9896095,
+    "loadavg": [
+      15.69384765625,
+      8.9462890625,
+      5.4130859375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  73224 rustc            940",
+      "  73973 ps               100",
+      "  73968 xearch-search   94.1",
+      "  73074 helium          65.0",
+      "  23296 helium          45.1",
+      "  72784 tantivy_worker  38.4",
+      "  72785 tantivy_worker  38.3",
+      "   5070 helium          34.4",
+      "  73972 cc              33.3",
+      "   2264 helium          29.7",
+      "  68095 helium          13.3",
+      "   2218 helium          13.2"
+    ]
+  },
+  {
+    "at": 1791529244.5665987,
+    "loadavg": [
+      13.625,
+      8.81787109375,
+      5.427734375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  74372 qs               150",
+      "  74305 xearch-search    100",
+      "  73074 helium          65.9",
+      "  23296 helium          43.0",
+      "  72784 tantivy_worker  39.9",
+      "  72785 tantivy_worker  39.5",
+      "   5070 helium          34.5",
+      "   2264 helium          29.8",
+      "   2218 helium          13.3",
+      "  68095 helium          11.8",
+      "   6959 t3code          10.9",
+      "   3759 vesktop         10.6"
+    ]
+  },
+  {
+    "at": 1791529261.2492092,
+    "loadavg": [
+      12.0029296875,
+      8.6953125,
+      5.443359375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  75047 ps               200",
+      "  75037 xearch-search    101",
+      "  73074 helium          63.1",
+      "  23296 helium          41.3",
+      "  72784 tantivy_worker  40.6",
+      "  72785 tantivy_worker  40.3",
+      "   5070 helium          34.8",
+      "   2264 helium          30.0",
+      "  75041 helium          24.0",
+      "   2218 helium          13.4",
+      "   6959 t3code          10.8",
+      "  68095 helium          10.6"
+    ]
+  },
+  {
+    "at": 1791529277.8506303,
+    "loadavg": [
+      10.0859375,
+      8.47119140625,
+      5.43994140625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  75110 xearch-search    100",
+      "  75114 ps               100",
+      "  73074 helium          54.4",
+      "  72784 tantivy_worker  41.2",
+      "  72785 tantivy_worker  40.8",
+      "  23296 helium          39.5",
+      "   5070 helium          34.8",
+      "   2264 helium          30.0",
+      "   2218 helium          13.3",
+      "   6959 t3code          10.7",
+      "   3759 vesktop         10.4",
+      "  68095 helium          10.0"
+    ]
+  },
+  {
+    "at": 1791529294.53449,
+    "loadavg": [
+      8.9580078125,
+      8.30029296875,
+      5.43310546875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  75265 xearch-search    100",
+      "  73074 helium          58.0",
+      "  72784 tantivy_worker  41.5",
+      "  72785 tantivy_worker  41.2",
+      "  23296 helium          37.9",
+      "   5070 helium          35.1",
+      "   2264 helium          30.2",
+      "   2218 helium          13.5",
+      "   6959 t3code          10.5",
+      "   3759 vesktop         10.3",
+      "   3624 vesktop          9.7",
+      "  68095 helium           9.4"
+    ]
+  },
+  {
+    "at": 1791529294.653967,
+    "loadavg": [
+      8.9580078125,
+      8.30029296875,
+      5.43310546875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  75265 xearch-search   99.3",
+      "  73074 helium          57.9",
+      "  23296 helium          37.9",
+      "   5070 helium          35.1",
+      "   2264 helium          30.2",
+      "   2218 helium          13.5",
+      "   6959 t3code          10.5",
+      "   3759 vesktop         10.3",
+      "   3624 vesktop          9.7",
+      "  68095 helium           9.4",
+      "  13051 claude           9.3",
+      "   6969 t3code           9.3"
+    ]
+  },
+  {
+    "at": 1791529323.052816,
+    "loadavg": [
+      7.283203125,
+      7.95263671875,
+      5.40869140625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  75493 xearch-search    104",
+      "  75497 ps               100",
+      "  73074 helium          56.4",
+      "  75270 tantivy_worker  42.5",
+      "  75271 tantivy_worker  42.2",
+      "  23296 helium          35.5",
+      "   5070 helium          35.2",
+      "   2264 helium          30.3",
+      "   2218 helium          13.5",
+      "   6959 t3code          10.4",
+      "   3759 vesktop         10.2",
+      "   3624 vesktop          9.7"
+    ]
+  },
+  {
+    "at": 1791529340.1740665,
+    "loadavg": [
+      7.36865234375,
+      7.93896484375,
+      5.4453125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  75577 xearch-search    125",
+      "  73074 helium          58.3",
+      "  75270 tantivy_worker  42.6",
+      "  75271 tantivy_worker  42.5",
+      "   5070 helium          35.1",
+      "  23296 helium          34.2",
+      "   2264 helium          30.4",
+      "   2218 helium          13.6",
+      "   6959 t3code          10.2",
+      "   3759 vesktop         10.1",
+      "   3624 vesktop          9.7",
+      "   6969 t3code           9.2"
+    ]
+  },
+  {
+    "at": 1791529356.795913,
+    "loadavg": [
+      6.43896484375,
+      7.697265625,
+      5.419921875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  75681 xearch-search    100",
+      "  73074 helium          57.2",
+      "  75270 tantivy_worker  43.1",
+      "  75271 tantivy_worker  42.8",
+      "   5070 helium          35.4",
+      "  23296 helium          33.0",
+      "   2264 helium          30.4",
+      "   2218 helium          13.6",
+      "   6959 t3code          10.1",
+      "   3759 vesktop         10.0",
+      "   3624 vesktop          9.8",
+      "   6969 t3code           9.1"
+    ]
+  },
+  {
+    "at": 1791529373.7548163,
+    "loadavg": [
+      6.43408203125,
+      7.63134765625,
+      5.43505859375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  75740 xearch-search    102",
+      "  73074 helium          57.1",
+      "  75270 tantivy_worker  43.1",
+      "  75271 tantivy_worker  43.0",
+      "   5070 helium          35.4",
+      "  23296 helium          31.8",
+      "   2264 helium          30.4",
+      "   2218 helium          13.6",
+      "   6959 t3code          10.0",
+      "   3759 vesktop         10.0",
+      "   3624 vesktop          9.7",
+      "   6969 t3code           9.0"
+    ]
+  },
+  {
+    "at": 1791529390.9375765,
+    "loadavg": [
+      5.94970703125,
+      7.46826171875,
+      5.41748046875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  75903 xearch-search    100",
+      "  73074 helium          56.2",
+      "  75270 tantivy_worker  43.1",
+      "  75271 tantivy_worker  42.9",
+      "   5070 helium          35.5",
+      "  23296 helium          30.7",
+      "   2264 helium          30.5",
+      "   2218 helium          13.7",
+      "   6959 t3code          10.0",
+      "   3759 vesktop          9.9",
+      "   3624 vesktop          9.8",
+      "   6969 t3code           9.0"
+    ]
+  },
+  {
+    "at": 1791529407.636857,
+    "loadavg": [
+      6.82421875,
+      7.568359375,
+      5.49462890625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      "  76033 xearch-search    100",
+      "  73074 helium          56.4",
+      "  75270 tantivy_worker  43.2",
+      "  75271 tantivy_worker  43.1",
+      "   5070 helium          35.6",
+      "   2264 helium          30.5",
+      "  23296 helium          29.9",
+      "   2218 helium          13.8",
+      "   6959 t3code           9.8",
+      "   3759 vesktop          9.8",
+      "   3624 vesktop          9.8",
+      "   6969 t3code           9.0"
+    ]
+  }
+]

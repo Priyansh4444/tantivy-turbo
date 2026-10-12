@@ -1,0 +1,25 @@
+{
+  "pass": true,
+  "error": null,
+  "diagnostic": {
+    "returncode": 0,
+    "error": null,
+    "requested_cases": 103,
+    "verified_cases": 103,
+    "source_index_parent_unchanged": true,
+    "binary_unchanged": true,
+    "binary_before_sha256": "793da5c3af3dd0545b3e8e1be1e6c81c2c435361a55c9243011b08d4faae2bd0",
+    "binary_after_sha256": "793da5c3af3dd0545b3e8e1be1e6c81c2c435361a55c9243011b08d4faae2bd0",
+    "wall_seconds": 2.614667346002534,
+    "latency_claim": false,
+    "logs": {
+      "worker.stderr": "4c5c0dedd8f05bfd9ffe3001eebdac90073c798fafb88fd9365035f1717ad42a",
+      "worker.stdout": "f530f8d24959f518ca08d1daf836269d82b693d6d471f687b257494f3db392a3",
+      "protocol.jsonl": "a0f67add3346c662ab02819b3311038a5795767d774ef8a913a8b0783eaa99ca",
+      "counters.jsonl": "a462cb2ba94efa188eb807c4e6a71f5acfec329be3e958158c06fe8251c7f7d2",
+      "command.json": "65dda7a016f1d014cd70783d909c3702fede9353c2b87099cb3dc4b091d4e6e1"
+    },
+    "pass": true
+  },
+  "latency_claim": false
+}

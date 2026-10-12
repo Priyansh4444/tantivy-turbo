@@ -1,0 +1,362 @@
+diff --git i/src/query/boolean_query/or_maxscore.rs w/src/query/boolean_query/or_maxscore.rs
+index d5cf67739..78fb7e1ab 100644
+--- i/src/query/boolean_query/or_maxscore.rs
++++ w/src/query/boolean_query/or_maxscore.rs
+@@ -57,6 +57,20 @@ type RegionChoice = (DocId, usize, usize, u64);
+ #[cfg(test)]
+ type GlobalPrefixState = (DocId, u32, usize, u64, usize);
+ 
++#[cfg(test)]
++#[derive(Debug)]
++struct DensityState {
++    lo: DocId,
++    certified: usize,
++    effective: usize,
++    minimum: u32,
++    remaining: u64,
++    winner_rank: usize,
++    winner_ordinal: Option<usize>,
++    rebuild_reason: u8,
++    terminated: u32,
++}
++
+ #[cfg(test)]
+ thread_local! {
+     // Test-only region evidence; no observer or counter exists in release.
+@@ -64,6 +78,8 @@ thread_local! {
+         const { std::cell::RefCell::new(None) };
+     static GLOBAL_PREFIX_STATES: std::cell::RefCell<Option<Vec<GlobalPrefixState>>> =
+         const { std::cell::RefCell::new(None) };
++    static DENSITY_STATES: std::cell::RefCell<Option<Vec<DensityState>>> =
++        const { std::cell::RefCell::new(None) };
+     static BATCH_LENGTHS: std::cell::RefCell<Option<Vec<usize>>> =
+         const { std::cell::RefCell::new(None) };
+ }
+@@ -133,6 +149,11 @@ pub(crate) fn or_maxscore(
+     // the density policy below still chooses its effective count per region.
+     let mut certified_global = 0;
+     let mut certified_global_sum = 0.0f64;
++    // Fixed rank costs and forward cursors make these drained-boundary facts
++    // reusable without any extra work in seek/advance/batch ownership.
++    let mut min_certified_cost = u32::MAX;
++    let mut max_live_rank = num_terms;
++    let mut live_max_ready = false;
+     #[cfg(test)]
+     let mut global_appends = 0;
+ 
+@@ -146,6 +167,7 @@ pub(crate) fn or_maxscore(
+                 break;
+             }
+             certified_global_sum = next_sum;
++            min_certified_cost = min_certified_cost.min(clauses[certified_global].cost);
+             certified_global += 1;
+             #[cfg(test)]
+             {
+@@ -169,6 +191,14 @@ pub(crate) fn or_maxscore(
+             }
+             assert_eq!(certified_global, naive_count);
+             assert_eq!(certified_global_sum.to_bits(), naive_sum.to_bits());
++            assert_eq!(
++                min_certified_cost,
++                clauses[..certified_global]
++                    .iter()
++                    .map(|clause| clause.cost)
++                    .min()
++                    .unwrap_or(u32::MAX)
++            );
+             assert_eq!(global_appends, certified_global);
+             assert!(global_appends <= num_terms);
+             GLOBAL_PREFIX_STATES.with(|states| {
+@@ -192,12 +222,35 @@ pub(crate) fn or_maxscore(
+         #[cfg(test)]
+         let mut observed_remaining_cost = 0;
+         if globally_optional > 0 {
+-            let remaining_cost = clauses[globally_optional..]
+-                .iter()
+-                .filter(|clause| clause.doc != TERMINATED)
+-                .map(|clause| u64::from(clause.cost))
+-                .max()
+-                .unwrap_or(0);
++            // A live maximum stays maximal until the growing prefix excludes
++            // it or its actual cursor reaches EOF. Metadata selection alone
++            // cannot invalidate this winner or make another clause live again.
++            let winner_invalid = max_live_rank < num_terms
++                && (max_live_rank < globally_optional || clauses[max_live_rank].doc == TERMINATED);
++            #[cfg(test)]
++            let rebuild_reason = u8::from(!live_max_ready)
++                | (u8::from(live_max_ready && max_live_rank < globally_optional) << 1)
++                | (u8::from(
++                    live_max_ready
++                        && max_live_rank < num_terms
++                        && clauses[max_live_rank].doc == TERMINATED,
++                ) << 2);
++            if !live_max_ready || winner_invalid {
++                max_live_rank = num_terms;
++                for (rank, clause) in clauses.iter().enumerate().skip(globally_optional) {
++                    if clause.doc != TERMINATED
++                        && (max_live_rank == num_terms || clause.cost > clauses[max_live_rank].cost)
++                    {
++                        max_live_rank = rank;
++                    }
++                }
++                live_max_ready = true;
++            }
++            let remaining_cost = if max_live_rank < num_terms {
++                u64::from(clauses[max_live_rank].cost)
++            } else {
++                0
++            };
+             #[cfg(test)]
+             {
+                 observed_remaining_cost = remaining_cost;
+@@ -205,9 +258,55 @@ pub(crate) fn or_maxscore(
+             // A looser global certificate is useful when it leaves a much
+             // sparser candidate driver. For comparable-density clauses, keep
+             // tight local bounds so another dense term need not be essential.
+-            let sparse_remainder = clauses[..globally_optional]
+-                .iter()
+-                .all(|clause| u64::from(clause.cost) >= 2 * remaining_cost);
++            let sparse_remainder = u64::from(min_certified_cost) >= 2 * remaining_cost;
++            #[cfg(test)]
++            {
++                // Independent old from-zero facts; never derive the oracle
++                // from the cached winner, minimum, or effective density choice.
++                let naive_remaining = clauses[certified_global..]
++                    .iter()
++                    .filter(|clause| clause.doc != TERMINATED)
++                    .map(|clause| u64::from(clause.cost))
++                    .max();
++                let naive_sparse = clauses[..certified_global]
++                    .iter()
++                    .all(|clause| u64::from(clause.cost) >= 2 * naive_remaining.unwrap_or(0));
++                assert_eq!(remaining_cost, naive_remaining.unwrap_or(0));
++                assert_eq!(sparse_remainder, naive_sparse);
++                if let Some(naive_maximum) = naive_remaining {
++                    assert!(max_live_rank >= certified_global && max_live_rank < num_terms);
++                    assert_ne!(clauses[max_live_rank].doc, TERMINATED);
++                    assert_eq!(u64::from(clauses[max_live_rank].cost), naive_maximum);
++                } else {
++                    assert_eq!(max_live_rank, num_terms);
++                }
++                DENSITY_STATES.with(|states| {
++                    if let Some(states) = states.borrow_mut().as_mut() {
++                        states.push(DensityState {
++                            lo,
++                            certified: certified_global,
++                            effective: if sparse_remainder {
++                                certified_global
++                            } else {
++                                0
++                            },
++                            minimum: min_certified_cost,
++                            remaining: remaining_cost,
++                            winner_rank: max_live_rank,
++                            winner_ordinal: (max_live_rank < num_terms)
++                                .then(|| clauses[max_live_rank].ordinal),
++                            rebuild_reason,
++                            terminated: clauses.iter().fold(0u32, |mask, clause| {
++                                mask | if clause.doc == TERMINATED {
++                                    1u32 << clause.ordinal
++                                } else {
++                                    0
++                                }
++                            }),
++                        });
++                    }
++                });
++            }
+             if !sparse_remainder {
+                 globally_optional = 0;
+             }
+@@ -491,6 +590,191 @@ mod tests {
+         (actual, states, choices)
+     }
+ 
++    #[test]
++    fn density_cache_observes_exhaustion_and_rejection_restoration_rejection() {
++        DENSITY_STATES.with(|states| *states.borrow_mut() = Some(Vec::new()));
++        // The existing independent complete-callback fixture stays unchanged.
++        cached_certificate_survives_density_rejection_widening_and_rejection_again();
++        let states = DENSITY_STATES.with(|states| states.borrow_mut().take().unwrap());
++        let rejected = states
++            .iter()
++            .position(|state| {
++                state.certified == 1 && state.effective == 0 && state.remaining == 200
++            })
++            .unwrap();
++        let restored = states
++            .iter()
++            .position(|state| {
++                state.certified == 1 && state.effective == 1 && state.remaining == 129
++            })
++            .unwrap();
++        let rejected_again = states
++            .iter()
++            .position(|state| {
++                state.certified == 3 && state.effective == 0 && state.remaining == 129
++            })
++            .unwrap();
++        assert!(
++            rejected < restored && restored < rejected_again,
++            "{states:?}"
++        );
++        assert_eq!(states[rejected].minimum, 300);
++        assert_eq!(states[restored].minimum, 300);
++        assert_eq!(states[rejected_again].minimum, 2);
++        assert_eq!(states[restored].rebuild_reason, 0b100);
++        assert_eq!(states[rejected_again].rebuild_reason, 0);
++        assert!(states.iter().any(|state| state.rebuild_reason == 0b001));
++        assert!(states.iter().any(|state| state.rebuild_reason == 0));
++    }
++
++    #[test]
++    fn density_cache_prefix_exclusion_preserves_native_legacy_n4_n32_neighbors() {
++        DENSITY_STATES.with(|states| *states.borrow_mut() = Some(Vec::new()));
++        cached_global_prefix_preserves_equality_neighbors_and_large_threshold_jumps();
++        let states = DENSITY_STATES.with(|states| states.borrow_mut().take().unwrap());
++        assert!(!states.is_empty());
++        assert!(states
++            .iter()
++            .all(|state| state.minimum == 2048 && state.remaining == 2048));
++        // All real costs tie. The first live suffix rank is retained until
++        // a numerically accepted global-prefix append actually excludes it.
++        assert!(states.iter().any(|state| state.rebuild_reason == 0b010));
++        assert!(states.iter().any(|state| state.rebuild_reason == 0));
++        assert!(states.iter().any(|state| state.certified == 1));
++        assert!(states.iter().any(|state| state.certified == 3));
++        assert!(states
++            .iter()
++            .all(|state| state.winner_rank == state.certified));
++    }
++
++    #[test]
++    fn density_cache_tied_nonwinner_eof_equal_rank_and_prefix_pass_are_real() {
++        let norms = vec![1; 4096];
++        let weak: Vec<_> = (0..800).map(|doc| (doc, 1)).collect();
++        let winner: Vec<_> = (0..400).map(|i| (600 + 2 * i, 1)).collect();
++        let tied: Vec<_> = (0..400).map(|doc| (doc, 1)).collect();
++        let driver: Vec<_> = std::iter::once((0, 1))
++            .chain((0..256).map(|i| (2000 + 7 * i, 1)))
++            .collect();
++        let last: Vec<_> = (0..128)
++            .map(|i| (27 * i, 1))
++            .chain(std::iter::once((4000, 1)))
++            .collect();
++        let scorers = vec![
++            fixture(&weak, &norms, 0.001),
++            fixture(&winner, &norms, 0.1),
++            fixture(&tied, &norms, 0.2),
++            fixture(&driver, &norms, 1.0),
++            fixture(&last, &norms, 10.0),
++        ];
++        let costs: Vec<_> = scorers.iter().map(TermScorer::size_hint).collect();
++        assert_eq!(costs, [800, 400, 400, 257, 129]);
++        let maxima: Vec<_> = scorers.iter().map(TermScorer::max_score).collect();
++        let mut ranks: Vec<_> = (0..5).collect();
++        ranks.sort_unstable_by(|&left, &right| {
++            (f64::from(maxima[left]) / f64::from(costs[left]))
++                .total_cmp(&(f64::from(maxima[right]) / f64::from(costs[right])))
++                .then_with(|| left.cmp(&right))
++        });
++        assert_eq!(ranks, [0, 1, 2, 3, 4]);
++        let bound = crate::query::score_combiner::ScoreSumUpperBound::new(5);
++        let prefix =
++            |count| bound.score(maxima[..count].iter().map(|&score| f64::from(score)).sum());
++        assert!(prefix(1) <= 0.01 && prefix(2) > 0.01);
++        assert!(prefix(3) <= 0.8 && prefix(4) > 0.8);
++        assert!(prefix(4) <= 3.0 && prefix(5) > 3.0);
++        let mut end = scorers[4].clone();
++        end.seek_block(0);
++        assert_eq!(end.last_doc_in_block(), 3429);
++        DENSITY_STATES.with(|states| *states.borrow_mut() = Some(Vec::new()));
++        let (accepted, _, _) =
++            check_scheduled_thresholds(scorers, 4096, 0.01, &[(3000, 0.8), (3700, 3.0)]);
++        let states = DENSITY_STATES.with(|states| states.borrow_mut().take().unwrap());
++        assert_eq!(accepted.last().unwrap().0, 4000);
++        let nonwinner_eof = states
++            .iter()
++            .position(|state| {
++                state.certified == 1
++                    && state.winner_ordinal == Some(1)
++                    && state.terminated & (1 << 2) != 0
++            })
++            .unwrap();
++        assert_eq!(states[nonwinner_eof].rebuild_reason, 0);
++        assert_eq!(states[nonwinner_eof].remaining, 400);
++        assert_eq!(states[nonwinner_eof].terminated & (1 << 1), 0);
++        let winner_eof = states
++            .iter()
++            .position(|state| {
++                state.certified == 1
++                    && state.winner_ordinal == Some(3)
++                    && state.rebuild_reason == 0b100
++            })
++            .unwrap();
++        assert!(nonwinner_eof < winner_eof);
++        assert_eq!(states[winner_eof].lo, 2883);
++        assert_eq!(states[winner_eof].remaining, 257);
++        assert_ne!(states[winner_eof].terminated & (1 << 1), 0);
++        let equal_rank = states
++            .iter()
++            .position(|state| {
++                state.certified == 3 && state.winner_rank == 3 && state.rebuild_reason == 0
++            })
++            .unwrap();
++        assert!(winner_eof < equal_rank);
++        assert_eq!(states[equal_rank].lo, 3430);
++        assert_eq!(states[equal_rank].minimum, 400);
++        let excluded = states
++            .iter()
++            .position(|state| {
++                state.certified == 4
++                    && state.winner_ordinal == Some(4)
++                    && state.rebuild_reason == 0b010
++            })
++            .unwrap();
++        assert!(equal_rank < excluded);
++        assert_eq!(states[excluded].lo, 3779);
++        assert_eq!(states[excluded].minimum, 257);
++        assert_eq!(states[excluded].remaining, 129);
++        assert_eq!(
++            states[excluded].terminated & (1 << 3),
++            0,
++            "prefix must exclude a still-live winner, not reuse EOF as the cause"
++        );
++    }
++
++    #[test]
++    fn density_cache_initial_exhausted_suffix_returns_exact_zero_once() {
++        let norms = vec![1; 512];
++        let weak: Vec<_> = (0..300).map(|doc| (doc, 1)).collect();
++        let other: Vec<_> = (0..130).map(|doc| (doc, 1)).collect();
++        let mut first = fixture(&other, &norms, 1.0);
++        let mut second = fixture(&other, &norms, 2.0);
++        while first.advance() != TERMINATED {}
++        while second.advance() != TERMINATED {}
++        DENSITY_STATES.with(|states| *states.borrow_mut() = Some(Vec::new()));
++        let accepted = check(
++            vec![fixture(&weak, &norms, 0.01), first, second],
++            512,
++            0.04,
++            0,
++        );
++        let states = DENSITY_STATES.with(|states| states.borrow_mut().take().unwrap());
++        assert!(accepted.is_empty());
++        assert_eq!(states.len(), 1);
++        let state = &states[0];
++        assert_eq!(state.certified, 1);
++        assert_eq!(state.effective, 1);
++        assert_eq!(state.minimum, 300);
++        assert_eq!(state.remaining, 0);
++        assert_eq!(state.winner_rank, 3);
++        assert_eq!(state.winner_ordinal, None);
++        assert_eq!(state.rebuild_reason, 0b001);
++        assert_eq!(state.terminated, 0b110);
++        // With no live suffix and a globally certified prefix, every local
++        // region is already certified. max_doc becomes its cap and ends this
++        // query; a second empty-cache reuse witness would be unrealizable.
++    }
++
+     #[test]
+     fn cached_global_prefix_preserves_equality_neighbors_and_large_threshold_jumps() {
+         let norms = vec![1; 2048];

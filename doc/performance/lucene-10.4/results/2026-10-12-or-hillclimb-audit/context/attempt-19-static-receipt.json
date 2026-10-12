@@ -1,0 +1,29 @@
+{
+  "attempt": "19",
+  "status": "source_only_unmeasured_unaccepted",
+  "parent_commit": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "worktree": "/home/pronsh/Coding/playground/search/tantivy-or-capped-partition-oct11",
+  "branch": "perf/or-capped-partition-oct11",
+  "source_sha256": {"src/query/boolean_query/or_maxscore.rs": "4c56911f9cabe4fd06f8d1fe2f999564267c8fa3196600f29fe1b42ba1e848f7", "src/query/term_query/term_scorer.rs": "21b05a2b6513223a81613ee0f40c4a31f6990a427bb0d4b60324154a55753cdb"},
+  "full_patch_sha256": "770473eb3c55982717b7e813bc84e867004df986fb120595d020c5ff926f2ea0",
+  "vs17_patch_sha256": "cee3d861910107e97bc447b4ed4c59e235aebdf60edcbc917e9ae3cd12ef459b",
+  "shared_replay_span_sha256": "4d126326d89b421cf75f0f068644558534550267e8fe48d476518b402192bd6f",
+  "static_guards": {
+    "exact_two_file_unstaged_scope": true,
+    "term_entire_source_same_as_17": true,
+    "clause_record_same_as_17": true,
+    "global_cache_live_density_span_same_as_17": true,
+    "shared_replay_same_as_17": true,
+    "canonical_check_scalar_and_cursor_oracles_same_as_17": true,
+    "indexed_corpus_and_scorer_helpers_same_as_17": true,
+    "optional_admission_loop_same_as_17": true,
+    "rustfmt_completed": true,
+    "git_diff_check_passed": true
+  },
+  "cold_scratch_logical_bytes": {"selected_ends": 128, "proposed_optional_bounds": 128, "total": 256},
+  "new_or_fixture_families": 6,
+  "or_test_count_source_only": 32,
+  "runtime": {"build": false, "tests": false, "worker": false, "benchmark": false, "profile": false},
+  "no_compiled_layout_memory_or_speed_claim": true,
+  "no_commit_or_push": true
+}

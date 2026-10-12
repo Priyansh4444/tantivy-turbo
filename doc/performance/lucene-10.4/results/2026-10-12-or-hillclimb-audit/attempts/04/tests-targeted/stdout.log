@@ -1,0 +1,15 @@
+
+running 10 tests
+test query::boolean_query::block_wand_union::tests::test_two_term_or_preserves_single_term_winner_with_sparse_quantized_field ... ok
+test query::boolean_query::block_wand_union::tests::two_term_exact_collector_rejection_preserves_physical_range ... ok
+test query::boolean_query::block_wand_union::tests::two_term_exact_complete_blocks_stale_tails_and_exhaustion ... ok
+test query::boolean_query::block_wand_union::tests::two_term_exact_early_warm_handoff_preserves_all_exit_paths ... ok
+test query::boolean_query::block_wand_union::tests::two_term_exact_local_required_mode_expires_before_single_term_winner ... ok
+test query::boolean_query::block_wand_union::tests::two_term_exact_midpoints_ties_and_warm_boundary_handoffs ... ok
+test query::boolean_query::block_wand_union::tests::two_term_exact_region_roles_reverse_after_shallow_skips ... ok
+test query::boolean_query::block_wand_union::tests::two_term_exact_signed_and_exceptional_domains_use_canonical_fallback ... ok
+test query::query_parser::query_parser::test::test_parse_query_to_ast_two_terms ... ok
+test query::boolean_query::block_wand_union::tests::test_block_wand_two_term_scorers ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 1400 filtered out; finished in 0.88s
+

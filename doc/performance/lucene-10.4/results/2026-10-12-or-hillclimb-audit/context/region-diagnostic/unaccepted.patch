@@ -1,0 +1,292 @@
+diff --git i/src/query/boolean_query/or_maxscore.rs w/src/query/boolean_query/or_maxscore.rs
+index 49ad5a202..a07e5d190 100644
+--- i/src/query/boolean_query/or_maxscore.rs
++++ w/src/query/boolean_query/or_maxscore.rs
+@@ -63,6 +63,146 @@ thread_local! {
+         const { std::cell::RefCell::new(None) };
+ }
+ 
++// Diagnostic-only binary: fixed-size counters never participate in pruning or
++// cursor movement. Presence of OR_REGION_DIAGNOSTIC enables one stderr summary.
++struct RegionDiagnostic {
++    num_terms: usize,
++    max_doc: DocId,
++    fallback: bool,
++    regions: u64,
++    physical_widths: [u64; 33],
++    essential_counts: [u64; 33],
++    cap_source_masks: [u64; 8],
++    skipped_regions: u64,
++    globally_finished: u64,
++    selected_finite_blocks: u64,
++    selected_sentinel_tails: u64,
++    batch_lengths: [u64; 129],
++    scalar_candidates: u64,
++    matching_essentials: [u64; 33],
++    optional_bound_checks: u64,
++    optional_probes: u64,
++    optional_seeks: u64,
++    scalar_boundaries: u64,
++    unique_earliest: u64,
++    gap_ge_128: u64,
++    gap_ge_2048: u64,
++}
++
++impl RegionDiagnostic {
++    fn enabled(num_terms: usize, max_doc: DocId) -> Option<Self> {
++        std::env::var_os("OR_REGION_DIAGNOSTIC").map(|_| Self {
++            num_terms,
++            max_doc,
++            fallback: false,
++            regions: 0,
++            physical_widths: [0; 33],
++            essential_counts: [0; 33],
++            cap_source_masks: [0; 8],
++            skipped_regions: 0,
++            globally_finished: 0,
++            selected_finite_blocks: 0,
++            selected_sentinel_tails: 0,
++            batch_lengths: [0; 129],
++            scalar_candidates: 0,
++            matching_essentials: [0; 33],
++            optional_bound_checks: 0,
++            optional_probes: 0,
++            optional_seeks: 0,
++            scalar_boundaries: 0,
++            unique_earliest: 0,
++            gap_ge_128: 0,
++            gap_ge_2048: 0,
++        })
++    }
++
++    fn region(
++        &mut self,
++        lo: DocId,
++        hi: DocId,
++        first_essential: usize,
++        selected_caps: &[Option<DocId>; 32],
++    ) {
++        self.regions += 1;
++        let width = hi - lo;
++        // Bin 0 is width 0; bin i covers [2^(i-1), 2^i-1].
++        self.physical_widths[(u32::BITS - width.leading_zeros()) as usize] += 1;
++        self.essential_counts[self.num_terms - first_essential] += 1;
++        let mut mask = if hi == self.max_doc { 4 } else { 0 };
++        for (rank, &cap) in selected_caps[..self.num_terms].iter().enumerate() {
++            if cap == Some(hi) {
++                mask |= if rank < first_essential { 1 } else { 2 };
++            }
++        }
++        self.cap_source_masks[mask] += 1;
++    }
++
++    fn scalar_boundary(&mut self, essentials: &[ClauseState], doc: DocId, hi: DocId) {
++        // Called only at a drained scalar boundary. These reads do not seek,
++        // score, repartition, or reorder any clause.
++        if doc >= hi {
++            return;
++        }
++        self.scalar_boundaries += 1;
++        let matches = essentials.iter().filter(|clause| clause.doc == doc).count();
++        if matches != 1 {
++            return;
++        }
++        self.unique_earliest += 1;
++        let second_doc = essentials
++            .iter()
++            .filter(|clause| clause.doc != doc)
++            .map(|clause| clause.doc)
++            .min()
++            .unwrap_or(TERMINATED);
++        let gap = hi.min(second_doc) - doc;
++        self.gap_ge_128 += u64::from(gap >= 128);
++        self.gap_ge_2048 += u64::from(gap >= 2048);
++    }
++}
++
++impl Drop for RegionDiagnostic {
++    fn drop(&mut self) {
++        // Arrays contain only integers, so Debug array syntax is valid JSON.
++        // One record per invocation, including fallback and early termination.
++        eprintln!(
++            concat!(
++                "OR_REGION_DIAGNOSTIC {{\"version\":1,\"num_terms\":{},\"max_doc\":{},",
++                "\"fallback\":{},\"regions\":{},\"physical_widths\":{:?},",
++                "\"essential_counts\":{:?},\"cap_source_masks\":{:?},",
++                "\"skipped_regions\":{},\"globally_finished\":{},",
++                "\"selected_finite_blocks\":{},\"selected_sentinel_tails\":{},",
++                "\"batch_lengths\":{:?},\"scalar_candidates\":{},",
++                "\"matching_essentials\":{:?},\"optional_bound_checks\":{},",
++                "\"optional_probes\":{},\"optional_seeks\":{},",
++                "\"scalar_boundaries\":{},\"unique_earliest\":{},",
++                "\"gap_ge_128\":{},\"gap_ge_2048\":{}}}"
++            ),
++            self.num_terms,
++            self.max_doc,
++            self.fallback,
++            self.regions,
++            self.physical_widths,
++            self.essential_counts,
++            self.cap_source_masks,
++            self.skipped_regions,
++            self.globally_finished,
++            self.selected_finite_blocks,
++            self.selected_sentinel_tails,
++            self.batch_lengths,
++            self.scalar_candidates,
++            self.matching_essentials,
++            self.optional_bound_checks,
++            self.optional_probes,
++            self.optional_seeks,
++            self.scalar_boundaries,
++            self.unique_earliest,
++            self.gap_ge_128,
++            self.gap_ge_2048,
++        );
++    }
++}
++
+ /// Merge only clauses whose local score bounds can exceed the optional prefix.
+ /// Scorers stay in incoming order: the preference order is for pruning only,
+ /// while published scores replay the original f32 leaves in f64.
+@@ -72,6 +212,7 @@ pub(crate) fn or_maxscore(
+     mut threshold: Score,
+     callback: &mut dyn FnMut(DocId, Score) -> Score,
+ ) {
++    let mut diagnostic = RegionDiagnostic::enabled(scorers.len(), max_doc);
+     debug_assert!((3..=32).contains(&scorers.len()));
+     // Reject exceptional/signed score domains before shallow seeks change any
+     // cursor. In particular, a negative weight's zero maximum does not certify
+@@ -82,6 +223,9 @@ pub(crate) fn or_maxscore(
+             scorer.bm25_weight().has_safe_score_bounds() && maximum.is_finite() && maximum > 0.0
+         });
+     if !eligible {
++        if let Some(stats) = diagnostic.as_mut() {
++            stats.fallback = true;
++        }
+         let mut union = BufferedUnionScorer::build(scorers, SumCombiner::default, max_doc);
+         for_each_pruning_scorer(&mut union, threshold, callback);
+         return;
+@@ -138,6 +282,9 @@ pub(crate) fn or_maxscore(
+             globally_optional += 1;
+         }
+         if globally_optional == num_terms {
++            if let Some(stats) = diagnostic.as_mut() {
++                stats.globally_finished += 1;
++            }
+             return;
+         }
+         #[cfg(test)]
+@@ -172,6 +319,7 @@ pub(crate) fn or_maxscore(
+             }
+         });
+         let mut hi = max_doc;
++        let mut selected_caps = [None; 32];
+         for (rank, clause) in clauses.iter_mut().enumerate() {
+             clause.local_max = 0.0;
+             // These maxima certify the entire physical range. Dense optional
+@@ -188,6 +336,13 @@ pub(crate) fn or_maxscore(
+             scorers[clause.ordinal].seek_block(lo.max(clause.doc));
+             clause.assert_coherent(&scorers);
+             let last_doc = scorers[clause.ordinal].last_doc_in_block();
++            if let Some(stats) = diagnostic.as_mut() {
++                if last_doc == TERMINATED {
++                    stats.selected_sentinel_tails += 1;
++                } else {
++                    stats.selected_finite_blocks += 1;
++                }
++            }
+             // Shallow selection can leave doc() in an old decoded block. A
+             // selected tail has no finite end, so reconcile it at the floor;
+             // remaining_docs alone does not prove there is a doc after lo.
+@@ -200,6 +355,12 @@ pub(crate) fn or_maxscore(
+             // Keep the previously selected last_doc after tail reconciliation.
+             // The cap makes both a tail and TERMINATED overflow harmless and
+             // uses the physical address range, including deleted documents.
++            if diagnostic.is_some() && last_doc != TERMINATED {
++                // Attribute only an intrinsic finite block end. A sentinel tail
++                // supplies no end, and clipping a larger end to max_doc must not
++                // manufacture a tie with the physical index cap.
++                selected_caps[rank] = Some(last_doc + 1);
++            }
+             hi = hi.min(last_doc.min(max_doc - 1) + 1);
+             let bound = scorers[clause.ordinal].block_max_score();
+             clause.assert_coherent(&scorers);
+@@ -225,7 +386,13 @@ pub(crate) fn or_maxscore(
+         {
+             first_essential += 1;
+         }
++        if let Some(stats) = diagnostic.as_mut() {
++            stats.region(lo, hi, first_essential, &selected_caps);
++        }
+         if first_essential == num_terms {
++            if let Some(stats) = diagnostic.as_mut() {
++                stats.skipped_regions += 1;
++            }
+             debug_assert!(clauses
+                 .iter()
+                 .all(|clause| clause.doc == scorers[clause.ordinal].doc()));
+@@ -255,6 +422,9 @@ pub(crate) fn or_maxscore(
+                         &mut batch,
+                     );
+                     batch_index = 0;
++                    if let Some(stats) = diagnostic.as_mut() {
++                        stats.batch_lengths[batch_len] += 1;
++                    }
+                     #[cfg(test)]
+                     BATCH_LENGTHS.with(|lengths| {
+                         if let Some(lengths) = lengths.borrow_mut().as_mut() {
+@@ -267,15 +437,29 @@ pub(crate) fn or_maxscore(
+                 }
+                 batch.docs[batch_index]
+             } else {
+-                clauses[first_essential..]
++                let scalar_doc = clauses[first_essential..]
+                     .iter()
+                     .map(|clause| clause.doc)
+                     .min()
+-                    .unwrap_or(TERMINATED)
++                    .unwrap_or(TERMINATED);
++                if let Some(stats) = diagnostic.as_mut() {
++                    stats.scalar_boundary(&clauses[first_essential..], scalar_doc, hi);
++                }
++                scalar_doc
+             };
+             if doc >= hi {
+                 break;
+             }
++            if !single_essential {
++                if let Some(stats) = diagnostic.as_mut() {
++                    stats.scalar_candidates += 1;
++                    let matches = clauses[first_essential..]
++                        .iter()
++                        .filter(|clause| clause.doc == doc)
++                        .count();
++                    stats.matching_essentials[matches] += 1;
++                }
++            }
+             contributions.fill(0.0);
+             let mut known = 0.0f64;
+             if single_essential {
+@@ -295,12 +479,21 @@ pub(crate) fn or_maxscore(
+             }
+             let mut competitive = true;
+             for rank in (0..first_essential).rev() {
++                if let Some(stats) = diagnostic.as_mut() {
++                    stats.optional_bound_checks += 1;
++                }
+                 if upper_bound.score(known + prefix[rank + 1]) <= threshold {
+                     competitive = false;
+                     break;
+                 }
+                 let clause = &mut clauses[rank];
++                if let Some(stats) = diagnostic.as_mut() {
++                    stats.optional_probes += 1;
++                }
+                 if clause.doc < doc {
++                    if let Some(stats) = diagnostic.as_mut() {
++                        stats.optional_seeks += 1;
++                    }
+                     clause.seek(&mut scorers, doc);
+                 }
+                 if clause.doc == doc {

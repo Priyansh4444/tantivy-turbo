@@ -1,0 +1,32 @@
+{
+  "command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "../../../tantivy-or-hillclimb-oct07/Cargo.toml",
+    "--target-dir",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/test-target",
+    "--lib",
+    "query::boolean_query::or_maxscore::tests",
+    "--",
+    "--test-threads=2",
+    "--nocapture"
+  ],
+  "returncode": 0,
+  "wall_seconds": 45.20023502600088,
+  "source_unchanged": true,
+  "compiler": "1.99.0",
+  "rustflags": "-C target-cpu=native",
+  "jobs": 2,
+  "profile": {
+    "opt_level": 0,
+    "lto": false,
+    "overflow_checks": true,
+    "debug_assertions": true,
+    "profile": "test/check; Cargo defaults"
+  },
+  "stdout_sha256": "28a4751392f62b443325746dd63af28808ca20a0aaa15cca720c7259f41255f2",
+  "stderr_sha256": "658313acd7d0bfdf4d13be82a567a1d2a3bd369d55fff71f767e844433af34a3",
+  "audited_index_unchanged": true
+}

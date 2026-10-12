@@ -1,0 +1,386 @@
+{
+  "seconds": 9.04887434700504,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 241339.33646112602,
+        "baseline_mean_ns": 241168.49731903485,
+        "ratio_mean": 1.000708380837424,
+        "median_ratio": 1.0007215660896296
+      },
+      "BA": {
+        "candidate_mean_ns": 241818.41018766756,
+        "baseline_mean_ns": 240596.59383378015,
+        "ratio_mean": 1.0050782778526428,
+        "median_ratio": 0.996199121522694
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 560966.1941747572,
+        "baseline_mean_ns": 557798.4466019417,
+        "ratio_mean": 1.005679018276428,
+        "median_ratio": 1.003828564934734
+      },
+      "BA": {
+        "candidate_mean_ns": 561851.3446601941,
+        "baseline_mean_ns": 554473.1456310679,
+        "ratio_mean": 1.013306684169039,
+        "median_ratio": 1.0042664379892297
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 80568.96782178218,
+        "baseline_mean_ns": 81222.650990099,
+        "ratio_mean": 0.9919519597015306,
+        "median_ratio": 0.9956000770173085
+      },
+      "BA": {
+        "candidate_mean_ns": 81148.20792079208,
+        "baseline_mean_ns": 81895.18316831683,
+        "ratio_mean": 0.9908788866618746,
+        "median_ratio": 0.9915160057434094
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 399,
+      "kind": "OR",
+      "terms": [
+        "mercury",
+        "insurance"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.213182020680438,
+      "BA": 1.3351578697944435
+    },
+    {
+      "id": 577,
+      "kind": "OR",
+      "terms": [
+        "hurricane",
+        "wilma"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2080024041557549,
+      "BA": 1.2404656415602466
+    },
+    {
+      "id": 442,
+      "kind": "AND",
+      "terms": [
+        "danbury",
+        "ct"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.197997860308727,
+      "BA": 1.2931127773054032
+    },
+    {
+      "id": 681,
+      "kind": "OR",
+      "terms": [
+        "costume",
+        "designers"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1820205356501758,
+      "BA": 1.354479370474572
+    },
+    {
+      "id": 343,
+      "kind": "OR",
+      "terms": [
+        "french",
+        "culinary",
+        "institute"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1653775245492966,
+      "BA": 1.1777041910058355
+    },
+    {
+      "id": 509,
+      "kind": "OR",
+      "terms": [
+        "tom",
+        "welling"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.117904184636904,
+      "BA": 1.2022867702257898
+    },
+    {
+      "id": 493,
+      "kind": "OR",
+      "terms": [
+        "american",
+        "academy",
+        "of",
+        "child",
+        "and",
+        "adolescent",
+        "psychiatry"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1162355538503994,
+      "BA": 1.1187864002841652
+    },
+    {
+      "id": 359,
+      "kind": "OR",
+      "terms": [
+        "west",
+        "palm",
+        "beach",
+        "florida"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1142338808242698,
+      "BA": 1.10773425837238
+    },
+    {
+      "id": 501,
+      "kind": "OR",
+      "terms": [
+        "jonathan",
+        "daniel"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1663942690368798,
+      "BA": 1.1066389445851643
+    },
+    {
+      "id": 917,
+      "kind": "OR",
+      "terms": [
+        "laborers",
+        "international",
+        "union",
+        "of",
+        "north",
+        "america"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1010532237186708,
+      "BA": 1.102323535232921
+    },
+    {
+      "id": 919,
+      "kind": "OR",
+      "terms": [
+        "to",
+        "be",
+        "or",
+        "not",
+        "to",
+        "be"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1060704300490123,
+      "BA": 1.0950370068825441
+    },
+    {
+      "id": 885,
+      "kind": "OR",
+      "terms": [
+        "warren",
+        "county"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0858830399846242,
+      "BA": 1.1128107218292655
+    },
+    {
+      "id": 839,
+      "kind": "OR",
+      "terms": [
+        "medal",
+        "of",
+        "honor"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0792617154728137,
+      "BA": 1.0704842461968158
+    },
+    {
+      "id": 119,
+      "kind": "TERM",
+      "terms": [
+        "for"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1424131715436092,
+      "BA": 1.0606032945273771
+    },
+    {
+      "id": 793,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "news",
+        "journal"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0649353808628752,
+      "BA": 1.0582836910103248
+    },
+    {
+      "id": 421,
+      "kind": "OR",
+      "terms": [
+        "jesus",
+        "as",
+        "a",
+        "child"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0976558503519251,
+      "BA": 1.057092136589914
+    },
+    {
+      "id": 479,
+      "kind": "OR",
+      "terms": [
+        "fluid",
+        "power"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.055932672993004,
+      "BA": 1.1186613627123507
+    },
+    {
+      "id": 615,
+      "kind": "OR",
+      "terms": [
+        "big",
+        "boss",
+        "man"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1314256212137273,
+      "BA": 1.0552570118720672
+    },
+    {
+      "id": 7,
+      "kind": "TERM",
+      "terms": [
+        "saxophone"
+      ],
+      "tags": [
+        "wiki20",
+        "term",
+        "low"
+      ],
+      "AB": 1.2787216525709153,
+      "BA": 1.0528437408384639
+    },
+    {
+      "id": 733,
+      "kind": "OR",
+      "terms": [
+        "us",
+        "coast",
+        "guard"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0766802172332859,
+      "BA": 1.0439248978722837
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791734504.700281,
+      "loadavg": [
+        3.58056640625,
+        3.333984375,
+        2.86474609375
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 183061 ps               100",
+        " 182980 python3         96.0",
+        " 172762 helium          29.8",
+        "3111450 helium          19.6",
+        "3775038 vesktop         12.8",
+        " 140783 t3code          11.4",
+        "3774896 vesktop          8.8",
+        " 140793 t3code           8.2",
+        "   2358 helium           6.7",
+        "   1429 Hyprland         6.3",
+        "  51379 helium           6.0",
+        "3233546 helium           5.6"
+      ]
+    },
+    {
+      "at": 1791734510.8955834,
+      "loadavg": [
+        3.45361328125,
+        3.3115234375,
+        2.85986328125
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 172762 helium          29.3",
+        " 182980 python3         24.8",
+        "3111450 helium          19.5",
+        "3775038 vesktop         12.8",
+        " 140783 t3code          11.3",
+        "3774896 vesktop          8.8",
+        " 140793 t3code           8.2",
+        "   2358 helium           6.7",
+        "   1429 Hyprland         6.3",
+        "  51379 helium           6.0",
+        "3233546 helium           5.6",
+        "  51398 helium           5.6"
+      ]
+    }
+  ]
+}

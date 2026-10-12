@@ -1,0 +1,13 @@
+[
+  "rustfmt",
+  "--check",
+  "--edition",
+  "2021",
+  "--config",
+  "skip_children=true",
+  "../../../tantivy-or-hillclimb-oct07/src/postings/segment_postings.rs",
+  "../../../tantivy-or-hillclimb-oct07/src/query/bm25.rs",
+  "../../../tantivy-or-hillclimb-oct07/src/query/boolean_query/or_maxscore.rs",
+  "../../../tantivy-or-hillclimb-oct07/src/query/term_query/mod.rs",
+  "../../../tantivy-or-hillclimb-oct07/src/query/term_query/term_scorer.rs"
+]

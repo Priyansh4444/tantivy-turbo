@@ -1,0 +1,16 @@
+{
+  "verdict": "kept_partial_win",
+  "commit": "22f4a270926d513b2641cd44c5445008ecf3b276",
+  "candidate_binary_sha256": "fe03feaf8f0c822f5b500edab9330a41f7af9956def57d6aced6625802aff117",
+  "correctness_tests": 1434,
+  "ignored_tests": 7,
+  "exact_profiles": 3,
+  "queries_per_profile": 1227,
+  "two_term_primary_ratios": {
+    "AB": 0.37799822199343325,
+    "BA": 0.3654209843980948
+  },
+  "target_met": false,
+  "tradeoffs": "AND per-query regressions retained; +4872 binary file bytes, +4736 .text bytes; no index changes or per-region allocation.",
+  "profile_correction": "profile-evidence-correction.json; clean baseline/candidate reruns retained separately."
+}

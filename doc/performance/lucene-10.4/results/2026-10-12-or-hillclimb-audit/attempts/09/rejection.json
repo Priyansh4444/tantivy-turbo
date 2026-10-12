@@ -1,0 +1,63 @@
+{
+  "verdict": "reverted",
+  "parent": "a674aaf2f6187f3010a135dc25fdacf9cab27e53",
+  "reason": "Longer OR pilot 4.32%/8.27% slower in AB/BA. No full sampler/broad tests run.",
+  "pilot": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 121397.58579088472,
+        "baseline_mean_ns": 118177.19705093834,
+        "ratio_mean": 1.0272505087301933,
+        "median_ratio": 0.9988858683542048
+      },
+      "BA": {
+        "candidate_mean_ns": 126394.17158176943,
+        "baseline_mean_ns": 119854.04691689007,
+        "ratio_mean": 1.0545674078858134,
+        "median_ratio": 1.0001080730573868
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 286195.2427184466,
+        "baseline_mean_ns": 274349.3009708738,
+        "ratio_mean": 1.0431783194112474,
+        "median_ratio": 0.9859724844888049
+      },
+      "BA": {
+        "candidate_mean_ns": 301647.53398058255,
+        "baseline_mean_ns": 278603.42233009706,
+        "ratio_mean": 1.082712952546513,
+        "median_ratio": 0.9921479279314366
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 40175.19306930693,
+        "baseline_mean_ns": 40425.512376237624,
+        "ratio_mean": 0.9938078878357561,
+        "median_ratio": 1.0045508291207774
+      },
+      "BA": {
+        "candidate_mean_ns": 40988.46534653466,
+        "baseline_mean_ns": 40749.88861386139,
+        "ratio_mean": 1.0058546597497229,
+        "median_ratio": 1.0009382612084592
+      }
+    }
+  ],
+  "targeted_tests": 20,
+  "exact_profiles": 3,
+  "queries_per_profile": 1227,
+  "candidate_binary_sha256": "31ffb022be8b7c590ddc6e218faf720020c728592af6d7504d38c3125c0cd3ec",
+  "candidate_file_delta_bytes": 2384,
+  "source_sha256": "41065df1d96bb7c585e0593c68b0df09ee717b97366efc253bd036f062725f12",
+  "memory": "Measured array/record payload 37000B at n32 vs foundation3208B; full RSS not measured.",
+  "oracle_correction": "Guard observer seek when original term starts after candidate; initial17pass3fail retained; no production change."
+}

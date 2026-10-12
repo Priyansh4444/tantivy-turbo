@@ -1,0 +1,17 @@
+{
+  "parent": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "binary_sha256": "e11c4939984690d2c2d781cb6ace40d5e818e3a18a3f9f558d6cbcfd62546e5d",
+  "assembly_sha256": "fc2410888f55d730d8b28ebf06d4022a1d4067991057306b9cd03e41ceef0d05",
+  "source_attribution": "Owned decoded docs copied to rsp+0x220, TFs to rsp+0x620, norm-cache gather to rsp+0x820, literal scores to rsp+0x420; single-essential pending replay loads docs immediately at0x29b31a. Posting suffix cursor/SkipReader reconciliation precedes score gather. This dataflow identifies the batch route rather than an unrelated vector divide.",
+  "norm_reader_dispatch": "At0x29b050..0x29b05a representation pointer checked once outside0x29b065..0x29b090 data gather loop; constant branch0x29b0c9 broadcasts cached literal norm with vector fills.",
+  "native_arithmetic": "0x29b0f8..0x29b144 processes8TFs per iteration. Fullu32 conversion sequence precedes vmulps/vaddps/vdivps/vsubps; stores literal8scores.",
+  "legacy_arithmetic": "0x29b251..0x29b299 processes8TFs per iteration with vaddps/vdivps/vmulps after sameunsigned conversion.",
+  "tails": "Scalar literal remainders remain0x29b15c and0x29b2ad.",
+  "reach": {
+    "already_scored_entries": 747344,
+    "entries_in_complete_eight_lane_chunks": 651760,
+    "complete_chunk_fraction": 0.872101736282087
+  },
+  "decision": "Screen explicit SIMD and reader-owned gather category: accepted11 already has packed8lane arithmetic and hoisted reader representation dispatch. No new optimization demonstrated by rewriting either.",
+  "limits": "Read existing machine code; no additional timing, cycle attribution, compiler derivation authenticity or cross-host assertion. Reach counts are diagnostic only."
+}

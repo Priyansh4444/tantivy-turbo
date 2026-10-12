@@ -1,0 +1,28 @@
+
+running 23 tests
+test query::boolean_query::or_maxscore::tests::cached_certificate_survives_density_rejection_widening_and_rejection_again ... ok
+test query::boolean_query::or_maxscore::tests::deferred_optional_clause_becomes_essential_after_shallow_full_blocks ... ok
+test query::boolean_query::or_maxscore::tests::duplicates_disparate_boosts_exhaustion_and_sparse_regions ... ok
+test query::boolean_query::or_maxscore::tests::cached_global_prefix_preserves_equality_neighbors_and_large_threshold_jumps ... ok
+test query::boolean_query::or_maxscore::tests::exact_midpoint_leaves_preserve_incoming_order_and_strict_ties ... ok
+test query::boolean_query::or_maxscore::tests::exact_traces_at_full_block_and_tail_boundaries ... ok
+test query::boolean_query::or_maxscore::tests::exhausted_high_cost_remainder_changes_live_density_choice ... ok
+test query::boolean_query::or_maxscore::tests::globally_optional_dense_terms_cover_sparse_essential_gaps_and_tails ... ok
+test query::boolean_query::or_maxscore::tests::similar_density_terms_keep_local_certificates_until_both_are_optional ... ok
+test query::boolean_query::or_maxscore::tests::single_driver_batches_replay_every_dynamic_threshold_exactly ... ok
+test query::boolean_query::or_maxscore::tests::threshold_growth_promotes_local_optionals_to_global_certificates ... ok
+test query::boolean_query::or_maxscore::tests::unsafe_domains_use_exhaustive_canonical_sum_before_any_seek ... ok
+test query::boolean_query::or_maxscore::tests::wider_certificates_cover_n3_n32_overlap_disjoint_and_tail_leafs ... ok
+test query::boolean_query::or_maxscore::tests::wider_legacy_custom_parameters_reuse_existing_global_bound_policy ... ok
+test query::boolean_query::or_maxscore::tests::exact_growing_threshold_traces_for_mixed_dense_and_sparse_terms ... ok
+test query::boolean_query::or_maxscore::tests::wider_midpoint_publication_keeps_literal_incoming_order_and_strict_neighbors ... ok
+test query::boolean_query::or_maxscore::tests::wider_native_default_crossed_pair_is_replaced_before_stronger_leaf ... ok
+test query::boolean_query::or_maxscore::tests::wider_real_indexed_deletions_keep_threshold_and_public_topdocs_exact ... ok
+test query::boolean_query::or_maxscore::tests::wider_region_restores_old_zero_and_promotes_future_high_tf_block ... ok
+test query::boolean_query::or_maxscore::tests::wider_simulated_deleted_winners_and_unsafe_fallback_observers_are_exact ... ok
+test query::boolean_query::or_maxscore::tests::wider_single_driver_retains_full_partial_batches_and_exact_end_heads ... ok
+test query::boolean_query::or_maxscore::tests::wider_stale_full_selection_tail_exhaustion_and_initial_skips_are_exact ... ok
+test query::boolean_query::or_maxscore::tests::wider_native_indexed_default_and_safe_custom_profiles_enclose_every_leaf ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 1400 filtered out; finished in 3.06s
+

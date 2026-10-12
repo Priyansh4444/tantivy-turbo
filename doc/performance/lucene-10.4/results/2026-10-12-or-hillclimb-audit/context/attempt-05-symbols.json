@@ -1,0 +1,9 @@
+{
+  "parent": [
+    "00000000002977e0 0000000000005e05 t <tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning"
+  ],
+  "candidate": [
+    "00000000002a0100 00000000000013dd t tantivy::query::boolean_query::block_wand_union::two_term_regions",
+    "0000000000297860 0000000000004a5e t <tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning"
+  ]
+}

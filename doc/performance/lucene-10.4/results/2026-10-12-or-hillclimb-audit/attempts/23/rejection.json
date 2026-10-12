@@ -1,0 +1,19 @@
+{
+  "verdict": "reverted_no_reliable_win",
+  "parent": "3dff75c5cfddee6dab50c144839b4cec645d9dca",
+  "source_sha256": {
+    "src/query/boolean_query/or_maxscore.rs": "e8936f114df5bb4c09b27960afc126832f07fab73863b061ab9e3d55a6be23bb",
+    "src/query/score_combiner.rs": "67a8070a9abad0d107eaebfc8ef731793b2d0f016e5216afc98d1b6ff3ac93b7"
+  },
+  "reason": "Frozen pilot longer OR is mixed across orders and median query ratios exceed one in both. Conservative screen rejection; no full self-control or actual-port lane ran, so no intrinsic slowdown or controlled performance claim.",
+  "pilot_or3_ratios": {
+    "AB": 1.029304714931994,
+    "BA": 0.983932792757641
+  },
+  "targeted_tests": 21,
+  "exact_profiles": 3,
+  "queries_per_profile": 1227,
+  "candidate_binary_sha256": "cb9a2cde1cada8b7158f072080a247a90fdbc36744ddb397bf32b03e56e860fa",
+  "candidate_file_delta_bytes": 64,
+  "limits": "No added state/allocation/index change. User background load retained. No broad test, full timing, actual-port, RSS, compiled register/frame or intrinsic-loss claim."
+}

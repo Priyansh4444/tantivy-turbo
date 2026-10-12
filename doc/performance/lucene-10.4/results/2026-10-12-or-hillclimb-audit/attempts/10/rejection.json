@@ -1,0 +1,116 @@
+{
+  "verdict": "reverted",
+  "parent": "a674aaf2f6187f3010a135dc25fdacf9cab27e53",
+  "reason": "No reliable win in two unchanged pilots: longer OR AB/BA initially +11.21%/-2.15%; repeat +7.75%/-8.51%. Substantial background compiler load retained; no intrinsic loss claim.",
+  "pilots": [
+    [
+      {
+        "set": "all",
+        "queries": 373,
+        "AB": {
+          "candidate_mean_ns": 321149.23458445043,
+          "baseline_mean_ns": 283271.0227882037,
+          "ratio_mean": 1.1337172133719002,
+          "median_ratio": 0.9987282746926663
+        },
+        "BA": {
+          "candidate_mean_ns": 324660.6152815013,
+          "baseline_mean_ns": 325740.1380697051,
+          "ratio_mean": 0.9966859386914954,
+          "median_ratio": 0.9895181719485086
+        }
+      },
+      {
+        "set": "or3plus",
+        "queries": 103,
+        "AB": {
+          "candidate_mean_ns": 723723.7621359223,
+          "baseline_mean_ns": 650791.708737864,
+          "ratio_mean": 1.1120666603751015,
+          "median_ratio": 0.9981858582516352
+        },
+        "BA": {
+          "candidate_mean_ns": 798267.9611650485,
+          "baseline_mean_ns": 815823.3592233009,
+          "ratio_mean": 0.9784813736211648,
+          "median_ratio": 0.9696160648836224
+        }
+      },
+      {
+        "set": "or2",
+        "queries": 202,
+        "AB": {
+          "candidate_mean_ns": 100013.31683168317,
+          "baseline_mean_ns": 96221.57673267326,
+          "ratio_mean": 1.039406339282345,
+          "median_ratio": 0.9905589745334553
+        },
+        "BA": {
+          "candidate_mean_ns": 100383.80445544554,
+          "baseline_mean_ns": 91098.22029702971,
+          "ratio_mean": 1.1019293695106205,
+          "median_ratio": 0.9885263895728102
+        }
+      }
+    ],
+    [
+      {
+        "set": "all",
+        "queries": 373,
+        "AB": {
+          "candidate_mean_ns": 331693.336461126,
+          "baseline_mean_ns": 313316.4222520107,
+          "ratio_mean": 1.0586528917859725,
+          "median_ratio": 1.0003575554210902
+        },
+        "BA": {
+          "candidate_mean_ns": 326255.62466487935,
+          "baseline_mean_ns": 346677.7587131367,
+          "ratio_mean": 0.9410918827787971,
+          "median_ratio": 0.9859384079023823
+        }
+      },
+      {
+        "set": "or3plus",
+        "queries": 103,
+        "AB": {
+          "candidate_mean_ns": 785414.9174757282,
+          "baseline_mean_ns": 728955.427184466,
+          "ratio_mean": 1.0774525961200845,
+          "median_ratio": 0.9950680731183886
+        },
+        "BA": {
+          "candidate_mean_ns": 765428.4757281553,
+          "baseline_mean_ns": 836644.7330097087,
+          "ratio_mean": 0.9148787358938325,
+          "median_ratio": 0.9680349061283257
+        }
+      },
+      {
+        "set": "or2",
+        "queries": 202,
+        "AB": {
+          "candidate_mean_ns": 97307.150990099,
+          "baseline_mean_ns": 91747.79455445544,
+          "ratio_mean": 1.0605938972445152,
+          "median_ratio": 0.9999998182320842
+        },
+        "BA": {
+          "candidate_mean_ns": 104527.60891089108,
+          "baseline_mean_ns": 100897.599009901,
+          "ratio_mean": 1.0359771683034191,
+          "median_ratio": 0.9907168811583102
+        }
+      }
+    ]
+  ],
+  "targeted_tests": 17,
+  "exact_profiles": 3,
+  "queries_per_profile": 1227,
+  "candidate_binary_sha256": "7d73eaa3a7a94168533fbdd39bfd7bc8612ddc3a41c087f41fa49c31ac9f98a0",
+  "candidate_file_delta_bytes": -528,
+  "source_sha256": "81cb888e53e467a03515f0224aeefbe3bd3b05a25eaf6cd294491eea578a9729",
+  "memory": "No extra allocation; reported span/replay sizes in targeted stderr, not RSS.",
+  "fixture_correction": "Explicit .order_by_score() on new TopDocs fixture. Initial E0277 retained; no production change.",
+  "limits": "Full sampler/broad tests/actualport not run; no causal performance claim under load."
+}

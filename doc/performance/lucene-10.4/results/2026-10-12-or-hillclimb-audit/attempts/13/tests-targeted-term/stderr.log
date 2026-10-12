@@ -1,0 +1,16 @@
+warning: unused import: `doc`
+   --> src/postings/segment_postings.rs:543:17
+    |
+543 |     use crate::{doc, DocId, Index};
+    |                 ^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `tantivy` (lib test) generated 1 warning (run `cargo fix --lib -p tantivy --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.17s
+     Running unittests src/lib.rs (/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/test-target/debug/deps/tantivy-95c542b621ca5120)
+B1_LAYOUT TermScorer=2048 BlockSegmentPostings=1168 Bm25Weight=56 FieldNormReader=32 TermBlockBounds=16
+reader native: public=0.032658458 fixed=0.88495576 expected=0.88495576
+reader classic: public=0.40807664 fixed=11.057794 expected=11.057794
+weight native: public=0.71428573 fixed=71.42857 expected=71.42857
+weight classic: public=8.9252205 fixed=892.522 expected=892.522

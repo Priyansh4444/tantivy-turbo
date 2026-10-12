@@ -1,0 +1,35 @@
+   Compiling tantivy v0.27.0 (/home/pronsh/Coding/playground/search/tantivy-or-hillclimb-oct07)
+warning: unused import: `doc`
+   --> src/postings/segment_postings.rs:543:17
+    |
+543 |     use crate::{doc, DocId, Index};
+    |                 ^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `selected_bounds` is never read
+   --> src/query/boolean_query/or_maxscore.rs:137:5
+    |
+126 | struct WidenedRegion {
+    |        ------------- field in this struct
+...
+137 |     selected_bounds: Vec<Score>,
+    |     ^^^^^^^^^^^^^^^
+    |
+    = note: `WidenedRegion` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `tantivy` (lib test) generated 2 warnings (run `cargo fix --lib -p tantivy --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 41.55s
+     Running unittests src/lib.rs (/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/test-target/debug/deps/tantivy-95c542b621ca5120)
+
+thread 'query::boolean_query::or_maxscore::tests::capped_partition_admits_and_rejects_zero_restoration_n3_n32' (166158) panicked at src/query/term_query/term_scorer.rs:326:9:
+assertion failed: target >= self.doc()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'query::boolean_query::or_maxscore::tests::capped_partition_stops_before_the_later_optional_after_overflow' (166171) panicked at src/query/term_query/term_scorer.rs:326:9:
+assertion failed: target >= self.doc()
+ClauseState bytes=24; max-32 array payload bytes=1160
+OR_BATCH_LAYOUT batch=2048 max_array_payload=3208
+OR_WIDEN_LAYOUT cap_scratch=128 ClauseState=24
+error: test failed, to rerun pass `--lib`

@@ -1,0 +1,365 @@
+{
+  "seconds": 4.71201741299592,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 115495.27613941018,
+        "baseline_mean_ns": 117657.0308310992,
+        "ratio_mean": 0.9816266424843554,
+        "median_ratio": 0.9906652798441141
+      },
+      "BA": {
+        "candidate_mean_ns": 115829.13404825737,
+        "baseline_mean_ns": 118413.0871313673,
+        "ratio_mean": 0.9781784839352825,
+        "median_ratio": 0.9855130769990381
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 262232.33009708737,
+        "baseline_mean_ns": 269614.286407767,
+        "ratio_mean": 0.9726203072951591,
+        "median_ratio": 0.9644483726733909
+      },
+      "BA": {
+        "candidate_mean_ns": 263137.5582524272,
+        "baseline_mean_ns": 271040.3446601942,
+        "ratio_mean": 0.9708427672726184,
+        "median_ratio": 0.9659500896050274
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 41089.25495049505,
+        "baseline_mean_ns": 41130.61881188119,
+        "ratio_mean": 0.9989943292228273,
+        "median_ratio": 1.0000643824701256
+      },
+      "BA": {
+        "candidate_mean_ns": 41232.47524752475,
+        "baseline_mean_ns": 41100.542079207924,
+        "ratio_mean": 1.00321001041939,
+        "median_ratio": 0.991279391160026
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 381,
+      "kind": "OR",
+      "terms": [
+        "catholic",
+        "answers"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0895197371025853,
+      "BA": 1.2439379335109901
+    },
+    {
+      "id": 355,
+      "kind": "OR",
+      "terms": [
+        "body",
+        "painting"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0888324220006433,
+      "BA": 1.0832381807684905
+    },
+    {
+      "id": 647,
+      "kind": "OR",
+      "terms": [
+        "william",
+        "wallace"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0751137009664582,
+      "BA": 1.0816717359468289
+    },
+    {
+      "id": 559,
+      "kind": "OR",
+      "terms": [
+        "bmw",
+        "engines"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.074470057474816,
+      "BA": 1.1107512578798218
+    },
+    {
+      "id": 795,
+      "kind": "OR",
+      "terms": [
+        "cartoon",
+        "network"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1391755086148156,
+      "BA": 1.0703340630056153
+    },
+    {
+      "id": 321,
+      "kind": "OR",
+      "terms": [
+        "griffith",
+        "observatory"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0458736430939728,
+      "BA": 1.0824849170437405
+    },
+    {
+      "id": 429,
+      "kind": "OR",
+      "terms": [
+        "penny",
+        "stocks"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0395996307273698,
+      "BA": 1.0532660361640613
+    },
+    {
+      "id": 447,
+      "kind": "OR",
+      "terms": [
+        "child",
+        "support"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.03926930693868,
+      "BA": 1.064386781772448
+    },
+    {
+      "id": 865,
+      "kind": "OR",
+      "terms": [
+        "water",
+        "filters"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1220330557971916,
+      "BA": 1.036726280339101
+    },
+    {
+      "id": 10,
+      "kind": "AND",
+      "terms": [
+        "new",
+        "york"
+      ],
+      "tags": [
+        "wiki20",
+        "intersection",
+        "andHighMed"
+      ],
+      "AB": 1.0898266879916196,
+      "BA": 1.033323796069455
+    },
+    {
+      "id": 680,
+      "kind": "AND",
+      "terms": [
+        "costume",
+        "designers"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1577250812871398,
+      "BA": 1.0331338626679396
+    },
+    {
+      "id": 986,
+      "kind": "PHRASE",
+      "terms": [
+        "philadelphia",
+        "phillies"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1192915270464336,
+      "BA": 1.0317309123381455
+    },
+    {
+      "id": 603,
+      "kind": "OR",
+      "terms": [
+        "weather",
+        "underground"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0287531848623424,
+      "BA": 1.0306496440079282
+    },
+    {
+      "id": 753,
+      "kind": "OR",
+      "terms": [
+        "new",
+        "haven"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0264742943548386,
+      "BA": 1.1141913764081315
+    },
+    {
+      "id": 685,
+      "kind": "OR",
+      "terms": [
+        "personal",
+        "chef"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0802212324408986,
+      "BA": 1.0262625776322758
+    },
+    {
+      "id": 563,
+      "kind": "OR",
+      "terms": [
+        "evening",
+        "wear"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.028410853743939,
+      "BA": 1.021960777280594
+    },
+    {
+      "id": 187,
+      "kind": "TERM",
+      "terms": [
+        "system"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0299822889432402,
+      "BA": 1.0207181145239512
+    },
+    {
+      "id": 693,
+      "kind": "OR",
+      "terms": [
+        "justin",
+        "timberlake"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0195841392649903,
+      "BA": 1.0280735721200387
+    },
+    {
+      "id": 369,
+      "kind": "OR",
+      "terms": [
+        "personal",
+        "loan"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0165408604436885,
+      "BA": 1.0612762485811578
+    },
+    {
+      "id": 581,
+      "kind": "OR",
+      "terms": [
+        "sesame",
+        "street"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0207643695455912,
+      "BA": 1.016532217906583
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791736603.7808058,
+      "loadavg": [
+        10.595703125,
+        6.84423828125,
+        5.2841796875
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 332259 ps               100",
+        " 332174 python3         95.9",
+        "3111450 helium          18.7",
+        "3775038 vesktop         14.3",
+        " 140783 t3code           9.9",
+        "3774896 vesktop          8.8",
+        "  51398 helium           6.8",
+        "   2358 helium           6.6",
+        "   1429 Hyprland         6.3",
+        "  51379 helium           5.9",
+        "3233546 helium           5.8",
+        " 140793 t3code           5.7"
+      ]
+    },
+    {
+      "at": 1791736606.6830463,
+      "loadavg": [
+        10.595703125,
+        6.84423828125,
+        5.2841796875
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 332362 ps               200",
+        " 332174 python3         30.6",
+        "3111450 helium          18.7",
+        "3775038 vesktop         14.3",
+        " 140783 t3code           9.9",
+        "3774896 vesktop          8.8",
+        "  51398 helium           6.8",
+        "   2358 helium           6.6",
+        "   1429 Hyprland         6.3",
+        "  51379 helium           5.9",
+        "3233546 helium           5.8",
+        " 140793 t3code           5.7"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "parent": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "source_sha256": {
+    "src/query/boolean_query/or_maxscore.rs": "bfa821570827f2ca95590ee08ead7bbc2b854067f9a32db215a702081c6733d0",
+    "src/query/term_query/term_scorer.rs": "21b05a2b6513223a81613ee0f40c4a31f6990a427bb0d4b60324154a55753cdb"
+  },
+  "patch_sha256": "c54c4e17e77a3389dd8955d09850e0e039f2064c74f9ccffe8da2e757e7e225d",
+  "review": "Root read full13 inherited mechanism, final16-vs13 patch, implementation matrix, actual production cap and certificate preparation. Independent source review also requested; root owns runtime."
+}

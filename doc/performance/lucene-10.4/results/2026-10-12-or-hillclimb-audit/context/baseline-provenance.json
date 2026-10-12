@@ -1,0 +1,22 @@
+{
+  "pass": true,
+  "compiled_non_doc_sources_match": 600,
+  "differences": [],
+  "baseline_binary_sha256": "2efc80ae6cc57c4163cab798f50bfb35ceb085c039bc4dd4b8fe31d22d387bbf",
+  "head": "0e9329dfe782187a8feda0024102e4aabf517c28",
+  "ready_default_exact_gate": {
+    "queries": 1227,
+    "failures": 0,
+    "unchanged": true,
+    "pass": true,
+    "wall_seconds": 4.9481395289999455
+  },
+  "ruler_sha256": {
+    "balanced.py": "855554f6211fa47244675eb4980133677ca3d24e8fd69757a9adfb42e413d42e",
+    "stage.py": "fdc2d280e67956afcec1991389b580893c5c2288643750ba86b0cebcfa1073cc",
+    "pilot.py": "28e34a3482ccbe0dbbad943c7bdcc13c93e56ff8b7ed063609cf20d7a8a6446e",
+    "port_measure.py": "968256c21f87c428ae91806f7a54f0a4143cb9b6e8947b482129a3af92f74aee",
+    "harness/src/bin/tantivy_worker.rs": "b502c978356e02f02171b68f5143ea1d05fb76beba5354c26e008ef16d45e562",
+    "harness/Cargo.lock": "21dfbb56abf6714579bdde51f28e1d708a0c82a3f61b3acd3853ec4835116e0c"
+  }
+}

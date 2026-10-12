@@ -1,0 +1,16 @@
+perf(query): cache exact optional score threshold cutoff
+
+Move the f64 successor and f32 rounding comparison out of optional probes
+into an exact threshold midpoint cutoff. Preserve the original rounded
+factor multiplication, score order and callback/cursor behavior; refresh
+the cutoff immediately after every callback threshold assignment.
+
+Cover midpoint parity, signed zeros, exponent boundaries, finite overflow
+and exceptional thresholds against the original bound. All 1446 tests,
+three 1227-query exact profiles, Clippy and formatting pass.
+
+Frozen longer OR arithmetic means take 2.77%/3.13% less time in AB/BA
+against 43f0683, past 0.36% controls. All OR also clears controls. This is
+a partial win: 60 full-suite per-query losses remain retained and the
+actual lucene-rs longer OR gap is still 1.71-1.72x. Binary grows 448 bytes;
+one f64 cache adds 8 logical bytes, no allocation or index format change.

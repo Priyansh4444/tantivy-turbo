@@ -1,0 +1,381 @@
+{
+  "seconds": 9.061751158995321,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 227415.95978552278,
+        "baseline_mean_ns": 243092.51876675602,
+        "ratio_mean": 0.9355119644949885,
+        "median_ratio": 0.9938366303323913
+      },
+      "BA": {
+        "candidate_mean_ns": 228764.7091152815,
+        "baseline_mean_ns": 244383.1836461126,
+        "ratio_mean": 0.9360902239760983,
+        "median_ratio": 0.9935641794328777
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 506096.88349514565,
+        "baseline_mean_ns": 559925.2281553398,
+        "ratio_mean": 0.9038651199240828,
+        "median_ratio": 0.99728555917481
+      },
+      "BA": {
+        "candidate_mean_ns": 510093.6553398058,
+        "baseline_mean_ns": 563677.7330097087,
+        "ratio_mean": 0.9049384523603667,
+        "median_ratio": 1.0013167552495013
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 81973.40594059406,
+        "baseline_mean_ns": 82920.25742574257,
+        "ratio_mean": 0.9885811801055195,
+        "median_ratio": 0.9938091041284964
+      },
+      "BA": {
+        "candidate_mean_ns": 82623.10396039604,
+        "baseline_mean_ns": 82978.7004950495,
+        "ratio_mean": 0.9957146046812979,
+        "median_ratio": 0.9923686713464834
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 817,
+      "kind": "OR",
+      "terms": [
+        "centerville",
+        "high",
+        "school"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 2.786666743400418,
+      "BA": 2.7465798649321767
+    },
+    {
+      "id": 909,
+      "kind": "OR",
+      "terms": [
+        "niceville",
+        "high",
+        "school"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.7991621971958283,
+      "BA": 1.8950816405325628
+    },
+    {
+      "id": 585,
+      "kind": "OR",
+      "terms": [
+        "jaguar",
+        "x",
+        "type"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.3191455989194725,
+      "BA": 1.321051862146861
+    },
+    {
+      "id": 675,
+      "kind": "OR",
+      "terms": [
+        "milan",
+        "tennessee"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2261606299640584,
+      "BA": 1.2757276252607412
+    },
+    {
+      "id": 485,
+      "kind": "OR",
+      "terms": [
+        "ace",
+        "frehley"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.221267947289058,
+      "BA": 1.2251647074021443
+    },
+    {
+      "id": 1139,
+      "kind": "PHRASE",
+      "terms": [
+        "business",
+        "consultants"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1891502894455557,
+      "BA": 1.1616098320228012
+    },
+    {
+      "id": 433,
+      "kind": "OR",
+      "terms": [
+        "lord",
+        "of",
+        "the",
+        "rings"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.134499962285702,
+      "BA": 1.192658347386172
+    },
+    {
+      "id": 435,
+      "kind": "OR",
+      "terms": [
+        "helen",
+        "of",
+        "troy"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2224527910354845,
+      "BA": 1.1269653605961452
+    },
+    {
+      "id": 569,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "breakfast",
+        "club"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.124042758430616,
+      "BA": 1.1384485407613636
+    },
+    {
+      "id": 359,
+      "kind": "OR",
+      "terms": [
+        "west",
+        "palm",
+        "beach",
+        "florida"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1195324956752464,
+      "BA": 1.1586525535038246
+    },
+    {
+      "id": 661,
+      "kind": "OR",
+      "terms": [
+        "david",
+        "kim"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1069443472173608,
+      "BA": 1.1011898949600345
+    },
+    {
+      "id": 647,
+      "kind": "OR",
+      "terms": [
+        "william",
+        "wallace"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1691550005816884,
+      "BA": 1.0976877299777403
+    },
+    {
+      "id": 373,
+      "kind": "OR",
+      "terms": [
+        "spiritual",
+        "warfare"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0968820723615822,
+      "BA": 1.1829163908607427
+    },
+    {
+      "id": 493,
+      "kind": "OR",
+      "terms": [
+        "american",
+        "academy",
+        "of",
+        "child",
+        "and",
+        "adolescent",
+        "psychiatry"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0894654834206108,
+      "BA": 1.1422380509903494
+    },
+    {
+      "id": 351,
+      "kind": "OR",
+      "terms": [
+        "robert",
+        "green",
+        "ingersoll"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0967678476955898,
+      "BA": 1.0874942581534222
+    },
+    {
+      "id": 695,
+      "kind": "OR",
+      "terms": [
+        "hawk",
+        "mountain"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0857586506545864,
+      "BA": 1.177009022621936
+    },
+    {
+      "id": 607,
+      "kind": "OR",
+      "terms": [
+        "analog",
+        "computer"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1222289352604917,
+      "BA": 1.077902294282838
+    },
+    {
+      "id": 691,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "oregonian",
+        "newspaper"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1630549103816994,
+      "BA": 1.076472598483907
+    },
+    {
+      "id": 583,
+      "kind": "OR",
+      "terms": [
+        "ellen",
+        "degeneres",
+        "show"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0741620310019488,
+      "BA": 1.1818252256673167
+    },
+    {
+      "id": 381,
+      "kind": "OR",
+      "terms": [
+        "catholic",
+        "answers"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.067453959722294,
+      "BA": 1.0862488145529787
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791716557.9951046,
+      "loadavg": [
+        4.35791015625,
+        6.10302734375,
+        7.12255859375
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        "3584014 python3         96.1",
+        "2886977 vesktop         91.0",
+        "3111450 helium          17.0",
+        "3562070 helium          16.2",
+        "2886856 vesktop         11.3",
+        "2886914 vesktop         10.4",
+        "3465431 t3code           7.8",
+        "3465440 t3code           7.7",
+        "3233546 helium           7.2",
+        "3562080 helium           7.1",
+        "   2358 helium           6.7",
+        "   1429 Hyprland         6.2"
+      ]
+    },
+    {
+      "at": 1791716564.1533542,
+      "loadavg": [
+        4.1689453125,
+        6.03466796875,
+        7.0947265625
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        "2886977 vesktop         91.0",
+        "3584014 python3         26.5",
+        "3111450 helium          17.0",
+        "3562070 helium          16.0",
+        "2886856 vesktop         11.3",
+        "2886914 vesktop         10.4",
+        "3465431 t3code           7.8",
+        "3465440 t3code           7.7",
+        "3233546 helium           7.2",
+        "3562080 helium           7.0",
+        "   2358 helium           6.7",
+        "   1429 Hyprland         6.2"
+      ]
+    }
+  ]
+}

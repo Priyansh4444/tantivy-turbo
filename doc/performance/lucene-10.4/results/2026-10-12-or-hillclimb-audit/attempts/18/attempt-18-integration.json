@@ -1,0 +1,8 @@
+{
+  "parent": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "source_sha256": {
+    "src/query/boolean_query/or_maxscore.rs": "252c08f4e6401bd5b1c497fefe6e3885c2a10bf233ecd87085ddcca7ef514819"
+  },
+  "patch_sha256": "fbb5f88a6b6fea9c321e9efa9e3518db7269ffa7047d3af1b96cbafb106704e4",
+  "review": "Root read complete source patch and report. Exactly-two fixed-partition direct cursor minimum; all old replay and fixtures unchanged; independent canonical trace and actual route fixture."
+}

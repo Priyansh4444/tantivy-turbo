@@ -1,0 +1,257 @@
+diff --git i/src/query/boolean_query/or_maxscore.rs w/src/query/boolean_query/or_maxscore.rs
+index d5cf67739..138bd3c42 100644
+--- i/src/query/boolean_query/or_maxscore.rs
++++ w/src/query/boolean_query/or_maxscore.rs
+@@ -57,6 +57,9 @@ type RegionChoice = (DocId, usize, usize, u64);
+ #[cfg(test)]
+ type GlobalPrefixState = (DocId, u32, usize, u64, usize);
+ 
++#[cfg(test)]
++type ContributionState = (DocId, DocId, bool, bool, u32);
++
+ #[cfg(test)]
+ thread_local! {
+     // Test-only region evidence; no observer or counter exists in release.
+@@ -64,6 +67,8 @@ thread_local! {
+         const { std::cell::RefCell::new(None) };
+     static GLOBAL_PREFIX_STATES: std::cell::RefCell<Option<Vec<GlobalPrefixState>>> =
+         const { std::cell::RefCell::new(None) };
++    static CONTRIBUTION_STATES: std::cell::RefCell<Option<Vec<ContributionState>>> =
++        const { std::cell::RefCell::new(None) };
+     static BATCH_LENGTHS: std::cell::RefCell<Option<Vec<usize>>> =
+         const { std::cell::RefCell::new(None) };
+ }
+@@ -323,11 +328,14 @@ pub(crate) fn or_maxscore(
+             if doc >= hi {
+                 break;
+             }
+-            contributions.fill(0.0);
++            // Only this candidate's matched ordinals may read saved slots.
++            // Absent +0 leaves are identities in the admitted score domain.
++            let mut matched = 0u32;
+             let mut known = 0.0f64;
+             if single_essential {
+                 let leaf = batch.scores[batch_index];
+                 contributions[clauses[first_essential].ordinal] = leaf;
++                matched |= 1u32 << clauses[first_essential].ordinal;
+                 known = f64::from(leaf);
+             } else {
+                 for clause in &clauses[first_essential..] {
+@@ -336,6 +344,7 @@ pub(crate) fn or_maxscore(
+                         let leaf = scorers[clause.ordinal].score();
+                         clause.assert_coherent(&scorers);
+                         contributions[clause.ordinal] = leaf;
++                        matched |= 1u32 << clause.ordinal;
+                         known += f64::from(leaf);
+                     }
+                 }
+@@ -355,14 +364,26 @@ pub(crate) fn or_maxscore(
+                     let leaf = scorers[clause.ordinal].score();
+                     clause.assert_coherent(&scorers);
+                     contributions[clause.ordinal] = leaf;
++                    matched |= 1u32 << clause.ordinal;
+                     known += f64::from(leaf);
+                 }
+             }
++            #[cfg(test)]
++            CONTRIBUTION_STATES.with(|states| {
++                if let Some(states) = states.borrow_mut().as_mut() {
++                    states.push((doc, lo, single_essential, competitive, matched));
++                }
++            });
+             if competitive {
+-                let score = contributions
+-                    .iter()
+-                    .map(|&leaf| f64::from(leaf))
+-                    .sum::<f64>() as Score;
++                // Ascending ordinals retain the incoming-order f64 fold,
++                // including matched zero leaves; stale unmarked slots stay unread.
++                let mut sum = 0.0f64;
++                while matched != 0 {
++                    let ordinal = matched.trailing_zeros() as usize;
++                    sum += f64::from(contributions[ordinal]);
++                    matched &= matched - 1;
++                }
++                let score = sum as Score;
+                 if score > threshold {
+                     let next_threshold = callback(doc, score);
+                     debug_assert!(next_threshold >= threshold);
+@@ -491,6 +512,178 @@ mod tests {
+         (actual, states, choices)
+     }
+ 
++    #[test]
++    fn contribution_masks_reset_across_scalar_regions_at_32_terms() {
++        let norms = vec![1; 1024];
++        let matches = |doc: DocId, ordinal: usize| match doc % 4 {
++            0 => true,
++            1 => ordinal == 31,
++            2 => ordinal == 0,
++            _ => ordinal % 2 == 1,
++        };
++        let mut leaves = [2.0f32.powi(-60); 32];
++        leaves[0] = 1.0;
++        leaves[1] = 2.0f32.powi(-24);
++        leaves[2] = 2.0f32.powi(-53);
++        leaves[31] = 2.0f32.powi(-53);
++        let scorers: Vec<_> = (0..32)
++            .map(|ordinal| {
++                let postings: Vec<_> = (0..1024)
++                    .filter(|&doc| matches(doc, ordinal))
++                    .map(|doc| (doc, 1))
++                    .collect();
++                let scorer = fixture(&postings, &norms, leaves[ordinal]);
++                assert_eq!(scorer.clone().score().to_bits(), leaves[ordinal].to_bits());
++                scorer
++            })
++            .collect();
++        let mut full_scores = Vec::new();
++        for reversed in [false, true] {
++            let order: Vec<_> = if reversed {
++                (0..32).rev().collect()
++            } else {
++                (0..32).collect()
++            };
++            let ordered: Vec<_> = order.iter().map(|&i| scorers[i].clone()).collect();
++            CONTRIBUTION_STATES.with(|states| *states.borrow_mut() = Some(Vec::new()));
++            let accepted = check(ordered.clone(), 1024, 0.0, 0);
++            let states = CONTRIBUTION_STATES.with(|states| states.borrow_mut().take().unwrap());
++            let expected: Vec<_> = (0..1024)
++                .map(|doc| {
++                    let mut sum = 0.0f64;
++                    for &ordinal in &order {
++                        if matches(doc, ordinal) {
++                            sum += f64::from(leaves[ordinal]);
++                        }
++                    }
++                    (doc, (sum as Score).to_bits())
++                })
++                .collect();
++            assert_eq!(accepted, expected);
++            assert_eq!(states.len(), 1024);
++            assert!(states.iter().all(|state| !state.2 && state.3));
++            for &(doc, _, _, _, mask) in &states {
++                let expected_mask = order.iter().enumerate().fold(0u32, |mask, (i, &ordinal)| {
++                    mask | if matches(doc, ordinal) { 1u32 << i } else { 0 }
++                });
++                assert_eq!(mask, expected_mask, "doc={doc} reversed={reversed}");
++            }
++            assert!(states.iter().any(|state| state.4 == u32::MAX));
++            if !reversed {
++                assert!(states.iter().any(|state| state.4 == 1u32 << 31));
++            }
++            let mut floors: Vec<_> = states.iter().map(|state| state.1).collect();
++            floors.dedup();
++            assert!(floors.len() >= 3, "must cross local region boundaries");
++            let full_score = Score::from_bits(expected[0].1);
++            full_scores.push(full_score.to_bits());
++            for threshold in [full_score.next_down(), full_score, full_score.next_up()] {
++                for limit in [0, 1, 10] {
++                    check(ordered.clone(), 1024, threshold, limit);
++                }
++            }
++        }
++        assert_ne!(
++            full_scores[0], full_scores[1],
++            "incoming-order midpoint must be sensitive"
++        );
++    }
++
++    #[test]
++    fn contribution_masks_reset_for_optional_probes_and_pending_single_batches() {
++        let norms = vec![1; 2048];
++        let matches = |doc: DocId, ordinal| match ordinal {
++            0 => ![4, 12].contains(&(doc % 16)),
++            1 => ![0, 12].contains(&(doc % 16)),
++            _ => doc % 4 == 0,
++        };
++        for native in [false, true] {
++            let scorers: Vec<_> = [0.01, 0.02, 1.0]
++                .iter()
++                .enumerate()
++                .map(|(ordinal, &boost)| {
++                    let postings: Vec<_> = (0..2048)
++                        .filter(|&doc| matches(doc, ordinal))
++                        .map(|doc| (doc, if ordinal == 2 && doc == 1920 { 30 } else { 1 }))
++                        .collect();
++                    let weight = if native {
++                        Bm25Weight::for_native_block_bounds(1.0).boost_by(boost)
++                    } else {
++                        Bm25Weight::new_without_explain(1.0, 1.0).boost_by(boost)
++                    };
++                    assert!(weight.has_safe_score_bounds() && weight.max_score() > 0.0);
++                    TermScorer::create_for_test(&postings, &norms, weight)
++                })
++                .collect();
++            CONTRIBUTION_STATES.with(|states| *states.borrow_mut() = Some(Vec::new()));
++            BATCH_LENGTHS.with(|lengths| *lengths.borrow_mut() = Some(Vec::new()));
++            let accepted = check(scorers.clone(), 2048, 0.1, 0);
++            let states = CONTRIBUTION_STATES.with(|states| states.borrow_mut().take().unwrap());
++            let lengths = BATCH_LENGTHS.with(|lengths| lengths.borrow_mut().take().unwrap());
++            assert_eq!(accepted.len(), 512);
++            assert_eq!(states.len(), 512);
++            assert!(states.iter().all(|state| state.2 && state.3));
++            assert!(lengths.contains(&128));
++            for &(doc, _, _, _, mask) in &states {
++                let expected_mask = (0..3).fold(0u32, |mask, ordinal| {
++                    mask | if matches(doc, ordinal) {
++                        1u32 << ordinal
++                    } else {
++                        0
++                    }
++                });
++                assert_eq!(mask, expected_mask, "doc={doc} native={native}");
++            }
++            for mask in [0b100, 0b101, 0b110, 0b111] {
++                assert!(states.iter().any(|state| state.4 == mask));
++            }
++            assert!(states.windows(2).any(|pair| pair[0].1 != pair[1].1));
++            CONTRIBUTION_STATES.with(|states| *states.borrow_mut() = Some(Vec::new()));
++            let growing = check(scorers, 2048, 0.1, 1);
++            let states = CONTRIBUTION_STATES.with(|states| states.borrow_mut().take().unwrap());
++            assert_eq!(growing.last().unwrap().0, 1920);
++            assert!(
++                states.iter().any(|state| !state.3),
++                "must reset after early optional pruning"
++            );
++            assert!(states.iter().any(|state| state.3 && state.0 > 0));
++            // A partially probed, pruned candidate may mark only a subset of
++            // its actual matches. It must never inherit another doc's bit.
++            for &(doc, _, _, _, mask) in &states {
++                let actual_mask = (0..3).fold(0u32, |mask, ordinal| {
++                    mask | if matches(doc, ordinal) {
++                        1u32 << ordinal
++                    } else {
++                        0
++                    }
++                });
++                assert_eq!(mask & !actual_mask, 0, "doc={doc} native={native}");
++            }
++        }
++    }
++
++    #[test]
++    fn matched_underflow_zero_is_marked_without_admitting_a_zero_weight() {
++        let mut norms = vec![1; 300];
++        norms[0] = u32::MAX;
++        let tiny = fixture(&[(0, 1), (4, 1)], &norms, Score::from_bits(1));
++        assert!(tiny.bm25_weight().has_safe_score_bounds());
++        assert!(tiny.max_score().is_finite() && tiny.max_score() > 0.0);
++        assert_eq!(tiny.clone().score().to_bits(), 0.0f32.to_bits());
++        let other = fixture(&[(1, 1), (4, 1), (128, 1)], &norms, 0.01);
++        let driver = fixture(&[(0, 1), (1, 1), (4, 1), (129, 1)], &norms, 1.0);
++        CONTRIBUTION_STATES.with(|states| *states.borrow_mut() = Some(Vec::new()));
++        let accepted = check(vec![tiny, other, driver], 300, 0.0, 0);
++        let states = CONTRIBUTION_STATES.with(|states| states.borrow_mut().take().unwrap());
++        assert_eq!(
++            accepted.iter().map(|entry| entry.0).collect::<Vec<_>>(),
++            [0, 1, 4, 128, 129]
++        );
++        assert_eq!(states.iter().find(|state| state.0 == 0).unwrap().4, 0b101);
++        assert_eq!(states.iter().find(|state| state.0 == 1).unwrap().4, 0b110);
++        assert_eq!(states.iter().find(|state| state.0 == 4).unwrap().4, 0b111);
++    }
++
+     #[test]
+     fn cached_global_prefix_preserves_equality_neighbors_and_large_threshold_jumps() {
+         let norms = vec![1; 2048];

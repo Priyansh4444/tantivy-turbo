@@ -1,0 +1,367 @@
+{
+  "seconds": 4.379330661002314,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 116166.97184986595,
+        "baseline_mean_ns": 117352.23860589812,
+        "ratio_mean": 0.9898999220627342,
+        "median_ratio": 0.9979875461187347
+      },
+      "BA": {
+        "candidate_mean_ns": 116783.95576407507,
+        "baseline_mean_ns": 117865.68498659518,
+        "ratio_mean": 0.9908223566287072,
+        "median_ratio": 0.9999588002636783
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 265541.0873786408,
+        "baseline_mean_ns": 269243.22330097086,
+        "ratio_mean": 0.9862498454856496,
+        "median_ratio": 0.9954332018232179
+      },
+      "BA": {
+        "candidate_mean_ns": 266865.8058252427,
+        "baseline_mean_ns": 270522.4951456311,
+        "ratio_mean": 0.986482864138822,
+        "median_ratio": 0.9973256600303961
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 40795.87128712871,
+        "baseline_mean_ns": 41010.94801980198,
+        "ratio_mean": 0.9947556264105522,
+        "median_ratio": 1.0029523722252531
+      },
+      "BA": {
+        "candidate_mean_ns": 41202.544554455446,
+        "baseline_mean_ns": 40970.180693069306,
+        "ratio_mean": 1.0056715361625301,
+        "median_ratio": 1.0005616310204801
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 680,
+      "kind": "AND",
+      "terms": [
+        "costume",
+        "designers"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1608553641718544,
+      "BA": 1.128661772188704
+    },
+    {
+      "id": 935,
+      "kind": "PHRASE",
+      "terms": [
+        "milwaukee",
+        "newspaper"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.074547078896879,
+      "BA": 1.1287411877422031
+    },
+    {
+      "id": 457,
+      "kind": "OR",
+      "terms": [
+        "montgomery",
+        "college"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1343424325686506,
+      "BA": 1.0715945153894044
+    },
+    {
+      "id": 711,
+      "kind": "OR",
+      "terms": [
+        "ford",
+        "parts"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0874908909940815,
+      "BA": 1.0690796295016245
+    },
+    {
+      "id": 321,
+      "kind": "OR",
+      "terms": [
+        "griffith",
+        "observatory"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1020277676287906,
+      "BA": 1.0662146172749614
+    },
+    {
+      "id": 625,
+      "kind": "OR",
+      "terms": [
+        "phone",
+        "cases"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.057209039243677,
+      "BA": 1.095875410633897
+    },
+    {
+      "id": 7,
+      "kind": "TERM",
+      "terms": [
+        "saxophone"
+      ],
+      "tags": [
+        "wiki20",
+        "term",
+        "low"
+      ],
+      "AB": 1.0543721973094171,
+      "BA": 2.364688128772636
+    },
+    {
+      "id": 539,
+      "kind": "OR",
+      "terms": [
+        "kitchen",
+        "accessories"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0495275214178035,
+      "BA": 1.0894151233438254
+    },
+    {
+      "id": 637,
+      "kind": "OR",
+      "terms": [
+        "game",
+        "downloads"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0472493985565356,
+      "BA": 1.0537430999193698
+    },
+    {
+      "id": 491,
+      "kind": "OR",
+      "terms": [
+        "ancient",
+        "egypt"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0675289930368936,
+      "BA": 1.0462756973967737
+    },
+    {
+      "id": 729,
+      "kind": "OR",
+      "terms": [
+        "tennis",
+        "elbow"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.086278460608503,
+      "BA": 1.0378941721905053
+    },
+    {
+      "id": 583,
+      "kind": "OR",
+      "terms": [
+        "ellen",
+        "degeneres",
+        "show"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0432361279870392,
+      "BA": 1.0329773327084824
+    },
+    {
+      "id": 327,
+      "kind": "OR",
+      "terms": [
+        "digital",
+        "scanning"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0788555478018145,
+      "BA": 1.032658580560564
+    },
+    {
+      "id": 677,
+      "kind": "OR",
+      "terms": [
+        "western",
+        "herald"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0323632268389544,
+      "BA": 1.1202743370832957
+    },
+    {
+      "id": 469,
+      "kind": "OR",
+      "terms": [
+        "flow",
+        "meter"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.036402080118864,
+      "BA": 1.0316086931189186
+    },
+    {
+      "id": 739,
+      "kind": "OR",
+      "terms": [
+        "domain",
+        "names"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0292593174321807,
+      "BA": 1.1127549162418062
+    },
+    {
+      "id": 799,
+      "kind": "OR",
+      "terms": [
+        "interracial",
+        "love"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0264973345876451,
+      "BA": 1.0263665259757178
+    },
+    {
+      "id": 1139,
+      "kind": "PHRASE",
+      "terms": [
+        "business",
+        "consultants"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.055980932518993,
+      "BA": 1.0245608556483723
+    },
+    {
+      "id": 805,
+      "kind": "OR",
+      "terms": [
+        "akron",
+        "beacon"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0390159689253344,
+      "BA": 1.0241212338593975
+    },
+    {
+      "id": 578,
+      "kind": "AND",
+      "terms": [
+        "john",
+        "wilkes",
+        "booth"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0228534381457919,
+      "BA": 1.029081682443642
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791735953.7631416,
+      "loadavg": [
+        2.98486328125,
+        3.58837890625,
+        3.76806640625
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 251189 ps               100",
+        " 251177 python3         95.0",
+        "3111450 helium          18.9",
+        "3775038 vesktop         13.0",
+        " 140783 t3code          10.6",
+        "3774896 vesktop          8.8",
+        "  51398 helium           7.8",
+        "   2358 helium           6.7",
+        "  51379 helium           6.5",
+        "   1429 Hyprland         6.3",
+        " 140793 t3code           6.2",
+        "3233546 helium           5.8"
+      ]
+    },
+    {
+      "at": 1791735956.6126175,
+      "loadavg": [
+        2.98486328125,
+        3.58837890625,
+        3.76806640625
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 251292 ps               100",
+        " 251177 python3         26.8",
+        "3111450 helium          18.9",
+        "3775038 vesktop         13.0",
+        " 140783 t3code          10.6",
+        "3774896 vesktop          8.8",
+        "  51398 helium           7.8",
+        "   2358 helium           6.7",
+        "  51379 helium           6.5",
+        "   1429 Hyprland         6.3",
+        " 140793 t3code           6.2",
+        "3233546 helium           5.8"
+      ]
+    }
+  ]
+}

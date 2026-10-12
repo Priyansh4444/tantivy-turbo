@@ -1,0 +1,8 @@
+{
+  "kind": "pre-build-controller-assertion-fix",
+  "original_controller_sha256": "c2dfde2f17c7c9b630c9f8cc9ae6d521432914213ee975822ce59592b3d59a94",
+  "source_unchanged": true,
+  "actual_tests_passed": 14,
+  "failure": "Expected18 targeted tests in root controller was mistaken; authentic stdout records14 passed0failed. Assertion stopped before build/gates/pilot. No stage run repeated.",
+  "original_returncode": 1
+}

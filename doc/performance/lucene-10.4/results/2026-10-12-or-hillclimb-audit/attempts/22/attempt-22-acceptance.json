@@ -1,0 +1,42 @@
+{
+  "verdict": "kept_partial_win",
+  "commit": "3dff75c5cfddee6dab50c144839b4cec645d9dca",
+  "parent": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "source_sha256": {
+    "src/query/boolean_query/or_maxscore.rs": "590f6a2b0f493fe2c0b6ab7c17a41ab610c95e50a76c8f4a6ff42f44e544806e",
+    "src/query/score_combiner.rs": "2679f2aab4434a4f4b75456185fee01d03506b5d40fb95f519e135664068997e"
+  },
+  "candidate_binary_sha256": "005dd61a74e1885cb3e145987fc67399d89fe662bb2409aa00a9c1d174726b84",
+  "correctness_tests": 1446,
+  "ignored_tests": 7,
+  "exact_profiles": 3,
+  "queries_per_profile": 1227,
+  "longer_or_primary_ratios": {
+    "AB": 0.9723214264971765,
+    "BA": 0.9686601565813414
+  },
+  "all_or_primary_ratios": {
+    "AB": 0.9760791830367352,
+    "BA": 0.9767223203830334
+  },
+  "control_log_spread": 0.003606968787084102,
+  "target_met": false,
+  "efficiency": {
+    "candidate_file_bytes": 4766376,
+    "baseline_file_bytes": 4765928,
+    "candidate_sections": {
+      ".rodata": 458816,
+      ".text": 2599346
+    },
+    "baseline_sections": {
+      ".rodata": 458816,
+      ".text": 2598898
+    },
+    "candidate_binary_sha256": "005dd61a74e1885cb3e145987fc67399d89fe662bb2409aa00a9c1d174726b84",
+    "baseline_binary_sha256": "e11c4939984690d2c2d781cb6ace40d5e818e3a18a3f9f558d6cbcfd62546e5d",
+    "index_change": false,
+    "per_region_allocation": false
+  },
+  "persistent_logical_payload_bytes": 8,
+  "limitations": "60 full-suite controlled per-query losses retained, none in longer OR. Whole-suite and PHRASE mixed. No RSS advantage established. Existing optimized monotone-threshold domain. Configured own-oracle correctness only. Port tracks lower-bound hits."
+}

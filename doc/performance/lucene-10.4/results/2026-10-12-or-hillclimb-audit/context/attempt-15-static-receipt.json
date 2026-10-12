@@ -1,0 +1,19 @@
+{
+  "parent": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "worktree": "/home/pronsh/Coding/playground/search/tantivy-or-density-certificate-oct08",
+  "changed_paths": [
+    "src/query/boolean_query/or_maxscore.rs"
+  ],
+  "source_sha256": "602867a5085c86c6923e15234a6ce381519b2834af6c627ef910db393e6d3477",
+  "full_diff_sha256": "b63ad6c388c15b64b80f7fbc4e7d34f22fe9710560c52713a1e7ac57cf04c3c6",
+  "full_diff_lines": 362,
+  "unchanged_original_fixture_bodies": 13,
+  "unchanged_preparation_replay_bytes": 6999,
+  "unchanged_preparation_replay_sha256": "b93646efb4641fbfa4bc1a0ec00c42a2f28c9af2306be3e938669b3741168421",
+  "static_checks": [
+    "rustfmt --edition 2021 --check",
+    "git diff --check",
+    "source/base/scope/existing fixtures/preparation-replay/ClauseState/admission guards"
+  ],
+  "runtime_checks": []
+}

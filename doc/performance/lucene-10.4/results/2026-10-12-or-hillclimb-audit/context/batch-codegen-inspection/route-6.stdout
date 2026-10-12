@@ -1,0 +1,456 @@
+
+/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-11/tantivy_worker:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000254d40 <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>>:
+  254d40:	55                   	push   %rbp
+  254d41:	41 57                	push   %r15
+  254d43:	41 56                	push   %r14
+  254d45:	41 55                	push   %r13
+  254d47:	41 54                	push   %r12
+  254d49:	53                   	push   %rbx
+  254d4a:	48 83 ec 48          	sub    $0x48,%rsp
+  254d4e:	48 89 f3             	mov    %rsi,%rbx
+  254d51:	49 89 fe             	mov    %rdi,%r14
+  254d54:	48 83 fe 21          	cmp    $0x21,%rsi
+  254d58:	73 19                	jae    254d73 <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x33>
+  254d5a:	4c 89 f7             	mov    %r14,%rdi
+  254d5d:	48 89 de             	mov    %rbx,%rsi
+  254d60:	48 83 c4 48          	add    $0x48,%rsp
+  254d64:	5b                   	pop    %rbx
+  254d65:	41 5c                	pop    %r12
+  254d67:	41 5d                	pop    %r13
+  254d69:	41 5e                	pop    %r14
+  254d6b:	41 5f                	pop    %r15
+  254d6d:	5d                   	pop    %rbp
+  254d6e:	e9 dd 06 00 00       	jmp    255450 <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>>
+  254d73:	89 cd                	mov    %ecx,%ebp
+  254d75:	49 89 d7             	mov    %rdx,%r15
+  254d78:	c4 e2 79 58 05 4f e7 	vpbroadcastd -0x1f18b1(%rip),%xmm0        # 634d0 <serde_json::ser::Formatter::write_char_escape::HEX_DIGITS+0x3d80>
+  254d7f:	e0 ff 
+  254d81:	c5 f9 7f 44 24 30    	vmovdqa %xmm0,0x30(%rsp)
+  254d87:	49 89 e4             	mov    %rsp,%r12
+  254d8a:	eb 63                	jmp    254def <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0xaf>
+  254d8c:	0f 1f 40 00          	nopl   0x0(%rax)
+  254d90:	4b 8d 04 40          	lea    (%r8,%r8,2),%rax
+  254d94:	49 8b 4e 10          	mov    0x10(%r14),%rcx
+  254d98:	48 89 4c 24 10       	mov    %rcx,0x10(%rsp)
+  254d9d:	c4 c1 78 10 06       	vmovups (%r14),%xmm0
+  254da2:	c5 f8 29 04 24       	vmovaps %xmm0,(%rsp)
+  254da7:	49 8b 4c c6 10       	mov    0x10(%r14,%rax,8),%rcx
+  254dac:	c4 c1 78 10 04 c6    	vmovups (%r14,%rax,8),%xmm0
+  254db2:	c4 c1 78 11 06       	vmovups %xmm0,(%r14)
+  254db7:	49 89 4e 10          	mov    %rcx,0x10(%r14)
+  254dbb:	48 8b 4c 24 10       	mov    0x10(%rsp),%rcx
+  254dc0:	49 89 4c c6 10       	mov    %rcx,0x10(%r14,%rax,8)
+  254dc5:	c5 f9 6f 04 24       	vmovdqa (%rsp),%xmm0
+  254dca:	c4 c1 7a 7f 04 c6    	vmovdqu %xmm0,(%r14,%rax,8)
+  254dd0:	49 f7 d0             	not    %r8
+  254dd3:	4c 01 c3             	add    %r8,%rbx
+  254dd6:	4d 8d 34 c6          	lea    (%r14,%rax,8),%r14
+  254dda:	49 83 c6 18          	add    $0x18,%r14
+  254dde:	45 31 ff             	xor    %r15d,%r15d
+  254de1:	8b 6c 24 24          	mov    0x24(%rsp),%ebp
+  254de5:	48 83 fb 21          	cmp    $0x21,%rbx
+  254de9:	0f 82 6b ff ff ff    	jb     254d5a <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x1a>
+  254def:	85 ed                	test   %ebp,%ebp
+  254df1:	0f 84 3c 06 00 00    	je     255433 <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x6f3>
+  254df7:	48 89 d9             	mov    %rbx,%rcx
+  254dfa:	48 c1 e9 03          	shr    $0x3,%rcx
+  254dfe:	48 8d 34 49          	lea    (%rcx,%rcx,2),%rsi
+  254e02:	48 c1 e6 05          	shl    $0x5,%rsi
+  254e06:	4c 01 f6             	add    %r14,%rsi
+  254e09:	48 69 d1 a8 00 00 00 	imul   $0xa8,%rcx,%rdx
+  254e10:	4c 01 f2             	add    %r14,%rdx
+  254e13:	48 83 fb 40          	cmp    $0x40,%rbx
+  254e17:	0f 83 13 01 00 00    	jae    254f30 <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x1f0>
+  254e1d:	c4 c1 7a 10 46 08    	vmovss 0x8(%r14),%xmm0
+  254e23:	c5 fa 5a c0          	vcvtss2sd %xmm0,%xmm0,%xmm0
+  254e27:	41 8b 46 0c          	mov    0xc(%r14),%eax
+  254e2b:	83 f8 01             	cmp    $0x1,%eax
+  254e2e:	83 d0 00             	adc    $0x0,%eax
+  254e31:	c4 e1 83 2a c8       	vcvtsi2sd %rax,%xmm15,%xmm1
+  254e36:	c5 fb 5e c1          	vdivsd %xmm1,%xmm0,%xmm0
+  254e3a:	c4 e1 f9 7e c0       	vmovq  %xmm0,%rax
+  254e3f:	49 89 c0             	mov    %rax,%r8
+  254e42:	49 c1 f8 3f          	sar    $0x3f,%r8
+  254e46:	49 d1 e8             	shr    $1,%r8
+  254e49:	49 31 c0             	xor    %rax,%r8
+  254e4c:	49 8b 06             	mov    (%r14),%rax
+  254e4f:	48 8b 0e             	mov    (%rsi),%rcx
+  254e52:	48 8b 3a             	mov    (%rdx),%rdi
+  254e55:	c5 fa 10 46 08       	vmovss 0x8(%rsi),%xmm0
+  254e5a:	c4 e3 79 21 42 08 10 	vinsertps $0x10,0x8(%rdx),%xmm0,%xmm0
+  254e61:	c5 f8 5a c0          	vcvtps2pd %xmm0,%xmm0
+  254e65:	c5 f9 6e 4e 0c       	vmovd  0xc(%rsi),%xmm1
+  254e6a:	c4 e3 71 22 4a 0c 01 	vpinsrd $0x1,0xc(%rdx),%xmm1,%xmm1
+  254e71:	c4 e2 71 3f 4c 24 30 	vpmaxud 0x30(%rsp),%xmm1,%xmm1
+  254e78:	c4 e2 79 35 c9       	vpmovzxdq %xmm1,%xmm1
+  254e7d:	c4 e2 79 59 15 22 7e 	vpbroadcastq -0x1f81de(%rip),%xmm2        # 5cca8 <__abi_tag+0x5c9ac>
+  254e84:	e0 ff 
+  254e86:	c5 f1 eb ca          	vpor   %xmm2,%xmm1,%xmm1
+  254e8a:	c5 f1 5c ca          	vsubpd %xmm2,%xmm1,%xmm1
+  254e8e:	c5 f9 5e c1          	vdivpd %xmm1,%xmm0,%xmm0
+  254e92:	c5 f1 57 c9          	vxorpd %xmm1,%xmm1,%xmm1
+  254e96:	c4 e2 71 37 c8       	vpcmpgtq %xmm0,%xmm1,%xmm1
+  254e9b:	c5 f1 73 d1 01       	vpsrlq $0x1,%xmm1,%xmm1
+  254ea0:	c5 f1 ef c0          	vpxor  %xmm0,%xmm1,%xmm0
+  254ea4:	c4 c1 f9 6e c8       	vmovq  %r8,%xmm1
+  254ea9:	c4 e2 79 59 c9       	vpbroadcastq %xmm1,%xmm1
+  254eae:	48 39 f8             	cmp    %rdi,%rax
+  254eb1:	41 0f 92 c0          	setb   %r8b
+  254eb5:	48 39 c8             	cmp    %rcx,%rax
+  254eb8:	0f 92 c0             	setb   %al
+  254ebb:	c5 f9 6e d0          	vmovd  %eax,%xmm2
+  254ebf:	c4 c3 69 20 d0 08    	vpinsrb $0x8,%r8d,%xmm2,%xmm2
+  254ec5:	c4 e2 71 29 d8       	vpcmpeqq %xmm0,%xmm1,%xmm3
+  254eca:	c4 e2 79 37 c9       	vpcmpgtq %xmm1,%xmm0,%xmm1
+  254ecf:	c5 e9 73 f2 3f       	vpsllq $0x3f,%xmm2,%xmm2
+  254ed4:	c4 e3 71 4b ca 30    	vblendvpd %xmm3,%xmm2,%xmm1,%xmm1
+  254eda:	c5 79 50 c1          	vmovmskpd %xmm1,%r8d
+  254ede:	45 89 c1             	mov    %r8d,%r9d
+  254ee1:	41 d0 e9             	shr    $1,%r9b
+  254ee4:	45 89 c2             	mov    %r8d,%r10d
+  254ee7:	41 80 e2 01          	and    $0x1,%r10b
+  254eeb:	4c 89 f0             	mov    %r14,%rax
+  254eee:	45 38 ca             	cmp    %r9b,%r10b
+  254ef1:	75 45                	jne    254f38 <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x1f8>
+  254ef3:	c4 e1 f9 7e c0       	vmovq  %xmm0,%rax
+  254ef8:	c4 c3 f9 16 c1 01    	vpextrq $0x1,%xmm0,%r9
+  254efe:	45 31 d2             	xor    %r10d,%r10d
+  254f01:	48 39 f9             	cmp    %rdi,%rcx
+  254f04:	41 0f 92 c2          	setb   %r10b
+  254f08:	31 c9                	xor    %ecx,%ecx
+  254f0a:	4c 39 c8             	cmp    %r9,%rax
+  254f0d:	0f 9c c1             	setl   %cl
+  254f10:	41 0f 44 ca          	cmove  %r10d,%ecx
+  254f14:	41 30 c8             	xor    %cl,%r8b
+  254f17:	41 f6 c0 01          	test   $0x1,%r8b
+  254f1b:	48 0f 45 f2          	cmovne %rdx,%rsi
+  254f1f:	48 89 f0             	mov    %rsi,%rax
+  254f22:	eb 14                	jmp    254f38 <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x1f8>
+  254f24:	66 66 66 2e 0f 1f 84 	data16 data16 cs nopw 0x0(%rax,%rax,1)
+  254f2b:	00 00 00 00 00 
+  254f30:	4c 89 f7             	mov    %r14,%rdi
+  254f33:	e8 c8 0c 00 00       	call   255c00 <core::slice::sort::shared::pivot::median3_rec::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>>
+  254f38:	ff cd                	dec    %ebp
+  254f3a:	89 6c 24 24          	mov    %ebp,0x24(%rsp)
+  254f3e:	4c 29 f0             	sub    %r14,%rax
+  254f41:	4d 85 ff             	test   %r15,%r15
+  254f44:	0f 84 80 00 00 00    	je     254fca <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x28a>
+  254f4a:	c4 c1 7a 10 47 08    	vmovss 0x8(%r15),%xmm0
+  254f50:	c4 c3 79 21 44 06 08 	vinsertps $0x10,0x8(%r14,%rax,1),%xmm0,%xmm0
+  254f57:	10 
+  254f58:	c5 f8 5a c0          	vcvtps2pd %xmm0,%xmm0
+  254f5c:	c4 c1 79 6e 4f 0c    	vmovd  0xc(%r15),%xmm1
+  254f62:	c4 c3 71 22 4c 06 0c 	vpinsrd $0x1,0xc(%r14,%rax,1),%xmm1,%xmm1
+  254f69:	01 
+  254f6a:	c4 e2 71 3f 4c 24 30 	vpmaxud 0x30(%rsp),%xmm1,%xmm1
+  254f71:	c4 e2 79 35 c9       	vpmovzxdq %xmm1,%xmm1
+  254f76:	c4 e2 79 59 15 29 7d 	vpbroadcastq -0x1f82d7(%rip),%xmm2        # 5cca8 <__abi_tag+0x5c9ac>
+  254f7d:	e0 ff 
+  254f7f:	c5 f1 eb ca          	vpor   %xmm2,%xmm1,%xmm1
+  254f83:	c5 f1 5c ca          	vsubpd %xmm2,%xmm1,%xmm1
+  254f87:	c5 f9 5e c1          	vdivpd %xmm1,%xmm0,%xmm0
+  254f8b:	c5 f1 57 c9          	vxorpd %xmm1,%xmm1,%xmm1
+  254f8f:	c4 e2 71 37 c8       	vpcmpgtq %xmm0,%xmm1,%xmm1
+  254f94:	c5 f1 73 d1 01       	vpsrlq $0x1,%xmm1,%xmm1
+  254f99:	c5 f1 ef c0          	vpxor  %xmm0,%xmm1,%xmm0
+  254f9d:	c4 e1 f9 7e c1       	vmovq  %xmm0,%rcx
+  254fa2:	c4 e3 f9 16 c2 01    	vpextrq $0x1,%xmm0,%rdx
+  254fa8:	49 8b 37             	mov    (%r15),%rsi
+  254fab:	31 ff                	xor    %edi,%edi
+  254fad:	49 3b 34 06          	cmp    (%r14,%rax,1),%rsi
+  254fb1:	40 0f 92 c7          	setb   %dil
+  254fb5:	31 f6                	xor    %esi,%esi
+  254fb7:	48 39 d1             	cmp    %rdx,%rcx
+  254fba:	40 0f 9c c6          	setl   %sil
+  254fbe:	0f 45 fe             	cmovne %esi,%edi
+  254fc1:	40 84 ff             	test   %dil,%dil
+  254fc4:	0f 84 76 02 00 00    	je     255240 <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x500>
+  254fca:	4c 89 7c 24 28       	mov    %r15,0x28(%rsp)
+  254fcf:	49 8b 4e 10          	mov    0x10(%r14),%rcx
+  254fd3:	48 89 4c 24 10       	mov    %rcx,0x10(%rsp)
+  254fd8:	c4 c1 78 10 06       	vmovups (%r14),%xmm0
+  254fdd:	c5 f8 29 04 24       	vmovaps %xmm0,(%rsp)
+  254fe2:	49 8b 4c 06 10       	mov    0x10(%r14,%rax,1),%rcx
+  254fe7:	c4 c1 78 10 04 06    	vmovups (%r14,%rax,1),%xmm0
+  254fed:	c4 c1 78 11 06       	vmovups %xmm0,(%r14)
+  254ff2:	49 89 4e 10          	mov    %rcx,0x10(%r14)
+  254ff6:	48 8b 4c 24 10       	mov    0x10(%rsp),%rcx
+  254ffb:	49 89 4c 06 10       	mov    %rcx,0x10(%r14,%rax,1)
+  255000:	c5 f8 28 04 24       	vmovaps (%rsp),%xmm0
+  255005:	c4 c1 78 11 04 06    	vmovups %xmm0,(%r14,%rax,1)
+  25500b:	49 8d 46 18          	lea    0x18(%r14),%rax
+  25500f:	49 8b 4e 28          	mov    0x28(%r14),%rcx
+  255013:	48 89 4c 24 10       	mov    %rcx,0x10(%rsp)
+  255018:	c4 c1 78 10 46 18    	vmovups 0x18(%r14),%xmm0
+  25501e:	c5 f8 29 04 24       	vmovaps %xmm0,(%rsp)
+  255023:	48 8d 34 dd 00 00 00 	lea    0x0(,%rbx,8),%rsi
+  25502a:	00 
+  25502b:	4c 8d 04 76          	lea    (%rsi,%rsi,2),%r8
+  25502f:	4d 01 f0             	add    %r14,%r8
+  255032:	49 8d 4e 30          	lea    0x30(%r14),%rcx
+  255036:	c4 c1 7a 10 46 08    	vmovss 0x8(%r14),%xmm0
+  25503c:	c5 fa 5a c0          	vcvtss2sd %xmm0,%xmm0,%xmm0
+  255040:	41 8b 56 0c          	mov    0xc(%r14),%edx
+  255044:	83 fa 01             	cmp    $0x1,%edx
+  255047:	83 d2 00             	adc    $0x0,%edx
+  25504a:	c4 e1 83 2a ca       	vcvtsi2sd %rdx,%xmm15,%xmm1
+  25504f:	c5 fb 5e c1          	vdivsd %xmm1,%xmm0,%xmm0
+  255053:	c4 e1 f9 7e c7       	vmovq  %xmm0,%rdi
+  255058:	48 89 fa             	mov    %rdi,%rdx
+  25505b:	48 c1 fa 3f          	sar    $0x3f,%rdx
+  25505f:	48 d1 ea             	shr    $1,%rdx
+  255062:	48 31 fa             	xor    %rdi,%rdx
+  255065:	49 8b 3e             	mov    (%r14),%rdi
+  255068:	4c 8d 2c 76          	lea    (%rsi,%rsi,2),%r13
+  25506c:	49 83 c5 b8          	add    $0xffffffffffffffb8,%r13
+  255070:	4c 8d 1c 76          	lea    (%rsi,%rsi,2),%r11
+  255074:	49 83 c3 d0          	add    $0xffffffffffffffd0,%r11
+  255078:	31 f6                	xor    %esi,%esi
+  25507a:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+  255080:	49 89 f1             	mov    %rsi,%r9
+  255083:	c5 fa 10 41 08       	vmovss 0x8(%rcx),%xmm0
+  255088:	c5 fa 5a c0          	vcvtss2sd %xmm0,%xmm0,%xmm0
+  25508c:	8b 71 0c             	mov    0xc(%rcx),%esi
+  25508f:	83 fe 01             	cmp    $0x1,%esi
+  255092:	83 d6 00             	adc    $0x0,%esi
+  255095:	c4 e1 83 2a ce       	vcvtsi2sd %rsi,%xmm15,%xmm1
+  25509a:	c5 fb 5e c1          	vdivsd %xmm1,%xmm0,%xmm0
+  25509e:	c4 e1 f9 7e c6       	vmovq  %xmm0,%rsi
+  2550a3:	49 89 f2             	mov    %rsi,%r10
+  2550a6:	49 c1 fa 3f          	sar    $0x3f,%r10
+  2550aa:	49 d1 ea             	shr    $1,%r10
+  2550ad:	49 31 f2             	xor    %rsi,%r10
+  2550b0:	31 f6                	xor    %esi,%esi
+  2550b2:	48 39 39             	cmp    %rdi,(%rcx)
+  2550b5:	40 0f 92 c6          	setb   %sil
+  2550b9:	31 ed                	xor    %ebp,%ebp
+  2550bb:	49 39 d2             	cmp    %rdx,%r10
+  2550be:	40 0f 9c c5          	setl   %bpl
+  2550c2:	0f 45 f5             	cmovne %ebp,%esi
+  2550c5:	4f 8d 14 49          	lea    (%r9,%r9,2),%r10
+  2550c9:	4e 8b 7c d0 10       	mov    0x10(%rax,%r10,8),%r15
+  2550ce:	c4 a1 78 10 04 d0    	vmovups (%rax,%r10,8),%xmm0
+  2550d4:	c5 f8 11 41 e8       	vmovups %xmm0,-0x18(%rcx)
+  2550d9:	4c 89 79 f8          	mov    %r15,-0x8(%rcx)
+  2550dd:	4c 8b 79 10          	mov    0x10(%rcx),%r15
+  2550e1:	4e 89 7c d0 10       	mov    %r15,0x10(%rax,%r10,8)
+  2550e6:	c5 fa 6f 01          	vmovdqu (%rcx),%xmm0
+  2550ea:	c4 a1 7a 7f 04 d0    	vmovdqu %xmm0,(%rax,%r10,8)
+  2550f0:	40 0f b6 f6          	movzbl %sil,%esi
+  2550f4:	4c 01 ce             	add    %r9,%rsi
+  2550f7:	48 83 c1 18          	add    $0x18,%rcx
+  2550fb:	4d 89 e9             	mov    %r13,%r9
+  2550fe:	49 83 c5 e8          	add    $0xffffffffffffffe8,%r13
+  255102:	4d 89 da             	mov    %r11,%r10
+  255105:	49 83 c3 e8          	add    $0xffffffffffffffe8,%r11
+  255109:	4c 39 c1             	cmp    %r8,%rcx
+  25510c:	0f 82 6e ff ff ff    	jb     255080 <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x340>
+  255112:	66 66 66 66 66 2e 0f 	data16 data16 data16 data16 cs nopw 0x0(%rax,%rax,1)
+  255119:	1f 84 00 00 00 00 00 
+  255120:	4d 85 c9             	test   %r9,%r9
+  255123:	49 89 c8             	mov    %rcx,%r8
+  255126:	4d 0f 44 c4          	cmove  %r12,%r8
+  25512a:	c4 c1 7a 10 40 08    	vmovss 0x8(%r8),%xmm0
+  255130:	c5 fa 5a c0          	vcvtss2sd %xmm0,%xmm0,%xmm0
+  255134:	45 8b 58 0c          	mov    0xc(%r8),%r11d
+  255138:	41 83 fb 01          	cmp    $0x1,%r11d
+  25513c:	41 83 d3 00          	adc    $0x0,%r11d
+  255140:	c4 c1 83 2a cb       	vcvtsi2sd %r11,%xmm15,%xmm1
+  255145:	c5 fb 5e c1          	vdivsd %xmm1,%xmm0,%xmm0
+  255149:	c4 c1 f9 7e c3       	vmovq  %xmm0,%r11
+  25514e:	4d 89 dd             	mov    %r11,%r13
+  255151:	49 c1 fd 3f          	sar    $0x3f,%r13
+  255155:	49 d1 ed             	shr    $1,%r13
+  255158:	4d 31 dd             	xor    %r11,%r13
+  25515b:	45 31 db             	xor    %r11d,%r11d
+  25515e:	49 39 38             	cmp    %rdi,(%r8)
+  255161:	41 0f 92 c3          	setb   %r11b
+  255165:	48 89 f5             	mov    %rsi,%rbp
+  255168:	48 8d 34 76          	lea    (%rsi,%rsi,2),%rsi
+  25516c:	c5 f8 10 04 f0       	vmovups (%rax,%rsi,8),%xmm0
+  255171:	4c 8b 7c f0 10       	mov    0x10(%rax,%rsi,8),%r15
+  255176:	4c 89 79 f8          	mov    %r15,-0x8(%rcx)
+  25517a:	c5 f8 11 41 e8       	vmovups %xmm0,-0x18(%rcx)
+  25517f:	4d 8b 78 10          	mov    0x10(%r8),%r15
+  255183:	4c 89 7c f0 10       	mov    %r15,0x10(%rax,%rsi,8)
+  255188:	45 31 ff             	xor    %r15d,%r15d
+  25518b:	49 39 d5             	cmp    %rdx,%r13
+  25518e:	41 0f 9c c7          	setl   %r15b
+  255192:	c4 c1 7a 6f 00       	vmovdqu (%r8),%xmm0
+  255197:	c5 fa 7f 04 f0       	vmovdqu %xmm0,(%rax,%rsi,8)
+  25519c:	45 0f 45 df          	cmovne %r15d,%r11d
+  2551a0:	41 0f b6 f3          	movzbl %r11b,%esi
+  2551a4:	48 01 ee             	add    %rbp,%rsi
+  2551a7:	48 83 c1 18          	add    $0x18,%rcx
+  2551ab:	49 83 c1 e8          	add    $0xffffffffffffffe8,%r9
+  2551af:	49 83 c2 e8          	add    $0xffffffffffffffe8,%r10
+  2551b3:	0f 85 67 ff ff ff    	jne    255120 <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x3e0>
+  2551b9:	48 39 de             	cmp    %rbx,%rsi
+  2551bc:	0f 83 6f 02 00 00    	jae    255431 <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x6f1>
+  2551c2:	48 8d 04 76          	lea    (%rsi,%rsi,2),%rax
+  2551c6:	49 8b 4e 10          	mov    0x10(%r14),%rcx
+  2551ca:	48 89 4c 24 10       	mov    %rcx,0x10(%rsp)
+  2551cf:	c4 c1 78 10 06       	vmovups (%r14),%xmm0
+  2551d4:	c5 f8 29 04 24       	vmovaps %xmm0,(%rsp)
+  2551d9:	49 8b 4c c6 10       	mov    0x10(%r14,%rax,8),%rcx
+  2551de:	c4 c1 78 10 04 c6    	vmovups (%r14,%rax,8),%xmm0
+  2551e4:	c4 c1 78 11 06       	vmovups %xmm0,(%r14)
+  2551e9:	4d 8d 3c c6          	lea    (%r14,%rax,8),%r15
+  2551ed:	49 89 4e 10          	mov    %rcx,0x10(%r14)
+  2551f1:	48 8b 4c 24 10       	mov    0x10(%rsp),%rcx
+  2551f6:	49 89 4c c6 10       	mov    %rcx,0x10(%r14,%rax,8)
+  2551fb:	c5 f9 6f 04 24       	vmovdqa (%rsp),%xmm0
+  255200:	c4 c1 7a 7f 04 c6    	vmovdqu %xmm0,(%r14,%rax,8)
+  255206:	4d 8d 2c c6          	lea    (%r14,%rax,8),%r13
+  25520a:	49 83 c5 18          	add    $0x18,%r13
+  25520e:	48 89 f0             	mov    %rsi,%rax
+  255211:	48 f7 d0             	not    %rax
+  255214:	48 01 c3             	add    %rax,%rbx
+  255217:	4c 89 f7             	mov    %r14,%rdi
+  25521a:	48 8b 54 24 28       	mov    0x28(%rsp),%rdx
+  25521f:	8b 6c 24 24          	mov    0x24(%rsp),%ebp
+  255223:	89 e9                	mov    %ebp,%ecx
+  255225:	e8 16 fb ff ff       	call   254d40 <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>>
+  25522a:	4d 89 ee             	mov    %r13,%r14
+  25522d:	48 83 fb 21          	cmp    $0x21,%rbx
+  255231:	0f 83 b8 fb ff ff    	jae    254def <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0xaf>
+  255237:	e9 1e fb ff ff       	jmp    254d5a <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x1a>
+  25523c:	0f 1f 40 00          	nopl   0x0(%rax)
+  255240:	4c 01 f0             	add    %r14,%rax
+  255243:	49 8b 4e 10          	mov    0x10(%r14),%rcx
+  255247:	48 89 4c 24 10       	mov    %rcx,0x10(%rsp)
+  25524c:	c4 c1 78 10 06       	vmovups (%r14),%xmm0
+  255251:	c5 f8 29 04 24       	vmovaps %xmm0,(%rsp)
+  255256:	48 8b 48 10          	mov    0x10(%rax),%rcx
+  25525a:	c5 f8 10 00          	vmovups (%rax),%xmm0
+  25525e:	c4 c1 78 11 06       	vmovups %xmm0,(%r14)
+  255263:	49 89 4e 10          	mov    %rcx,0x10(%r14)
+  255267:	48 8b 4c 24 10       	mov    0x10(%rsp),%rcx
+  25526c:	48 89 48 10          	mov    %rcx,0x10(%rax)
+  255270:	c5 f8 28 04 24       	vmovaps (%rsp),%xmm0
+  255275:	c5 f8 11 00          	vmovups %xmm0,(%rax)
+  255279:	49 8d 46 18          	lea    0x18(%r14),%rax
+  25527d:	49 8b 4e 28          	mov    0x28(%r14),%rcx
+  255281:	48 89 4c 24 10       	mov    %rcx,0x10(%rsp)
+  255286:	c4 c1 78 10 46 18    	vmovups 0x18(%r14),%xmm0
+  25528c:	c5 f8 29 04 24       	vmovaps %xmm0,(%rsp)
+  255291:	4c 8d 04 dd 00 00 00 	lea    0x0(,%rbx,8),%r8
+  255298:	00 
+  255299:	4b 8d 3c 40          	lea    (%r8,%r8,2),%rdi
+  25529d:	4c 01 f7             	add    %r14,%rdi
+  2552a0:	49 8d 4e 30          	lea    0x30(%r14),%rcx
+  2552a4:	c4 c1 7a 10 46 08    	vmovss 0x8(%r14),%xmm0
+  2552aa:	c5 fa 5a c0          	vcvtss2sd %xmm0,%xmm0,%xmm0
+  2552ae:	41 8b 56 0c          	mov    0xc(%r14),%edx
+  2552b2:	83 fa 01             	cmp    $0x1,%edx
+  2552b5:	83 d2 00             	adc    $0x0,%edx
+  2552b8:	c4 e1 83 2a ca       	vcvtsi2sd %rdx,%xmm15,%xmm1
+  2552bd:	c5 fb 5e c1          	vdivsd %xmm1,%xmm0,%xmm0
+  2552c1:	c4 e1 f9 7e c6       	vmovq  %xmm0,%rsi
+  2552c6:	48 89 f2             	mov    %rsi,%rdx
+  2552c9:	48 c1 fa 3f          	sar    $0x3f,%rdx
+  2552cd:	48 d1 ea             	shr    $1,%rdx
+  2552d0:	48 31 f2             	xor    %rsi,%rdx
+  2552d3:	49 8b 36             	mov    (%r14),%rsi
+  2552d6:	4f 8d 3c 40          	lea    (%r8,%r8,2),%r15
+  2552da:	49 83 c7 b8          	add    $0xffffffffffffffb8,%r15
+  2552de:	4f 8d 1c 40          	lea    (%r8,%r8,2),%r11
+  2552e2:	49 83 c3 d0          	add    $0xffffffffffffffd0,%r11
+  2552e6:	45 31 c0             	xor    %r8d,%r8d
+  2552e9:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+  2552f0:	4d 89 c1             	mov    %r8,%r9
+  2552f3:	c5 fa 10 41 08       	vmovss 0x8(%rcx),%xmm0
+  2552f8:	c5 fa 5a c0          	vcvtss2sd %xmm0,%xmm0,%xmm0
+  2552fc:	44 8b 41 0c          	mov    0xc(%rcx),%r8d
+  255300:	41 83 f8 01          	cmp    $0x1,%r8d
+  255304:	41 83 d0 00          	adc    $0x0,%r8d
+  255308:	c4 c1 83 2a c8       	vcvtsi2sd %r8,%xmm15,%xmm1
+  25530d:	c5 fb 5e c1          	vdivsd %xmm1,%xmm0,%xmm0
+  255311:	c4 c1 f9 7e c0       	vmovq  %xmm0,%r8
+  255316:	4d 89 c2             	mov    %r8,%r10
+  255319:	49 c1 fa 3f          	sar    $0x3f,%r10
+  25531d:	49 d1 ea             	shr    $1,%r10
+  255320:	4d 31 c2             	xor    %r8,%r10
+  255323:	45 31 c0             	xor    %r8d,%r8d
+  255326:	48 3b 31             	cmp    (%rcx),%rsi
+  255329:	41 0f 93 c0          	setae  %r8b
+  25532d:	31 ed                	xor    %ebp,%ebp
+  25532f:	4c 39 d2             	cmp    %r10,%rdx
+  255332:	40 0f 9d c5          	setge  %bpl
+  255336:	44 0f 45 c5          	cmovne %ebp,%r8d
+  25533a:	4f 8d 14 49          	lea    (%r9,%r9,2),%r10
+  25533e:	4e 8b 6c d0 10       	mov    0x10(%rax,%r10,8),%r13
+  255343:	c4 a1 78 10 04 d0    	vmovups (%rax,%r10,8),%xmm0
+  255349:	c5 f8 11 41 e8       	vmovups %xmm0,-0x18(%rcx)
+  25534e:	4c 89 69 f8          	mov    %r13,-0x8(%rcx)
+  255352:	4c 8b 69 10          	mov    0x10(%rcx),%r13
+  255356:	4e 89 6c d0 10       	mov    %r13,0x10(%rax,%r10,8)
+  25535b:	c5 fa 6f 01          	vmovdqu (%rcx),%xmm0
+  25535f:	c4 a1 7a 7f 04 d0    	vmovdqu %xmm0,(%rax,%r10,8)
+  255365:	45 0f b6 c0          	movzbl %r8b,%r8d
+  255369:	4d 01 c8             	add    %r9,%r8
+  25536c:	48 83 c1 18          	add    $0x18,%rcx
+  255370:	4d 89 f9             	mov    %r15,%r9
+  255373:	49 83 c7 e8          	add    $0xffffffffffffffe8,%r15
+  255377:	4d 89 da             	mov    %r11,%r10
+  25537a:	49 83 c3 e8          	add    $0xffffffffffffffe8,%r11
+  25537e:	48 39 f9             	cmp    %rdi,%rcx
+  255381:	0f 82 69 ff ff ff    	jb     2552f0 <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x5b0>
+  255387:	66 0f 1f 84 00 00 00 	nopw   0x0(%rax,%rax,1)
+  25538e:	00 00 
+  255390:	4d 85 c9             	test   %r9,%r9
+  255393:	48 89 cf             	mov    %rcx,%rdi
+  255396:	49 0f 44 fc          	cmove  %r12,%rdi
+  25539a:	c5 fa 10 47 08       	vmovss 0x8(%rdi),%xmm0
+  25539f:	c5 fa 5a c0          	vcvtss2sd %xmm0,%xmm0,%xmm0
+  2553a3:	44 8b 5f 0c          	mov    0xc(%rdi),%r11d
+  2553a7:	41 83 fb 01          	cmp    $0x1,%r11d
+  2553ab:	41 83 d3 00          	adc    $0x0,%r11d
+  2553af:	c4 c1 83 2a cb       	vcvtsi2sd %r11,%xmm15,%xmm1
+  2553b4:	c5 fb 5e c1          	vdivsd %xmm1,%xmm0,%xmm0
+  2553b8:	c4 c1 f9 7e c3       	vmovq  %xmm0,%r11
+  2553bd:	4d 89 df             	mov    %r11,%r15
+  2553c0:	49 c1 ff 3f          	sar    $0x3f,%r15
+  2553c4:	49 d1 ef             	shr    $1,%r15
+  2553c7:	4d 31 df             	xor    %r11,%r15
+  2553ca:	45 31 db             	xor    %r11d,%r11d
+  2553cd:	48 3b 37             	cmp    (%rdi),%rsi
+  2553d0:	41 0f 93 c3          	setae  %r11b
+  2553d4:	4d 89 c5             	mov    %r8,%r13
+  2553d7:	4f 8d 04 40          	lea    (%r8,%r8,2),%r8
+  2553db:	c4 a1 78 10 04 c0    	vmovups (%rax,%r8,8),%xmm0
+  2553e1:	4a 8b 6c c0 10       	mov    0x10(%rax,%r8,8),%rbp
+  2553e6:	48 89 69 f8          	mov    %rbp,-0x8(%rcx)
+  2553ea:	c5 f8 11 41 e8       	vmovups %xmm0,-0x18(%rcx)
+  2553ef:	48 8b 6f 10          	mov    0x10(%rdi),%rbp
+  2553f3:	4a 89 6c c0 10       	mov    %rbp,0x10(%rax,%r8,8)
+  2553f8:	31 ed                	xor    %ebp,%ebp
+  2553fa:	4c 39 fa             	cmp    %r15,%rdx
+  2553fd:	40 0f 9d c5          	setge  %bpl
+  255401:	c5 fa 6f 07          	vmovdqu (%rdi),%xmm0
+  255405:	c4 a1 7a 7f 04 c0    	vmovdqu %xmm0,(%rax,%r8,8)
+  25540b:	44 0f 45 dd          	cmovne %ebp,%r11d
+  25540f:	45 0f b6 c3          	movzbl %r11b,%r8d
+  255413:	4d 01 e8             	add    %r13,%r8
+  255416:	48 83 c1 18          	add    $0x18,%rcx
+  25541a:	49 83 c1 e8          	add    $0xffffffffffffffe8,%r9
+  25541e:	49 83 c2 e8          	add    $0xffffffffffffffe8,%r10
+  255422:	0f 85 68 ff ff ff    	jne    255390 <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x650>
+  255428:	49 39 d8             	cmp    %rbx,%r8
+  25542b:	0f 82 5f f9 ff ff    	jb     254d90 <core::slice::sort::unstable::quicksort::quicksort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x50>
+  255431:	0f 0b                	ud2
+  255433:	4c 89 f7             	mov    %r14,%rdi
+  255436:	48 89 de             	mov    %rbx,%rsi
+  255439:	48 83 c4 48          	add    $0x48,%rsp
+  25543d:	5b                   	pop    %rbx
+  25543e:	41 5c                	pop    %r12
+  255440:	41 5d                	pop    %r13
+  255442:	41 5e                	pop    %r14
+  255444:	41 5f                	pop    %r15
+  255446:	5d                   	pop    %rbp
+  255447:	e9 b4 05 00 00       	jmp    255a00 <core::slice::sort::unstable::heapsort::heapsort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>>

@@ -1,0 +1,26 @@
+   Compiling tantivy v0.27.0 (/home/pronsh/Coding/playground/search/tantivy-or-hillclimb-oct07)
+warning: unused import: `doc`
+   --> src/postings/segment_postings.rs:543:17
+    |
+543 |     use crate::{doc, DocId, Index};
+    |                 ^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `tantivy` (lib test) generated 1 warning (run `cargo fix --lib -p tantivy --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 35.45s
+     Running unittests src/lib.rs (/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/test-target/debug/deps/tantivy-95c542b621ca5120)
+ClauseState bytes=24; max-32 array payload bytes=1160
+
+thread 'query::boolean_query::or_maxscore::tests::posting_heap_full_callback_oracle_covers_n3_n32_disjoint_overlap_and_tails' (485145) panicked at src/query/term_query/term_scorer.rs:257:9:
+assertion failed: target >= self.doc()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+OR_POSTING_HEAP_LAYOUT buffer=1040 head=16 scratch=536 region=40 buffers_len=32 buffers_capacity=32 foundation=3208 array_record_payload=37000
+
+thread 'query::boolean_query::or_maxscore::tests::posting_heap_runner_up_ties_below_hi_and_at_next_region_boundary' (485150) panicked at src/query/term_query/term_scorer.rs:257:9:
+assertion failed: target >= self.doc()
+OR_BATCH_LAYOUT batch=2048 max_array_payload=3208
+
+thread 'query::boolean_query::or_maxscore::tests::posting_heap_jumps_huge_gaps_without_physical_window_refills' (485146) panicked at src/query/term_query/term_scorer.rs:257:9:
+assertion failed: target >= self.doc()
+error: test failed, to rerun pass `--lib`

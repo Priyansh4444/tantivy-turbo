@@ -1,0 +1,470 @@
+diff --git i/src/query/boolean_query/or_maxscore.rs w/src/query/boolean_query/or_maxscore.rs
+index d5cf67739..1f7ba6145 100644
+--- i/src/query/boolean_query/or_maxscore.rs
++++ w/src/query/boolean_query/or_maxscore.rs
+@@ -57,6 +57,23 @@ type RegionChoice = (DocId, usize, usize, u64);
+ #[cfg(test)]
+ type GlobalPrefixState = (DocId, u32, usize, u64, usize);
+ 
++#[cfg(test)]
++#[derive(Clone, Debug)]
++struct RequiredGapObservation {
++    lo: DocId,
++    hi: DocId,
++    trigger: DocId,
++    target: DocId,
++    optional_doc: DocId,
++    driver_doc: DocId,
++    batch_index: usize,
++    batch_len: usize,
++    next_index: usize,
++    bound: Option<u32>,
++    threshold: u32,
++    cache_built: bool,
++}
++
+ #[cfg(test)]
+ thread_local! {
+     // Test-only region evidence; no observer or counter exists in release.
+@@ -64,6 +81,8 @@ thread_local! {
+         const { std::cell::RefCell::new(None) };
+     static GLOBAL_PREFIX_STATES: std::cell::RefCell<Option<Vec<GlobalPrefixState>>> =
+         const { std::cell::RefCell::new(None) };
++    static REQUIRED_GAPS: std::cell::RefCell<Option<Vec<RequiredGapObservation>>> =
++        const { std::cell::RefCell::new(None) };
+     static BATCH_LENGTHS: std::cell::RefCell<Option<Vec<usize>>> =
+         const { std::cell::RefCell::new(None) };
+ }
+@@ -290,9 +309,12 @@ pub(crate) fn or_maxscore(
+         // The buffered phase retains the current certified partition. Cursor
+         // docs always mean first unread; batch docs own the replay candidates.
+         let single_essential = num_terms - first_essential == 1;
++        // Bounds and rank stay fixed in this region. A later threshold rise can
++        // certify a previously failed first-optional requirement.
++        let mut required_other_bound: Option<Score> = None;
+         let mut batch_len = 0;
+         let mut batch_index = 0;
+-        loop {
++        'candidates: loop {
+             let doc = if single_essential {
+                 if batch_index == batch_len {
+                     batch_len = clauses[first_essential].fill_scored_batch(
+@@ -356,6 +378,93 @@ pub(crate) fn or_maxscore(
+                     clause.assert_coherent(&scorers);
+                     contributions[clause.ordinal] = leaf;
+                     known += f64::from(leaf);
++                } else if single_essential && rank + 1 == first_essential {
++                    // The ordinary seek owns this real cursor. Only pending
++                    // batch entries strictly before it can be skipped.
++                    let optional_doc = clause.doc;
++                    let target = optional_doc.min(hi);
++                    // A trigger-only gap saves no later candidate work. Avoid
++                    // both the bound pass and its cache check in that case.
++                    if batch_index + 1 < batch_len && batch.docs[batch_index + 1] < target {
++                        #[cfg(test)]
++                        let cache_built = required_other_bound.is_none();
++                        let other_bound = *required_other_bound.get_or_insert_with(|| {
++                            let mut other_sum = 0.0f64;
++                            for (other_rank, other_clause) in clauses.iter().enumerate() {
++                                if other_rank != rank {
++                                    other_sum += f64::from(other_clause.local_max);
++                                }
++                            }
++                            let bound = upper_bound.score(other_sum);
++                            #[cfg(test)]
++                            {
++                                // The generic helper and a separate from-zero
++                                // fold are independent of the cached value.
++                                let mut independent = 0.0f64;
++                                for (other_rank, other_clause) in clauses.iter().enumerate() {
++                                    if other_rank != rank {
++                                        independent += f64::from(other_clause.local_max);
++                                    }
++                                }
++                                let generic = crate::query::score_combiner::ScoreSumUpperBound::new(
++                                    num_terms,
++                                );
++                                assert_eq!(bound.to_bits(), generic.score(independent).to_bits());
++                            }
++                            bound
++                        });
++                        let next_index = if other_bound <= threshold {
++                            let skipped = batch.docs[batch_index..batch_len]
++                                .partition_point(|&pending| pending < target);
++                            debug_assert!(skipped >= 2);
++                            batch_index + skipped
++                        } else {
++                            batch_index
++                        };
++                        #[cfg(test)]
++                        REQUIRED_GAPS.with(|observations| {
++                            if let Some(observations) = observations.borrow_mut().as_mut() {
++                                observations.push(RequiredGapObservation {
++                                    lo,
++                                    hi,
++                                    trigger: doc,
++                                    target,
++                                    optional_doc,
++                                    driver_doc: clauses[first_essential].doc,
++                                    batch_index,
++                                    batch_len,
++                                    next_index,
++                                    bound: Some(other_bound.to_bits()),
++                                    threshold: threshold.to_bits(),
++                                    cache_built,
++                                });
++                            }
++                        });
++                        if next_index != batch_index {
++                            batch_index = next_index;
++                            continue 'candidates;
++                        }
++                    } else {
++                        #[cfg(test)]
++                        REQUIRED_GAPS.with(|observations| {
++                            if let Some(observations) = observations.borrow_mut().as_mut() {
++                                observations.push(RequiredGapObservation {
++                                    lo,
++                                    hi,
++                                    trigger: doc,
++                                    target,
++                                    optional_doc,
++                                    driver_doc: clauses[first_essential].doc,
++                                    batch_index,
++                                    batch_len,
++                                    next_index: batch_index,
++                                    bound: None,
++                                    threshold: threshold.to_bits(),
++                                    cache_built: false,
++                                });
++                            }
++                        });
++                    }
+                 }
+             }
+             if competitive {
+@@ -491,6 +600,324 @@ mod tests {
+         (actual, states, choices)
+     }
+ 
++    // These helpers create real compressed full blocks/tails. Expected callback
++    // scores always come from BufferedUnionScorer, not from the gap certificate.
++    fn required_gap_fixture(
++        num_terms: usize,
++        driver_len: DocId,
++        optional_docs: &[DocId],
++        native: bool,
++    ) -> (Vec<TermScorer>, Score) {
++        let norms = vec![1; 2048];
++        let driver: Vec<_> = (0..driver_len).map(|doc| (doc, 1000)).collect();
++        let optional: Vec<_> = optional_docs.iter().map(|&doc| (doc, 1000)).collect();
++        let weak: Vec<_> = (0..1024).map(|doc| (doc, 1)).collect();
++        let make = |postings: &[(DocId, u32)], boost| {
++            let weight = if native {
++                Bm25Weight::for_native_block_bounds(1.0).boost_by(boost)
++            } else {
++                Bm25Weight::new_without_explain(1.0, 1.0).boost_by(boost)
++            };
++            assert!(weight.has_safe_score_bounds());
++            TermScorer::create_for_test(postings, &norms, weight)
++        };
++        let mut scorers = vec![make(&driver, 128.0), make(&optional, 1.0)];
++        for _ in 2..num_terms {
++            scorers.push(make(&weak, 0.00001));
++        }
++        let mut ranked: Vec<_> = scorers.iter().cloned().enumerate().collect();
++        ranked.sort_unstable_by(|(left_ordinal, left), (right_ordinal, right)| {
++            let priority = |scorer: &TermScorer| {
++                f64::from(scorer.max_score()) / f64::from(scorer.size_hint().max(1))
++            };
++            priority(left)
++                .total_cmp(&priority(right))
++                .then_with(|| left_ordinal.cmp(right_ordinal))
++        });
++        assert_eq!(ranked[num_terms - 1].0, 0);
++        assert_eq!(ranked[num_terms - 2].0, 1);
++        // Derive a strictness boundary from independently selected real block
++        // maxima. A partial driver has the ordinary global tail bound instead.
++        let mut excluded = 0.0f64;
++        for (rank, (_, scorer)) in ranked.iter_mut().enumerate() {
++            if rank != num_terms - 2 {
++                scorer.seek_block(0);
++                excluded += f64::from(scorer.block_max_score());
++            }
++        }
++        let threshold =
++            crate::query::score_combiner::ScoreSumUpperBound::new(num_terms).score(excluded);
++        (scorers, threshold)
++    }
++
++    fn check_required_gap_rule(
++        scorers: Vec<TermScorer>,
++        initial: Score,
++        rule: impl Fn(DocId, Score, Score) -> Score,
++    ) -> (Vec<(DocId, u32)>, Vec<RequiredGapObservation>) {
++        let run = |optimized: bool| {
++            let mut current = initial;
++            let mut accepted = Vec::new();
++            let mut callback = |doc, score: Score| {
++                accepted.push((doc, score.to_bits()));
++                let next = rule(doc, score, current);
++                assert!(next >= current);
++                current = next;
++                current
++            };
++            if optimized {
++                or_maxscore(scorers.clone(), 2048, initial, &mut callback);
++            } else {
++                let mut union =
++                    BufferedUnionScorer::build(scorers.clone(), SumCombiner::default, 2048);
++                for_each_pruning_scorer(&mut union, initial, &mut callback);
++            }
++            assert!(accepted.windows(2).all(|pair| pair[0].0 < pair[1].0));
++            accepted
++        };
++        let expected = run(false);
++        REQUIRED_GAPS.with(|observations| *observations.borrow_mut() = Some(Vec::new()));
++        let actual = run(true);
++        let observations =
++            REQUIRED_GAPS.with(|observations| observations.borrow_mut().take().unwrap());
++        assert_eq!(actual, expected);
++        for observation in &observations {
++            assert!(observation.lo <= observation.trigger);
++            assert!(observation.trigger < observation.target);
++            assert!(observation.target <= observation.hi);
++            assert!(observation.optional_doc >= observation.target);
++            assert!(observation.driver_doc >= observation.hi);
++            assert!(observation.batch_index < observation.batch_len);
++            assert!(observation.next_index <= observation.batch_len);
++            if observation.next_index != observation.batch_index {
++                assert!(observation.next_index >= observation.batch_index + 2);
++                assert!(
++                    Score::from_bits(observation.bound.unwrap())
++                        <= Score::from_bits(observation.threshold)
++                );
++            }
++        }
++        (actual, observations)
++    }
++
++    #[test]
++    fn required_gap_preserves_full_owned_batches_exclusive_end_and_literal_scores() {
++        for num_terms in [3, 32] {
++            for native in [false, true] {
++                for optional_end in [128, 129, TERMINATED] {
++                    let optional_docs = if optional_end == TERMINATED {
++                        vec![0, 64]
++                    } else {
++                        vec![0, 64, optional_end]
++                    };
++                    let (scorers, boundary) =
++                        required_gap_fixture(num_terms, 128, &optional_docs, native);
++                    for reversed in [false, true] {
++                        let ordered = if reversed {
++                            scorers.iter().rev().cloned().collect()
++                        } else {
++                            scorers.clone()
++                        };
++                        let (accepted, observations) =
++                            check_required_gap_rule(ordered.clone(), boundary, |_, _, current| {
++                                current
++                            });
++                        assert!(accepted.iter().any(|&(doc, _)| doc == 64));
++                        assert!(
++                            observations.iter().any(|observation| {
++                                observation.trigger == 1
++                                    && observation.target == 64
++                                    && observation.next_index > observation.batch_index
++                                    && observation.batch_len == 128
++                                    && observation.driver_doc > 64
++                            }),
++                            "{observations:?}"
++                        );
++                        assert!(
++                            observations.iter().any(|observation| {
++                                observation.trigger == 65
++                                    && observation.target == observation.hi
++                                    && observation.optional_doc == optional_end
++                                    && observation.next_index == observation.batch_len
++                            }),
++                            "{observations:?}"
++                        );
++                        // Full exhaustive callback/score-bit traces for actual
++                        // Top1/Top10 threshold schedules and strict neighbors.
++                        for threshold in [boundary.next_down(), boundary, boundary.next_up()] {
++                            for limit in [0, 1, 10] {
++                                check(ordered.clone(), 2048, threshold, limit);
++                            }
++                        }
++                    }
++                }
++            }
++        }
++    }
++
++    #[test]
++    fn required_gap_keeps_partial_suffix_and_skips_no_real_cursor_operation() {
++        for num_terms in [3, 32] {
++            let (scorers, boundary) = required_gap_fixture(num_terms, 65, &[0, 32, 128], false);
++            let (accepted, observations) =
++                check_required_gap_rule(scorers, boundary, |_, _, current| current);
++            assert!(accepted.iter().any(|&(doc, _)| doc == 32));
++            assert!(
++                observations.iter().any(|observation| {
++                    observation.trigger == 1
++                        && observation.target == 32
++                        && observation.batch_len == 65
++                        && observation.driver_doc == TERMINATED
++                        && observation.next_index > observation.batch_index
++                }),
++                "{observations:?}"
++            );
++            assert!(
++                observations.iter().any(|observation| {
++                    observation.trigger == 33
++                        && observation.optional_doc == observation.hi
++                        && observation.next_index == 65
++                        && observation.driver_doc == TERMINATED
++                }),
++                "{observations:?}"
++            );
++        }
++    }
++
++    #[test]
++    fn required_gap_cache_rechecks_equality_after_real_threshold_growth_and_deletions() {
++        for num_terms in [3, 32] {
++            for native in [false, true] {
++                let (scorers, boundary) =
++                    required_gap_fixture(num_terms, 128, &[0, 32, 64, 128], native);
++                for reversed in [false, true] {
++                    let ordered = if reversed {
++                        scorers.iter().rev().cloned().collect()
++                    } else {
++                        scorers.clone()
++                    };
++                    // Deleted early matches withhold the raise. Only the real
++                    // callback at64 changes the live threshold to exact bound.
++                    let (accepted, observations) = check_required_gap_rule(
++                        ordered,
++                        boundary.next_down(),
++                        |doc, _, current| {
++                            if doc >= 64 {
++                                current.max(boundary)
++                            } else {
++                                current
++                            }
++                        },
++                    );
++                    assert!(accepted.iter().any(|&(doc, _)| doc == 0));
++                    assert!(accepted.iter().any(|&(doc, _)| doc == 32));
++                    assert!(accepted.iter().any(|&(doc, _)| doc == 64));
++                    assert!(
++                        observations.iter().any(|observation| {
++                            observation.trigger == 1
++                                && observation.cache_built
++                                && observation.bound == Some(boundary.to_bits())
++                                && observation.next_index == observation.batch_index
++                        }),
++                        "{observations:?}"
++                    );
++                    assert!(
++                        observations.iter().any(|observation| {
++                            observation.trigger == 65
++                                && !observation.cache_built
++                                && observation.bound == Some(observation.threshold)
++                                && observation.next_index == observation.batch_len
++                        }),
++                        "{observations:?}"
++                    );
++                }
++            }
++        }
++    }
++
++    #[test]
++    fn required_gap_no_future_entry_guard_and_failed_certificate_preserve_trace() {
++        for num_terms in [3, 32] {
++            let optional_docs: Vec<_> = (0..=128).step_by(2).collect();
++            let (scorers, boundary) = required_gap_fixture(num_terms, 128, &optional_docs, false);
++            let (_, observations) =
++                check_required_gap_rule(scorers, boundary, |_, _, current| current);
++            assert!(!observations.is_empty());
++            assert!(
++                observations.iter().all(|observation| {
++                    observation.bound.is_none()
++                        && !observation.cache_built
++                        && observation.next_index == observation.batch_index
++                }),
++                "{observations:?}"
++            );
++            let (scorers, boundary) = required_gap_fixture(num_terms, 128, &[0, 64, 128], false);
++            let (_, observations) =
++                check_required_gap_rule(scorers, boundary.next_down(), |_, _, current| current);
++            assert!(observations
++                .iter()
++                .any(|observation| observation.cache_built));
++            assert!(
++                observations
++                    .iter()
++                    .all(|observation| { observation.next_index == observation.batch_index }),
++                "{observations:?}"
++            );
++        }
++    }
++
++    #[test]
++    fn required_gap_discards_region_certificate_before_optional_becomes_essential() {
++        let norms = vec![1; 2048];
++        let driver: Vec<_> = (0..128).map(|doc| (doc, 1)).collect();
++        let optional: Vec<_> = [0, 64]
++            .into_iter()
++            .chain(128..512)
++            .map(|doc| (doc, if doc < 256 { 1 } else { 1000 }))
++            .collect();
++        let weak: Vec<_> = (0..1024).map(|doc| (doc, 1)).collect();
++        for num_terms in [3, 32] {
++            let mut scorers = vec![
++                fixture(&driver, &norms, 1.0),
++                fixture(&optional, &norms, 1.0),
++            ];
++            for _ in 2..num_terms {
++                scorers.push(fixture(&weak, &norms, 0.00001));
++            }
++            for reversed in [false, true] {
++                let ordered = if reversed {
++                    scorers.iter().rev().cloned().collect()
++                } else {
++                    scorers.clone()
++                };
++                let (accepted, observations) =
++                    check_required_gap_rule(ordered, 1.1, |_, _, current| current);
++                assert!(
++                    observations.iter().any(|observation| {
++                        observation.lo == 0
++                            && observation.trigger == 1
++                            && observation.target == 64
++                            && observation.next_index > observation.batch_index
++                    }),
++                    "{observations:?}"
++                );
++                let docs: Vec<_> = accepted.iter().map(|&(doc, _)| doc).collect();
++                assert_eq!(&docs[..2], &[0, 64]);
++                // The former driver is exhausted at128. These later competitive
++                // callbacks require the old optional term's new high-TF block;
++                // stale optional decoding and a retained old certificate would
++                // lose them. The canonical union supplies every raw score bit.
++                assert_eq!(&docs[2..], &(256..512).collect::<Vec<_>>());
++                assert!(observations
++                    .iter()
++                    .all(|observation| { observation.lo == 0 || observation.lo >= 128 }));
++                for limit in [0, 1, 10] {
++                    check(scorers.clone(), 2048, 1.1, limit);
++                }
++            }
++        }
++    }
++
+     #[test]
+     fn cached_global_prefix_preserves_equality_neighbors_and_large_threshold_jumps() {
+         let norms = vec![1; 2048];

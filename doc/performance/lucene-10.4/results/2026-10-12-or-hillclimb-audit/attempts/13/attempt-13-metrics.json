@@ -1,0 +1,959 @@
+{
+  "parent": {
+    "binary": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-11/tantivy_worker",
+    "binary_sha256": "e11c4939984690d2c2d781cb6ace40d5e818e3a18a3f9f558d6cbcfd62546e5d",
+    "source_commit": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+    "compiled_sources": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-11/build-final/after.json",
+    "compiled_sources_sha256": "9972db388f51e23da6de3f586e9a0f16073ce4fa675c0b354d3cf1b052a45e5f",
+    "exact_gate": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-11/verify/receipt.json",
+    "exact_gate_sha256": "35c1fe105532a1d3fe8a699c1d088437b1873793f33b01510f952441ad98a3ed"
+  },
+  "groups": {
+    "ALL": {
+      "queries": 1201,
+      "primary": {
+        "AB": 0.9732798990562038,
+        "BA": 0.964512307381809
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.028220940625695,
+          "BA": 0.9932000432224176
+        },
+        "PP": {
+          "AB": 1.0035510047860134,
+          "BA": 1.0004233906522981
+        }
+      },
+      "control_log_spread": 0.027830066728020804,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9717091395543264,
+          "TT": 1.0241465099834646,
+          "PP": 1.013352213827061
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9662688870245291,
+          "TT": 0.9605841389947685,
+          "PP": 1.0083630243109392
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9751881754847359,
+          "TT": 1.0257318593916769,
+          "PP": 1.0020249353740085
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.952574354952779,
+          "TT": 1.001781972052193,
+          "PP": 0.9909233251884019
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9743747568164107,
+          "TT": 1.0240014443445222,
+          "PP": 0.999208778230004
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9644719918903172,
+          "TT": 0.9981389121196648,
+          "PP": 0.9985493055529492
+        }
+      ]
+    },
+    "OR": {
+      "queries": 301,
+      "primary": {
+        "AB": 0.9361992803377515,
+        "BA": 0.9270302990673877
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0168822623470697,
+          "BA": 0.9743016581489723
+        },
+        "PP": {
+          "AB": 1.0020912415411671,
+          "BA": 0.9967238055900777
+        }
+      },
+      "control_log_spread": 0.026034312664809163,
+      "candidate_win_both_beyond_group_controls": true,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9326570045002217,
+          "TT": 1.0106458458932606,
+          "PP": 1.005462991205095
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.927659527125831,
+          "TT": 0.9790574858682681,
+          "PP": 0.9942053355025519
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9213412927755567,
+          "TT": 1.0166375037876174,
+          "PP": 0.9989218576811305
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9039497842199707,
+          "TT": 0.9845092749543449,
+          "PP": 0.9922917485644637
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9396145151355436,
+          "TT": 1.0139152452463482,
+          "PP": 0.9945926335601718
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9306122104579918,
+          "TT": 0.9805353826027803,
+          "PP": 0.997304040206592
+        }
+      ]
+    },
+    "OR_2": {
+      "queries": 198,
+      "primary": {
+        "AB": 1.0005739844977055,
+        "BA": 0.9901830727704916
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0370395255868816,
+          "BA": 0.9535421741984641
+        },
+        "PP": {
+          "AB": 0.9957664793369192,
+          "BA": 0.9946472894486243
+        }
+      },
+      "control_log_spread": 0.04757162398278606,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9947038883233154,
+          "TT": 1.0283641896621432,
+          "PP": 1.001872540940903
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9978678061252474,
+          "TT": 0.9219703676679081,
+          "PP": 0.9803121657184071
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9989179449822195,
+          "TT": 1.0354954522642377,
+          "PP": 0.9849753451760609
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9875622888567714,
+          "TT": 0.9788546296969276,
+          "PP": 1.004395118632877
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 1.0010722053302317,
+          "TT": 1.0280962556907924,
+          "PP": 0.9950549933873151
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9959260942389343,
+          "TT": 0.9754311300109736,
+          "PP": 1.0018818000937275
+        }
+      ]
+    },
+    "OR_3PLUS": {
+      "queries": 103,
+      "primary": {
+        "AB": 0.9194630977039634,
+        "BA": 0.91058717188682
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0114080749603032,
+          "BA": 0.9801743393412784
+        },
+        "PP": {
+          "AB": 1.0037011181163944,
+          "BA": 0.9972552731974388
+        }
+      },
+      "control_log_spread": 0.020024825852346623,
+      "candidate_win_both_beyond_group_controls": true,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9169108365303327,
+          "TT": 1.005898161274741,
+          "PP": 1.0063604369042594
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9097806098891538,
+          "TT": 0.9935927544232263,
+          "PP": 0.9977710758036848
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9017205067464817,
+          "TT": 1.0115224929567193,
+          "PP": 1.0024744632499287
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.8823766735488382,
+          "TT": 0.9860662712402034,
+          "PP": 0.9892897064649556
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9236407020979432,
+          "TT": 1.0100652631110445,
+          "PP": 0.9944768375094163
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9140030204726383,
+          "TT": 0.9819350469891451,
+          "PP": 0.9961454769086291
+        }
+      ]
+    },
+    "AND": {
+      "queries": 300,
+      "primary": {
+        "AB": 1.0012815342994406,
+        "BA": 0.9824992598628877
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.08158912110022,
+          "BA": 1.0334323814934412
+        },
+        "PP": {
+          "AB": 1.0095259135998826,
+          "BA": 0.9969144547422529
+        }
+      },
+      "control_log_spread": 0.07843136810159661,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9994854203346945,
+          "TT": 1.096424200481943,
+          "PP": 1.0091897229988647
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9856053008389201,
+          "TT": 1.0229745468758924,
+          "PP": 0.9963699843318296
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 1.0019816567292787,
+          "TT": 1.0770064199925145,
+          "PP": 1.0082076920048813
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9307902057112235,
+          "TT": 1.0445942978425415,
+          "PP": 1.0008650966789467
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.996659628344357,
+          "TT": 1.0762132682117367,
+          "PP": 1.0121529036010455
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.983461590388124,
+          "TT": 1.038536298273231,
+          "PP": 0.9922154648813559
+        }
+      ]
+    },
+    "TERM": {
+      "queries": 300,
+      "primary": {
+        "AB": 1.002726793697163,
+        "BA": 1.0122418073790347
+      },
+      "controls": {
+        "TT": {
+          "AB": 0.9999216804333844,
+          "BA": 0.9944403372773077
+        },
+        "PP": {
+          "AB": 1.0055932687918343,
+          "BA": 1.0122853231697775
+        }
+      },
+      "control_log_spread": 0.012210471018776078,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9990653155074086,
+          "TT": 0.9952057797061652,
+          "PP": 0.9988840011209151
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 1.0079969212347766,
+          "TT": 0.9875006645969453,
+          "PP": 1.0108648347711435
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 1.0027371777778702,
+          "TT": 0.9957845270476104,
+          "PP": 1.0043065839897602
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 1.0181969390965586,
+          "TT": 1.0055221374690246,
+          "PP": 1.0137292175456836
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 1.0022798522145948,
+          "TT": 0.9967165032112961,
+          "PP": 0.9985342809230597
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 1.0102185655513893,
+          "TT": 1.0031605316887695,
+          "PP": 1.008199304761028
+        }
+      ]
+    },
+    "PHRASE": {
+      "queries": 300,
+      "primary": {
+        "AB": 0.9842570591390105,
+        "BA": 0.9799495947685308
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0094559839473058,
+          "BA": 0.9849558864826183
+        },
+        "PP": {
+          "AB": 1.001402193859487,
+          "BA": 1.0044724404677088
+        }
+      },
+      "control_log_spread": 0.015158424109773696,
+      "candidate_win_both_beyond_group_controls": true,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.984269093307818,
+          "TT": 0.9977814431950084,
+          "PP": 1.0219595860281956
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9822195712287208,
+          "TT": 0.9134046545228266,
+          "PP": 1.0250497325346586
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9995693568540728,
+          "TT": 1.0065653659589213,
+          "PP": 1.0009527459247414
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9971382235093916,
+          "TT": 0.990908427037124,
+          "PP": 0.9836676732679043
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9859808981435869,
+          "TT": 1.0048748812893231,
+          "PP": 0.9958938129650465
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9766624099180936,
+          "TT": 0.9886057017128688,
+          "PP": 1.0023815079362104
+        }
+      ]
+    }
+  },
+  "regressions_beyond_per_query_controls": [
+    {
+      "id": "1",
+      "kind": "TERM",
+      "terms": "of",
+      "T_over_P_AB": "1.0270418752289099",
+      "T_over_P_BA": "1.0288226673180263",
+      "control_log_spread": "0.016561380339844976"
+    },
+    {
+      "id": "2",
+      "kind": "TERM",
+      "terms": "and",
+      "T_over_P_AB": "1.0299091325680947",
+      "T_over_P_BA": "1.0168024213290603",
+      "control_log_spread": "0.01535330910290491"
+    },
+    {
+      "id": "4",
+      "kind": "TERM",
+      "terms": "states",
+      "T_over_P_AB": "1.0165021618176493",
+      "T_over_P_BA": "1.0210480951560077",
+      "control_log_spread": "0.0035582076273183664"
+    },
+    {
+      "id": "21",
+      "kind": "TERM",
+      "terms": "and",
+      "T_over_P_AB": "1.0198358413132695",
+      "T_over_P_BA": "1.0237731439870574",
+      "control_log_spread": "0.009072968518518599"
+    },
+    {
+      "id": "70",
+      "kind": "TERM",
+      "terms": "having",
+      "T_over_P_AB": "1.0311130303357443",
+      "T_over_P_BA": "1.0367014046216583",
+      "control_log_spread": "0.004593761432442887"
+    },
+    {
+      "id": "83",
+      "kind": "TERM",
+      "terms": "is",
+      "T_over_P_AB": "1.0268269279902797",
+      "T_over_P_BA": "1.0306192829117717",
+      "control_log_spread": "0.002408601414128745"
+    },
+    {
+      "id": "89",
+      "kind": "TERM",
+      "terms": "on",
+      "T_over_P_AB": "1.020018237255293",
+      "T_over_P_BA": "1.016262552045065",
+      "control_log_spread": "0.01296234432339033"
+    },
+    {
+      "id": "105",
+      "kind": "TERM",
+      "terms": "school",
+      "T_over_P_AB": "1.0146698378692423",
+      "T_over_P_BA": "1.0091233637445458",
+      "control_log_spread": "0.007724126780869909"
+    },
+    {
+      "id": "117",
+      "kind": "TERM",
+      "terms": "west",
+      "T_over_P_AB": "1.0135079014666346",
+      "T_over_P_BA": "1.0275956163901236",
+      "control_log_spread": "0.010508875387385378"
+    },
+    {
+      "id": "174",
+      "kind": "TERM",
+      "terms": "little",
+      "T_over_P_AB": "1.0184571131796571",
+      "T_over_P_BA": "1.0394342393819287",
+      "control_log_spread": "0.017458446343489788"
+    },
+    {
+      "id": "188",
+      "kind": "TERM",
+      "terms": "a",
+      "T_over_P_AB": "1.0343276490153634",
+      "T_over_P_BA": "1.0319945718833998",
+      "control_log_spread": "0.026198827033635807"
+    },
+    {
+      "id": "205",
+      "kind": "TERM",
+      "terms": "as",
+      "T_over_P_AB": "1.050431470108062",
+      "T_over_P_BA": "1.0285108646340129",
+      "control_log_spread": "0.021658524187338685"
+    },
+    {
+      "id": "221",
+      "kind": "TERM",
+      "terms": "south",
+      "T_over_P_AB": "1.0052957347410318",
+      "T_over_P_BA": "1.0145109003276103",
+      "control_log_spread": "0.0026760458546336427"
+    },
+    {
+      "id": "222",
+      "kind": "TERM",
+      "terms": "trendy",
+      "T_over_P_AB": "1.064526136187374",
+      "T_over_P_BA": "1.0881102228270114",
+      "control_log_spread": "0.05322437941224654"
+    },
+    {
+      "id": "241",
+      "kind": "TERM",
+      "terms": "secretary",
+      "T_over_P_AB": "1.0765644564030157",
+      "T_over_P_BA": "1.0247313569847183",
+      "control_log_spread": "0.016810313432782786"
+    },
+    {
+      "id": "243",
+      "kind": "TERM",
+      "terms": "transplant",
+      "T_over_P_AB": "1.0390644438915153",
+      "T_over_P_BA": "1.1008907471368843",
+      "control_log_spread": "0.03534917656467792"
+    },
+    {
+      "id": "244",
+      "kind": "TERM",
+      "terms": "state",
+      "T_over_P_AB": "1.0129691429294447",
+      "T_over_P_BA": "1.045294954926459",
+      "control_log_spread": "0.0055904773261747955"
+    },
+    {
+      "id": "262",
+      "kind": "TERM",
+      "terms": "test",
+      "T_over_P_AB": "1.015943246984378",
+      "T_over_P_BA": "1.0126504544338",
+      "control_log_spread": "0.011891155519321345"
+    },
+    {
+      "id": "265",
+      "kind": "TERM",
+      "terms": "high",
+      "T_over_P_AB": "1.0090647269504855",
+      "T_over_P_BA": "1.010293599421333",
+      "control_log_spread": "0.00645489805013356"
+    },
+    {
+      "id": "299",
+      "kind": "TERM",
+      "terms": "people",
+      "T_over_P_AB": "1.0178000680040802",
+      "T_over_P_BA": "1.019012248930987",
+      "control_log_spread": "0.010213755976100596"
+    },
+    {
+      "id": "319",
+      "kind": "TERM",
+      "terms": "systems",
+      "T_over_P_AB": "1.0155113246396705",
+      "T_over_P_BA": "1.0366627625091929",
+      "control_log_spread": "0.008259250546367362"
+    },
+    {
+      "id": "357",
+      "kind": "OR",
+      "terms": "who dares wins",
+      "T_over_P_AB": "1.223673243493742",
+      "T_over_P_BA": "1.3534008683068017",
+      "control_log_spread": "0.05603067609332587"
+    },
+    {
+      "id": "401",
+      "kind": "OR",
+      "terms": "battle of the bulge",
+      "T_over_P_AB": "1.80759484358268",
+      "T_over_P_BA": "1.7818976571173408",
+      "control_log_spread": "0.022188541670769134"
+    },
+    {
+      "id": "431",
+      "kind": "OR",
+      "terms": "cured of cancer",
+      "T_over_P_AB": "3.020257184148176",
+      "T_over_P_BA": "3.071254812963766",
+      "control_log_spread": "0.031095716866711632"
+    },
+    {
+      "id": "433",
+      "kind": "OR",
+      "terms": "lord of the rings",
+      "T_over_P_AB": "1.5013779717822726",
+      "T_over_P_BA": "1.5175521846099886",
+      "control_log_spread": "0.05487194454639081"
+    },
+    {
+      "id": "435",
+      "kind": "OR",
+      "terms": "helen of troy",
+      "T_over_P_AB": "4.435404883922688",
+      "T_over_P_BA": "4.004756475273136",
+      "control_log_spread": "0.052307774485918695"
+    },
+    {
+      "id": "463",
+      "kind": "OR",
+      "terms": "tallest trees in the world",
+      "T_over_P_AB": "1.0507683234858853",
+      "T_over_P_BA": "1.0893186045663432",
+      "control_log_spread": "0.03089003094614224"
+    },
+    {
+      "id": "515",
+      "kind": "OR",
+      "terms": "st petersburg high school",
+      "T_over_P_AB": "1.0466178739347634",
+      "T_over_P_BA": "1.0492283776988411",
+      "control_log_spread": "0.027883088938237627"
+    },
+    {
+      "id": "531",
+      "kind": "OR",
+      "terms": "walk the line",
+      "T_over_P_AB": "1.2169247770929779",
+      "T_over_P_BA": "1.283823153346287",
+      "control_log_spread": "0.04821931405409802"
+    },
+    {
+      "id": "567",
+      "kind": "OR",
+      "terms": "critical care nurse",
+      "T_over_P_AB": "1.232841637563423",
+      "T_over_P_BA": "1.142789901212536",
+      "control_log_spread": "0.08657604740180036"
+    },
+    {
+      "id": "569",
+      "kind": "OR",
+      "terms": "the breakfast club",
+      "T_over_P_AB": "1.5459735671702994",
+      "T_over_P_BA": "1.4627458488660638",
+      "control_log_spread": "0.06806404771475803"
+    },
+    {
+      "id": "583",
+      "kind": "OR",
+      "terms": "ellen degeneres show",
+      "T_over_P_AB": "2.1252753921452223",
+      "T_over_P_BA": "2.0559095580678313",
+      "control_log_spread": "0.01814526969635352"
+    },
+    {
+      "id": "585",
+      "kind": "OR",
+      "terms": "jaguar x type",
+      "T_over_P_AB": "1.543817120269439",
+      "T_over_P_BA": "1.625624157199295",
+      "control_log_spread": "0.03011295280700751"
+    },
+    {
+      "id": "593",
+      "kind": "OR",
+      "terms": "little brown jug",
+      "T_over_P_AB": "1.3610683630184823",
+      "T_over_P_BA": "1.347763394944465",
+      "control_log_spread": "0.08206503582345885"
+    },
+    {
+      "id": "609",
+      "kind": "OR",
+      "terms": "pump it up",
+      "T_over_P_AB": "1.9689602501365941",
+      "T_over_P_BA": "1.9725580992951044",
+      "control_log_spread": "0.0701200737489561"
+    },
+    {
+      "id": "615",
+      "kind": "OR",
+      "terms": "big boss man",
+      "T_over_P_AB": "1.1992954699726244",
+      "T_over_P_BA": "1.1086405905790329",
+      "control_log_spread": "0.035566000115307465"
+    },
+    {
+      "id": "631",
+      "kind": "OR",
+      "terms": "worcester state college",
+      "T_over_P_AB": "1.3724238418554346",
+      "T_over_P_BA": "1.2651580738573605",
+      "control_log_spread": "0.1163717807719305"
+    },
+    {
+      "id": "653",
+      "kind": "OR",
+      "terms": "miami dade college",
+      "T_over_P_AB": "1.5387961423345526",
+      "T_over_P_BA": "1.4606139269258225",
+      "control_log_spread": "0.048913509722153956"
+    },
+    {
+      "id": "655",
+      "kind": "OR",
+      "terms": "time in denver",
+      "T_over_P_AB": "1.478409066170731",
+      "T_over_P_BA": "1.582130716632091",
+      "control_log_spread": "0.09946518390906095"
+    },
+    {
+      "id": "689",
+      "kind": "OR",
+      "terms": "bismarck state college",
+      "T_over_P_AB": "2.4216741451985735",
+      "T_over_P_BA": "2.311674793184682",
+      "control_log_spread": "0.03324035410690076"
+    },
+    {
+      "id": "691",
+      "kind": "OR",
+      "terms": "the oregonian newspaper",
+      "T_over_P_AB": "3.2975563706980258",
+      "T_over_P_BA": "3.194407845804025",
+      "control_log_spread": "0.06882834434066194"
+    },
+    {
+      "id": "701",
+      "kind": "OR",
+      "terms": "connecticut historical society",
+      "T_over_P_AB": "1.1770602564691823",
+      "T_over_P_BA": "1.1463703074320304",
+      "control_log_spread": "0.05161721812267514"
+    },
+    {
+      "id": "723",
+      "kind": "OR",
+      "terms": "the daily breeze",
+      "T_over_P_AB": "1.500706426338999",
+      "T_over_P_BA": "1.5235428085737013",
+      "control_log_spread": "0.02398672324989417"
+    },
+    {
+      "id": "725",
+      "kind": "OR",
+      "terms": "debra jo rupp",
+      "T_over_P_AB": "1.4011876154350287",
+      "T_over_P_BA": "1.4200409079174692",
+      "control_log_spread": "0.024042565066016406"
+    },
+    {
+      "id": "730",
+      "kind": "AND",
+      "terms": "kidney transplant",
+      "T_over_P_AB": "1.1524294801345456",
+      "T_over_P_BA": "1.0820747873112182",
+      "control_log_spread": "0.03389495338925634"
+    },
+    {
+      "id": "761",
+      "kind": "OR",
+      "terms": "ambassador of italy",
+      "T_over_P_AB": "1.3618372114647017",
+      "T_over_P_BA": "1.3624825711302075",
+      "control_log_spread": "0.15636218927183873"
+    },
+    {
+      "id": "765",
+      "kind": "OR",
+      "terms": "napa auto parts",
+      "T_over_P_AB": "1.1653717611614736",
+      "T_over_P_BA": "1.2865962782562361",
+      "control_log_spread": "0.021147904417361984"
+    },
+    {
+      "id": "791",
+      "kind": "OR",
+      "terms": "university of akron",
+      "T_over_P_AB": "3.75503100664192",
+      "T_over_P_BA": "3.637112072640464",
+      "control_log_spread": "0.06048662043181142"
+    },
+    {
+      "id": "817",
+      "kind": "OR",
+      "terms": "centerville high school",
+      "T_over_P_AB": "14.824595293314749",
+      "T_over_P_BA": "14.512867843616165",
+      "control_log_spread": "0.019975796047051773"
+    },
+    {
+      "id": "825",
+      "kind": "OR",
+      "terms": "civil war battlefields",
+      "T_over_P_AB": "1.5957182137358399",
+      "T_over_P_BA": "1.6145495286663576",
+      "control_log_spread": "0.0828262805855743"
+    },
+    {
+      "id": "827",
+      "kind": "OR",
+      "terms": "national security cutter",
+      "T_over_P_AB": "1.4390064660341828",
+      "T_over_P_BA": "1.3673413554056246",
+      "control_log_spread": "0.042321316620164244"
+    },
+    {
+      "id": "859",
+      "kind": "OR",
+      "terms": "new england aquarium",
+      "T_over_P_AB": "1.111382635169876",
+      "T_over_P_BA": "1.1620996073568919",
+      "control_log_spread": "0.053431000771850916"
+    },
+    {
+      "id": "883",
+      "kind": "OR",
+      "terms": "george r brown convention center",
+      "T_over_P_AB": "1.0261848968476015",
+      "T_over_P_BA": "1.030687848357329",
+      "control_log_spread": "0.005093621817516055"
+    },
+    {
+      "id": "889",
+      "kind": "OR",
+      "terms": "david lee roth",
+      "T_over_P_AB": "1.2951023170270977",
+      "T_over_P_BA": "1.312025211477857",
+      "control_log_spread": "0.12003943283220453"
+    },
+    {
+      "id": "905",
+      "kind": "OR",
+      "terms": "boulder city nevada",
+      "T_over_P_AB": "1.8635758507929532",
+      "T_over_P_BA": "1.5869359419375197",
+      "control_log_spread": "0.07335358958005309"
+    },
+    {
+      "id": "909",
+      "kind": "OR",
+      "terms": "niceville high school",
+      "T_over_P_AB": "9.240898893116997",
+      "T_over_P_BA": "9.137319179935478",
+      "control_log_spread": "0.008250319622147381"
+    },
+    {
+      "id": "991",
+      "kind": "PHRASE",
+      "terms": "binghamton new york",
+      "T_over_P_AB": "1.1891307333150234",
+      "T_over_P_BA": "1.1411522341407971",
+      "control_log_spread": "0.12114566199416787"
+    },
+    {
+      "id": "1044",
+      "kind": "PHRASE",
+      "terms": "critical care nurse",
+      "T_over_P_AB": "1.2797485326103148",
+      "T_over_P_BA": "1.179100738142502",
+      "control_log_spread": "0.12204195751334149"
+    },
+    {
+      "id": "1103",
+      "kind": "PHRASE",
+      "terms": "personal chef",
+      "T_over_P_AB": "1.0602081332883502",
+      "T_over_P_BA": "1.2260160052944609",
+      "control_log_spread": "0.05324117127722526"
+    },
+    {
+      "id": "1197",
+      "kind": "PHRASE",
+      "terms": "elizabeth vargas",
+      "T_over_P_AB": "1.026536312849162",
+      "T_over_P_BA": "1.0246496798220937",
+      "control_log_spread": "0.01745329219207526"
+    }
+  ],
+  "efficiency": {
+    "candidate_file_bytes": 4770472,
+    "baseline_file_bytes": 4765928,
+    "candidate_sections": {
+      ".rodata": 458816,
+      ".text": 2602930
+    },
+    "baseline_sections": {
+      ".rodata": 458816,
+      ".text": 2598898
+    },
+    "candidate_binary_sha256": "72807b04187e358b37ba50233c91867cc11646d03435941ff6bb3ae17d10a5b0",
+    "baseline_binary_sha256": "e11c4939984690d2c2d781cb6ace40d5e818e3a18a3f9f558d6cbcfd62546e5d",
+    "index_change": false,
+    "per_region_allocation": false
+  }
+}

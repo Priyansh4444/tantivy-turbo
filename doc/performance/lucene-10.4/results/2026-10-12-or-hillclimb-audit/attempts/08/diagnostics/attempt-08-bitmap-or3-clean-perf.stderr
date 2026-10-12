@@ -1,0 +1,2 @@
+[ perf record: Woken up 32 times to write data ]
+[ perf record: Captured and wrote 0.223 MB /home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-08-bitmap-or3-clean-perf.data (4805 samples) ]

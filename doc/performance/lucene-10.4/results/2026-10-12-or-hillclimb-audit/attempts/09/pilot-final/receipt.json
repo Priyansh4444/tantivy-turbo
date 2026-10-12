@@ -1,0 +1,393 @@
+{
+  "seconds": 4.221370018000016,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 121397.58579088472,
+        "baseline_mean_ns": 118177.19705093834,
+        "ratio_mean": 1.0272505087301933,
+        "median_ratio": 0.9988858683542048
+      },
+      "BA": {
+        "candidate_mean_ns": 126394.17158176943,
+        "baseline_mean_ns": 119854.04691689007,
+        "ratio_mean": 1.0545674078858134,
+        "median_ratio": 1.0001080730573868
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 286195.2427184466,
+        "baseline_mean_ns": 274349.3009708738,
+        "ratio_mean": 1.0431783194112474,
+        "median_ratio": 0.9859724844888049
+      },
+      "BA": {
+        "candidate_mean_ns": 301647.53398058255,
+        "baseline_mean_ns": 278603.42233009706,
+        "ratio_mean": 1.082712952546513,
+        "median_ratio": 0.9921479279314366
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 40175.19306930693,
+        "baseline_mean_ns": 40425.512376237624,
+        "ratio_mean": 0.9938078878357561,
+        "median_ratio": 1.0045508291207774
+      },
+      "BA": {
+        "candidate_mean_ns": 40988.46534653466,
+        "baseline_mean_ns": 40749.88861386139,
+        "ratio_mean": 1.0058546597497229,
+        "median_ratio": 1.0009382612084592
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 917,
+      "kind": "OR",
+      "terms": [
+        "laborers",
+        "international",
+        "union",
+        "of",
+        "north",
+        "america"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2005017999345478,
+      "BA": 1.2942448869028318
+    },
+    {
+      "id": 920,
+      "kind": "OR",
+      "terms": [
+        "a",
+        "search",
+        "engine",
+        "is",
+        "an",
+        "information",
+        "retrieval",
+        "software",
+        "system",
+        "designed",
+        "to",
+        "help",
+        "find",
+        "information",
+        "stored",
+        "on",
+        "one",
+        "or",
+        "more",
+        "computer",
+        "systems"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.187861324254521,
+      "BA": 1.2788918680582073
+    },
+    {
+      "id": 471,
+      "kind": "OR",
+      "terms": [
+        "famous",
+        "quotes"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0899749654373576,
+      "BA": 1.108547912104508
+    },
+    {
+      "id": 437,
+      "kind": "OR",
+      "terms": [
+        "long",
+        "legs"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.086813692668229,
+      "BA": 1.1951410260316686
+    },
+    {
+      "id": 597,
+      "kind": "OR",
+      "terms": [
+        "carolyn",
+        "jones"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1074062692071296,
+      "BA": 1.085610652886813
+    },
+    {
+      "id": 411,
+      "kind": "OR",
+      "terms": [
+        "japan",
+        "airlines"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0850011213868256,
+      "BA": 1.151101327762433
+    },
+    {
+      "id": 755,
+      "kind": "OR",
+      "terms": [
+        "ron",
+        "keel"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1160783931357254,
+      "BA": 1.081823657508224
+    },
+    {
+      "id": 935,
+      "kind": "PHRASE",
+      "terms": [
+        "milwaukee",
+        "newspaper"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.079738968303294,
+      "BA": 1.1499937884340643
+    },
+    {
+      "id": 639,
+      "kind": "OR",
+      "terms": [
+        "chicken",
+        "noodle",
+        "soup"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1305785568340683,
+      "BA": 1.065012954610882
+    },
+    {
+      "id": 551,
+      "kind": "OR",
+      "terms": [
+        "developmental",
+        "delays"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0642361671237297,
+      "BA": 1.06467745183594
+    },
+    {
+      "id": 681,
+      "kind": "OR",
+      "terms": [
+        "costume",
+        "designers"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0691424839040777,
+      "BA": 1.0608778272154245
+    },
+    {
+      "id": 349,
+      "kind": "OR",
+      "terms": [
+        "milwaukee",
+        "newspaper"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0529696335763084,
+      "BA": 1.1254401779245506
+    },
+    {
+      "id": 795,
+      "kind": "OR",
+      "terms": [
+        "cartoon",
+        "network"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.051663787617056,
+      "BA": 1.0510683367102598
+    },
+    {
+      "id": 591,
+      "kind": "OR",
+      "terms": [
+        "dexter",
+        "michigan"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1503833564991257,
+      "BA": 1.0497838277470999
+    },
+    {
+      "id": 321,
+      "kind": "OR",
+      "terms": [
+        "griffith",
+        "observatory"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.049295125771676,
+      "BA": 1.0590763087073531
+    },
+    {
+      "id": 153,
+      "kind": "TERM",
+      "terms": [
+        "obstruction"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0492402385074053,
+      "BA": 2.451645064805583
+    },
+    {
+      "id": 493,
+      "kind": "OR",
+      "terms": [
+        "american",
+        "academy",
+        "of",
+        "child",
+        "and",
+        "adolescent",
+        "psychiatry"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0491282726540512,
+      "BA": 1.0481786240302624
+    },
+    {
+      "id": 527,
+      "kind": "OR",
+      "terms": [
+        "false",
+        "prophets"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0648052395725611,
+      "BA": 1.0468123687726665
+    },
+    {
+      "id": 615,
+      "kind": "OR",
+      "terms": [
+        "big",
+        "boss",
+        "man"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0465319365835657,
+      "BA": 1.1097405454586133
+    },
+    {
+      "id": 617,
+      "kind": "OR",
+      "terms": [
+        "gun",
+        "magazines"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0464251973422238,
+      "BA": 1.053234201923382
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791435992.1789377,
+      "loadavg": [
+        5.37939453125,
+        3.5302734375,
+        2.9462890625
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 487460 python          94.2",
+        " 467738 helium          45.5",
+        " 193666 helium          40.4",
+        "   2192 helium          19.8",
+        " 477415 t3code          13.4",
+        " 477405 t3code          10.4",
+        "  44668 vesktop          9.2",
+        "   2142 helium           7.1",
+        "  44549 vesktop          7.0",
+        "   1439 Hyprland         7.0",
+        " 450901 helium           6.2",
+        " 478723 claude           6.2"
+      ]
+    },
+    {
+      "at": 1791435995.1723864,
+      "loadavg": [
+        5.2685546875,
+        3.5380859375,
+        2.9521484375
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 487475 ps               100",
+        " 467738 helium          45.5",
+        " 193666 helium          40.4",
+        " 487460 python          23.2",
+        "   2192 helium          19.8",
+        " 477415 t3code          13.2",
+        " 477405 t3code          10.3",
+        "  44668 vesktop          9.2",
+        "   2142 helium           7.1",
+        "  44549 vesktop          7.0",
+        "   1439 Hyprland         7.0",
+        " 450901 helium           6.2"
+      ]
+    }
+  ]
+}

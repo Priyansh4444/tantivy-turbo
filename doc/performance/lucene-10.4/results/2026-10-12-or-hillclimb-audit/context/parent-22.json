@@ -1,0 +1,9 @@
+{
+  "binary": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-22/tantivy_worker",
+  "binary_sha256": "005dd61a74e1885cb3e145987fc67399d89fe662bb2409aa00a9c1d174726b84",
+  "source_commit": "3dff75c5cfddee6dab50c144839b4cec645d9dca",
+  "compiled_sources": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-22/build-final/after.json",
+  "compiled_sources_sha256": "9fcc988d9e3a32af967e8d44c10a561711539ab5657d0f217a37d428a4c3370c",
+  "exact_gate": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-22/verify/receipt.json",
+  "exact_gate_sha256": "b6ee49486343988539e074bbded8d5f5c7e1eb21feee78a7c92d4bec4cc24921"
+}

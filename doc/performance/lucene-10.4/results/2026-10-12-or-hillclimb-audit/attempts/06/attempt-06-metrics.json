@@ -1,0 +1,631 @@
+{
+  "parent": {
+    "binary": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-03/tantivy_worker",
+    "binary_sha256": "c4ab444bb759f0bc096d59eb0cfa693552840ef0a040581a1b36d9e92447b5e6",
+    "source_commit": "05835b971452bd5bda75037cec2925b7ba6785bf",
+    "compiled_sources": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-03/build-final/after.json",
+    "compiled_sources_sha256": "5d12dad9bed1bcabc22eb3d4e51d0da7213e3492a4ee2c5238681882e97fc49f",
+    "exact_gate": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-03/verify/receipt.json",
+    "exact_gate_sha256": "098f0dce6d6cdf8a5169ba5e531335c1f5f90f33942f5bad59b8e7b57858f2ed"
+  },
+  "groups": {
+    "ALL": {
+      "queries": 1201,
+      "primary": {
+        "AB": 0.9587780754953283,
+        "BA": 0.9558553383877619
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0219016607588283,
+          "BA": 0.9719924201517931
+        },
+        "PP": {
+          "AB": 1.0308042748900395,
+          "BA": 0.9788206444532049
+        }
+      },
+      "control_log_spread": 0.03033934694505932,
+      "candidate_win_both_beyond_group_controls": true,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9627001802407795,
+          "TT": 1.0201948923373232,
+          "PP": 1.0346592000495018
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9545962314667961,
+          "TT": 0.9588451904973886,
+          "PP": 0.9857757266452336
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9587621152526983,
+          "TT": 1.0347964367653024,
+          "PP": 1.0255579877928558
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9483247696337809,
+          "TT": 0.9755563454527272,
+          "PP": 0.9820405696400457
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9577876405599661,
+          "TT": 1.022014591251858,
+          "PP": 1.0224901151468213
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9552558741980829,
+          "TT": 0.9772581104430573,
+          "PP": 0.9380474206536457
+        }
+      ]
+    },
+    "OR": {
+      "queries": 301,
+      "primary": {
+        "AB": 0.8767172375886514,
+        "BA": 0.878286866803382
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.02065616860992,
+          "BA": 0.969703566690339
+        },
+        "PP": {
+          "AB": 1.037989370267093,
+          "BA": 0.9785262645850257
+        }
+      },
+      "control_log_spread": 0.03728554410079255,
+      "candidate_win_both_beyond_group_controls": true,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.8787049929503007,
+          "TT": 1.0274087476181006,
+          "PP": 1.0452009649549179
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.8700701922371961,
+          "TT": 0.9787612316510678,
+          "PP": 0.9938974072477403
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.8730183039288031,
+          "TT": 1.020129192977444,
+          "PP": 1.027620073938692
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.8783714001094015,
+          "TT": 0.9689726079162969,
+          "PP": 0.9794282404557412
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.8769541790698988,
+          "TT": 1.0172723870000855,
+          "PP": 1.0172482437377257
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.8799368529858779,
+          "TT": 0.9757068929937409,
+          "PP": 0.9232235059897819
+        }
+      ]
+    },
+    "OR_2": {
+      "queries": 198,
+      "primary": {
+        "AB": 0.9911246466290116,
+        "BA": 1.0058232500742363
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0555388135297368,
+          "BA": 0.939871189093005
+        },
+        "PP": {
+          "AB": 1.0682257709255059,
+          "BA": 0.9357075472599725
+        }
+      },
+      "control_log_spread": 0.06645230083563906,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9851149238728715,
+          "TT": 1.048792113176365,
+          "PP": 1.04377553930705
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 1.006210242312588,
+          "TT": 0.9344024999604982,
+          "PP": 0.9530472177713076
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9983456677373125,
+          "TT": 1.0471162911731435,
+          "PP": 1.0708465536074552
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 1.0042589066471317,
+          "TT": 0.950133721802101,
+          "PP": 0.9500484231209978
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9971852177372675,
+          "TT": 1.057011332311082,
+          "PP": 1.0571817806535868
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 1.0060751679599165,
+          "TT": 0.9505206398462328,
+          "PP": 0.9562183936397669
+        }
+      ]
+    },
+    "OR_3PLUS": {
+      "queries": 103,
+      "primary": {
+        "AB": 0.8513179235869295,
+        "BA": 0.8502144699829397
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.012043352707343,
+          "BA": 0.9774514585466909
+        },
+        "PP": {
+          "AB": 1.0317083478510625,
+          "BA": 0.9880460110217161
+        }
+      },
+      "control_log_spread": 0.031216018446563944,
+      "candidate_win_both_beyond_group_controls": true,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.8552712061511003,
+          "TT": 1.02217563142999,
+          "PP": 1.045501256420734
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.8406554483692725,
+          "TT": 0.99058336058414,
+          "PP": 1.002823157378368
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.8455228965473295,
+          "TT": 1.0133549475869812,
+          "PP": 1.0185502050063664
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.8504987823115505,
+          "TT": 0.9738057759775621,
+          "PP": 0.9858095688285156
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.850304405366692,
+          "TT": 1.0075005979649128,
+          "PP": 1.0105498395526227
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.8523802784150997,
+          "TT": 0.9821157066331256,
+          "PP": 0.9160563322524645
+        }
+      ]
+    },
+    "AND": {
+      "queries": 300,
+      "primary": {
+        "AB": 1.0078337625354812,
+        "BA": 1.0050146793812107
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0299235130634543,
+          "BA": 0.9695745785648167
+        },
+        "PP": {
+          "AB": 1.0349269352812995,
+          "BA": 0.9686787251067226
+        }
+      },
+      "control_log_spread": 0.034330830294352,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 1.011251324306189,
+          "TT": 1.0200770097150047,
+          "PP": 1.0260275624478639
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 1.0041720234296778,
+          "TT": 0.9736768816927907,
+          "PP": 0.9717924078419069
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 1.0105597531313206,
+          "TT": 1.034742334782052,
+          "PP": 1.0320654317389624
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9903437244755399,
+          "TT": 0.973993018535291,
+          "PP": 0.976813442797442
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 1.0088523935585205,
+          "TT": 1.035928681093478,
+          "PP": 1.0324186647549518
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9966633628076461,
+          "TT": 0.9753733920219004,
+          "PP": 0.9728376232977223
+        }
+      ]
+    },
+    "TERM": {
+      "queries": 300,
+      "primary": {
+        "AB": 1.0066360966027255,
+        "BA": 1.0074396754585226
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0315012592674064,
+          "BA": 0.965643532508281
+        },
+        "PP": {
+          "AB": 1.024800176508855,
+          "BA": 0.9616936885878598
+        }
+      },
+      "control_log_spread": 0.03905929005131715,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 1.0066819066779085,
+          "TT": 1.0207341186731467,
+          "PP": 1.010899070340376
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.998003183679913,
+          "TT": 0.9677567533050718,
+          "PP": 0.9901162803641359
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 1.010302951450686,
+          "TT": 1.0211980930951847,
+          "PP": 1.0151911187545168
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 1.0180286425170064,
+          "TT": 0.9744384542241519,
+          "PP": 0.9763055809382597
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9978680275328762,
+          "TT": 1.0341372339686,
+          "PP": 1.0183350422912256
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 1.008027859766222,
+          "TT": 0.9700867816817356,
+          "PP": 0.9975864526013225
+        }
+      ]
+    },
+    "PHRASE": {
+      "queries": 300,
+      "primary": {
+        "AB": 1.0006657248348698,
+        "BA": 0.9935091217747299
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0181923764721987,
+          "BA": 0.9753052675127202
+        },
+        "PP": {
+          "AB": 1.0226907971481276,
+          "BA": 0.9852548134080755
+        }
+      },
+      "control_log_spread": 0.025004762103423797,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 1.0069330194796455,
+          "TT": 1.0148723725919337,
+          "PP": 1.031315434512044
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9990209138488736,
+          "TT": 0.9362871953745211,
+          "PP": 0.9859613704800464
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 1.0020809413194356,
+          "TT": 1.0462990818513402,
+          "PP": 1.0208375853297746
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9815714482449394,
+          "TT": 0.9814501274912777,
+          "PP": 0.9874092363183188
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9978298367557398,
+          "TT": 1.0176951081027947,
+          "PP": 1.0229690473358344
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9946535146542013,
+          "TT": 0.9797908836984467,
+          "PP": 0.9302918450372111
+        }
+      ]
+    }
+  },
+  "regressions_beyond_per_query_controls": [
+    {
+      "id": "31",
+      "kind": "TERM",
+      "terms": "antonio",
+      "T_over_P_AB": "1.0630239520958085",
+      "T_over_P_BA": "1.0982614095001553",
+      "control_log_spread": "0.059763861122702225"
+    },
+    {
+      "id": "182",
+      "kind": "TERM",
+      "terms": "false",
+      "T_over_P_AB": "1.050069648661198",
+      "T_over_P_BA": "1.0528109028960817",
+      "control_log_spread": "0.02901433704601198"
+    },
+    {
+      "id": "196",
+      "kind": "TERM",
+      "terms": "del",
+      "T_over_P_AB": "1.042953972257251",
+      "T_over_P_BA": "1.0671268745536777",
+      "control_log_spread": "0.02390489007423613"
+    },
+    {
+      "id": "400",
+      "kind": "AND",
+      "terms": "battle of the bulge",
+      "T_over_P_AB": "1.0510349577354146",
+      "T_over_P_BA": "1.034528824676977",
+      "control_log_spread": "0.02508338969157419"
+    },
+    {
+      "id": "432",
+      "kind": "AND",
+      "terms": "lord of the rings",
+      "T_over_P_AB": "1.0315388532618028",
+      "T_over_P_BA": "1.0213953882350193",
+      "control_log_spread": "0.012178471454853667"
+    },
+    {
+      "id": "462",
+      "kind": "AND",
+      "terms": "tallest trees in the world",
+      "T_over_P_AB": "1.0243680372668444",
+      "T_over_P_BA": "1.0296310511144415",
+      "control_log_spread": "0.02397311431547728"
+    },
+    {
+      "id": "492",
+      "kind": "AND",
+      "terms": "american academy of child and adolescent psychiatry",
+      "T_over_P_AB": "1.0282090365677015",
+      "T_over_P_BA": "1.035855257962291",
+      "control_log_spread": "0.01998810366933137"
+    },
+    {
+      "id": "516",
+      "kind": "AND",
+      "terms": "fatherless children",
+      "T_over_P_AB": "1.0309188052903564",
+      "T_over_P_BA": "1.0322737521552676",
+      "control_log_spread": "0.011716470864410909"
+    },
+    {
+      "id": "621",
+      "kind": "OR",
+      "terms": "antonio cromartie",
+      "T_over_P_AB": "1.0279508065804184",
+      "T_over_P_BA": "1.0183679849929654",
+      "control_log_spread": "0.015379541165431037"
+    },
+    {
+      "id": "643",
+      "kind": "OR",
+      "terms": "microsoft frontpage",
+      "T_over_P_AB": "1.0564236111111112",
+      "T_over_P_BA": "1.0392619797131863",
+      "control_log_spread": "0.024980058447098243"
+    },
+    {
+      "id": "690",
+      "kind": "AND",
+      "terms": "the oregonian newspaper",
+      "T_over_P_AB": "1.0404968897549276",
+      "T_over_P_BA": "1.0524496716381269",
+      "control_log_spread": "0.03284607050463904"
+    },
+    {
+      "id": "718",
+      "kind": "AND",
+      "terms": "the garden of eden",
+      "T_over_P_AB": "1.0548768176960994",
+      "T_over_P_BA": "1.0330287467266226",
+      "control_log_spread": "0.015838789025904063"
+    },
+    {
+      "id": "780",
+      "kind": "AND",
+      "terms": "little shop of horrors",
+      "T_over_P_AB": "1.0614227286006428",
+      "T_over_P_BA": "1.0460992659419477",
+      "control_log_spread": "0.013334558479555713"
+    },
+    {
+      "id": "816",
+      "kind": "AND",
+      "terms": "centerville high school",
+      "T_over_P_AB": "1.027361299052774",
+      "T_over_P_BA": "1.0412805391743891",
+      "control_log_spread": "0.02608040597043832"
+    },
+    {
+      "id": "845",
+      "kind": "OR",
+      "terms": "perfume bottles",
+      "T_over_P_AB": "1.165482834432606",
+      "T_over_P_BA": "1.1479536399855126",
+      "control_log_spread": "0.1046783239355029"
+    },
+    {
+      "id": "925",
+      "kind": "PHRASE",
+      "terms": "plus size clothing",
+      "T_over_P_AB": "1.2546921303918341",
+      "T_over_P_BA": "1.2801511460870652",
+      "control_log_spread": "0.12070321984986222"
+    },
+    {
+      "id": "943",
+      "kind": "PHRASE",
+      "terms": "ford modeling agency",
+      "T_over_P_AB": "1.034312816300575",
+      "T_over_P_BA": "1.0293991531328723",
+      "control_log_spread": "0.01848265476609943"
+    },
+    {
+      "id": "1178",
+      "kind": "PHRASE",
+      "terms": "rob halford",
+      "T_over_P_AB": "1.0808414106001238",
+      "T_over_P_BA": "1.0425622022233987",
+      "control_log_spread": "0.024291844661954755"
+    },
+    {
+      "id": "1181",
+      "kind": "PHRASE",
+      "terms": "hot springs south dakota",
+      "T_over_P_AB": "1.0649975036520645",
+      "T_over_P_BA": "1.0914318354912413",
+      "control_log_spread": "0.017737479001701906"
+    }
+  ],
+  "efficiency": {
+    "candidate_file_bytes": 4765928,
+    "baseline_file_bytes": 4766824,
+    "candidate_sections": {
+      ".rodata": 458816,
+      ".text": 2598898
+    },
+    "baseline_sections": {
+      ".rodata": 458816,
+      ".text": 2599794
+    },
+    "candidate_binary_sha256": "44356c9d2f849c17686dfae3b0fd3e7ebd1b986966d9a03ca292e1b64a72424d",
+    "baseline_binary_sha256": "c4ab444bb759f0bc096d59eb0cfa693552840ef0a040581a1b36d9e92447b5e6",
+    "index_change": false,
+    "per_region_allocation": false
+  }
+}

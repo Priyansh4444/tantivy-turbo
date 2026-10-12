@@ -1,0 +1,15 @@
+{
+  "processes": [
+    {
+      "pid": 525329,
+      "ppid": 516411,
+      "comm": "rustc",
+      "cwd": "/home/pronsh/Coding/ytsearch/.worktrees/memprobe"
+    }
+  ],
+  "loadavg": [
+    8.53271484375,
+    7.6142578125,
+    5.07470703125
+  ]
+}

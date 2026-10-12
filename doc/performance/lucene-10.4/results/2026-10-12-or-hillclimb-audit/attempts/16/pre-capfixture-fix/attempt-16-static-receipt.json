@@ -1,0 +1,38 @@
+{
+  "attempt": 16,
+  "status": "source_only_unmeasured",
+  "parent": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "worktree": "/home/pronsh/Coding/playground/search/tantivy-or-capped-expansion-oct10",
+  "changed_paths": [
+    "src/query/boolean_query/or_maxscore.rs",
+    "src/query/term_query/term_scorer.rs"
+  ],
+  "source_sha256": {
+    "src/query/boolean_query/or_maxscore.rs": "bfa821570827f2ca95590ee08ead7bbc2b854067f9a32db215a702081c6733d0",
+    "src/query/term_query/term_scorer.rs": "21b05a2b6513223a81613ee0f40c4a31f6990a427bb0d4b60324154a55753cdb"
+  },
+  "patch_sha256": "c54c4e17e77a3389dd8955d09850e0e039f2064c74f9ccffe8da2e757e7e225d",
+  "held13_term_byte_identical": true,
+  "held13_original_fixture_suffix_preserved_except_one_density_path_witness": true,
+  "held13_replay_byte_identical": true,
+  "accepted11_hot_record_byte_identical": true,
+  "accepted11_global_density_cache_byte_identical": true,
+  "scalar_leaf_cursor_callback_oracles_byte_identical": true,
+  "held13_indexed_original_corpus_byte_identical": true,
+  "all_held13_fixture_corpus_setup_preserved": true,
+  "new_fixture_names": [
+    "capped_native_expansion_promotes_crossed_beta_and_retains_literal_bits",
+    "capped_expansion_restores_virtual_zero_before_replay",
+    "capped_expansion_preserves_wide_sparse_tight_regions_n3_n32",
+    "capped_expansion_uses_essential_end_before_cap_and_keeps_exclusive_head",
+    "capped_expansion_retains_full_batches_in_unexpanded_dense_regions",
+    "capped_expansion_ceiling_arithmetic_and_empty_segment_are_safe"
+  ],
+  "tests_run": false,
+  "builds_run": false,
+  "release_observer_added": false,
+  "additional_logical_scratch_beyond13": 0,
+  "selected_end_scratch_logical_bytes": 128,
+  "rustfmt_ran": true,
+  "git_diff_check_passed": true
+}

@@ -1,0 +1,1314 @@
+{
+  "command": [
+    "perf",
+    "record",
+    "-e",
+    "cycles:u",
+    "-F",
+    "499",
+    "-o",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-06-or3-clean-before-pivot-perf.data",
+    "--",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-06/tantivy_worker",
+    "/home/pronsh/Coding/playground/search/bench/wiki-1m-native-aligned-v11-oct05.idx",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-balanced-oct06/queries.jsonl"
+  ],
+  "returncode": 0,
+  "seconds": 9.034876945999713,
+  "binary_sha256": "44356c9d2f849c17686dfae3b0fd3e7ebd1b986966d9a03ca292e1b64a72424d",
+  "binary_unchanged": true,
+  "script_sha256": "fea7f158b7d6a1647a6a5670f085d83e913c1501c64ab691e0dbbc4dd729e812",
+  "cases_sha256": "b27fe4740a1b2e155f248bf8bcb98dc8ac9a1b8d2712cf843db3b63e69369d90",
+  "query_sha256": "39a54b200392befbde83469841ce6eaefe7ec1850bb5b0e25c74a0eefa709a4e",
+  "inputs_unchanged": true,
+  "correctness_checksums_match": true,
+  "cases": [
+    {
+      "id": 329,
+      "kind": "OR",
+      "terms": [
+        "plus",
+        "size",
+        "clothing"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 337,
+      "kind": "OR",
+      "terms": [
+        "wisconsin",
+        "attorney",
+        "general"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 339,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "english",
+        "restoration"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 343,
+      "kind": "OR",
+      "terms": [
+        "french",
+        "culinary",
+        "institute"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 351,
+      "kind": "OR",
+      "terms": [
+        "robert",
+        "green",
+        "ingersoll"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 357,
+      "kind": "OR",
+      "terms": [
+        "who",
+        "dares",
+        "wins"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 359,
+      "kind": "OR",
+      "terms": [
+        "west",
+        "palm",
+        "beach",
+        "florida"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 365,
+      "kind": "OR",
+      "terms": [
+        "ford",
+        "modeling",
+        "agency"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 371,
+      "kind": "OR",
+      "terms": [
+        "texas",
+        "state",
+        "legislature"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 375,
+      "kind": "OR",
+      "terms": [
+        "georgia",
+        "public",
+        "broadcasting"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 379,
+      "kind": "OR",
+      "terms": [
+        "texas",
+        "death",
+        "row"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 391,
+      "kind": "OR",
+      "terms": [
+        "people",
+        "having",
+        "sex"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 393,
+      "kind": "OR",
+      "terms": [
+        "new",
+        "york",
+        "population"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 395,
+      "kind": "OR",
+      "terms": [
+        "most",
+        "improved",
+        "player"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 401,
+      "kind": "OR",
+      "terms": [
+        "battle",
+        "of",
+        "the",
+        "bulge"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 403,
+      "kind": "OR",
+      "terms": [
+        "secretary",
+        "of",
+        "state"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 407,
+      "kind": "OR",
+      "terms": [
+        "hempstead",
+        "new",
+        "york"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 409,
+      "kind": "OR",
+      "terms": [
+        "university",
+        "of",
+        "washington"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 421,
+      "kind": "OR",
+      "terms": [
+        "jesus",
+        "as",
+        "a",
+        "child"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 427,
+      "kind": "OR",
+      "terms": [
+        "state",
+        "of",
+        "louisiana"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 431,
+      "kind": "OR",
+      "terms": [
+        "cured",
+        "of",
+        "cancer"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 433,
+      "kind": "OR",
+      "terms": [
+        "lord",
+        "of",
+        "the",
+        "rings"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 435,
+      "kind": "OR",
+      "terms": [
+        "helen",
+        "of",
+        "troy"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 453,
+      "kind": "OR",
+      "terms": [
+        "trans",
+        "siberian",
+        "orchestra"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 461,
+      "kind": "OR",
+      "terms": [
+        "binghamton",
+        "new",
+        "york"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 463,
+      "kind": "OR",
+      "terms": [
+        "tallest",
+        "trees",
+        "in",
+        "the",
+        "world"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 487,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "globe",
+        "newspaper"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 493,
+      "kind": "OR",
+      "terms": [
+        "american",
+        "academy",
+        "of",
+        "child",
+        "and",
+        "adolescent",
+        "psychiatry"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 499,
+      "kind": "OR",
+      "terms": [
+        "world",
+        "bank",
+        "president"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 505,
+      "kind": "OR",
+      "terms": [
+        "xena",
+        "warrior",
+        "princess"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 507,
+      "kind": "OR",
+      "terms": [
+        "time",
+        "for",
+        "kids"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 515,
+      "kind": "OR",
+      "terms": [
+        "st",
+        "petersburg",
+        "high",
+        "school"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 519,
+      "kind": "OR",
+      "terms": [
+        "hotel",
+        "del",
+        "coronado"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 531,
+      "kind": "OR",
+      "terms": [
+        "walk",
+        "the",
+        "line"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 545,
+      "kind": "OR",
+      "terms": [
+        "national",
+        "book",
+        "award"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 549,
+      "kind": "OR",
+      "terms": [
+        "mid",
+        "continent",
+        "airport"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 555,
+      "kind": "OR",
+      "terms": [
+        "canadian",
+        "real",
+        "estate"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 567,
+      "kind": "OR",
+      "terms": [
+        "critical",
+        "care",
+        "nurse"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 569,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "breakfast",
+        "club"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 575,
+      "kind": "OR",
+      "terms": [
+        "critical",
+        "care",
+        "medicine"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 579,
+      "kind": "OR",
+      "terms": [
+        "john",
+        "wilkes",
+        "booth"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 583,
+      "kind": "OR",
+      "terms": [
+        "ellen",
+        "degeneres",
+        "show"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 585,
+      "kind": "OR",
+      "terms": [
+        "jaguar",
+        "x",
+        "type"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 593,
+      "kind": "OR",
+      "terms": [
+        "little",
+        "brown",
+        "jug"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 595,
+      "kind": "OR",
+      "terms": [
+        "books",
+        "on",
+        "cd"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 609,
+      "kind": "OR",
+      "terms": [
+        "pump",
+        "it",
+        "up"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 613,
+      "kind": "OR",
+      "terms": [
+        "graduate",
+        "management",
+        "admission",
+        "test"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 615,
+      "kind": "OR",
+      "terms": [
+        "big",
+        "boss",
+        "man"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 631,
+      "kind": "OR",
+      "terms": [
+        "worcester",
+        "state",
+        "college"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 635,
+      "kind": "OR",
+      "terms": [
+        "jefferson",
+        "davis",
+        "high",
+        "school"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 639,
+      "kind": "OR",
+      "terms": [
+        "chicken",
+        "noodle",
+        "soup"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 653,
+      "kind": "OR",
+      "terms": [
+        "miami",
+        "dade",
+        "college"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 655,
+      "kind": "OR",
+      "terms": [
+        "time",
+        "in",
+        "denver"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 667,
+      "kind": "OR",
+      "terms": [
+        "zion",
+        "national",
+        "park"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 679,
+      "kind": "OR",
+      "terms": [
+        "care",
+        "a",
+        "lot"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 683,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "actors",
+        "studio"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 689,
+      "kind": "OR",
+      "terms": [
+        "bismarck",
+        "state",
+        "college"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 691,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "oregonian",
+        "newspaper"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 699,
+      "kind": "OR",
+      "terms": [
+        "chicago",
+        "teachers",
+        "union"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 701,
+      "kind": "OR",
+      "terms": [
+        "connecticut",
+        "historical",
+        "society"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 719,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "garden",
+        "of",
+        "eden"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 721,
+      "kind": "OR",
+      "terms": [
+        "immigration",
+        "to",
+        "mexico"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 723,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "daily",
+        "breeze"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 725,
+      "kind": "OR",
+      "terms": [
+        "debra",
+        "jo",
+        "rupp"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 727,
+      "kind": "OR",
+      "terms": [
+        "term",
+        "life",
+        "insurance"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 733,
+      "kind": "OR",
+      "terms": [
+        "us",
+        "coast",
+        "guard"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 737,
+      "kind": "OR",
+      "terms": [
+        "playa",
+        "del",
+        "rey"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 751,
+      "kind": "OR",
+      "terms": [
+        "kansas",
+        "city",
+        "kings"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 759,
+      "kind": "OR",
+      "terms": [
+        "open",
+        "source",
+        "software"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 761,
+      "kind": "OR",
+      "terms": [
+        "ambassador",
+        "of",
+        "italy"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 763,
+      "kind": "OR",
+      "terms": [
+        "los",
+        "angeles",
+        "daily",
+        "news"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 765,
+      "kind": "OR",
+      "terms": [
+        "napa",
+        "auto",
+        "parts"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 767,
+      "kind": "OR",
+      "terms": [
+        "law",
+        "school",
+        "rankings"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 781,
+      "kind": "OR",
+      "terms": [
+        "little",
+        "shop",
+        "of",
+        "horrors"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 789,
+      "kind": "OR",
+      "terms": [
+        "new",
+        "jersey",
+        "police"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 791,
+      "kind": "OR",
+      "terms": [
+        "university",
+        "of",
+        "akron"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 793,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "news",
+        "journal"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 809,
+      "kind": "OR",
+      "terms": [
+        "city",
+        "in",
+        "iran"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 811,
+      "kind": "OR",
+      "terms": [
+        "corpus",
+        "christi",
+        "tx"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 813,
+      "kind": "OR",
+      "terms": [
+        "becoming",
+        "a",
+        "widow"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 817,
+      "kind": "OR",
+      "terms": [
+        "centerville",
+        "high",
+        "school"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 825,
+      "kind": "OR",
+      "terms": [
+        "civil",
+        "war",
+        "battlefields"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 827,
+      "kind": "OR",
+      "terms": [
+        "national",
+        "security",
+        "cutter"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 829,
+      "kind": "OR",
+      "terms": [
+        "eastern",
+        "mennonite",
+        "university"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 831,
+      "kind": "OR",
+      "terms": [
+        "new",
+        "york",
+        "times",
+        "best",
+        "sellers",
+        "list"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 837,
+      "kind": "OR",
+      "terms": [
+        "new",
+        "york",
+        "towns"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 839,
+      "kind": "OR",
+      "terms": [
+        "medal",
+        "of",
+        "honor"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 841,
+      "kind": "OR",
+      "terms": [
+        "hot",
+        "springs",
+        "south",
+        "dakota"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 855,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "british",
+        "embassy"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 859,
+      "kind": "OR",
+      "terms": [
+        "new",
+        "england",
+        "aquarium"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 861,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "book",
+        "of",
+        "life"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 871,
+      "kind": "OR",
+      "terms": [
+        "blue",
+        "ridge",
+        "parkway"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 881,
+      "kind": "OR",
+      "terms": [
+        "chicago",
+        "public",
+        "schools"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 883,
+      "kind": "OR",
+      "terms": [
+        "george",
+        "r",
+        "brown",
+        "convention",
+        "center"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 889,
+      "kind": "OR",
+      "terms": [
+        "david",
+        "lee",
+        "roth"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 891,
+      "kind": "OR",
+      "terms": [
+        "central",
+        "community",
+        "college"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 893,
+      "kind": "OR",
+      "terms": [
+        "power",
+        "rangers",
+        "ninja",
+        "storm"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 905,
+      "kind": "OR",
+      "terms": [
+        "boulder",
+        "city",
+        "nevada"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 907,
+      "kind": "OR",
+      "terms": [
+        "united",
+        "states",
+        "constitution"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 909,
+      "kind": "OR",
+      "terms": [
+        "niceville",
+        "high",
+        "school"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 917,
+      "kind": "OR",
+      "terms": [
+        "laborers",
+        "international",
+        "union",
+        "of",
+        "north",
+        "america"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 919,
+      "kind": "OR",
+      "terms": [
+        "to",
+        "be",
+        "or",
+        "not",
+        "to",
+        "be"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    },
+    {
+      "id": 920,
+      "kind": "OR",
+      "terms": [
+        "a",
+        "search",
+        "engine",
+        "is",
+        "an",
+        "information",
+        "retrieval",
+        "software",
+        "system",
+        "designed",
+        "to",
+        "help",
+        "find",
+        "information",
+        "stored",
+        "on",
+        "one",
+        "or",
+        "more",
+        "computer",
+        "systems"
+      ],
+      "tags": [
+        "port-style"
+      ]
+    }
+  ],
+  "first_preparation_and_warmup_included_in_trace": true,
+  "latency_acceptance": false,
+  "purpose": "diagnostic cycles only; sequential profiles under existing desktop load"
+}

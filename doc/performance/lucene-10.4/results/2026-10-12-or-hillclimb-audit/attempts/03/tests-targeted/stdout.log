@@ -1,0 +1,10 @@
+
+running 5 tests
+test postings::segment_postings::tests::batch_cursor_matches_literal_postings_across_blocks_and_tails ... ok
+test indexer::index_writer::tests::test_ordered_batched_operations ... ok
+test postings::segment_postings::tests::batch_then_scalar_reads_preserve_positions_and_skipfreq ... ok
+test query::bm25::tests::batch_leaves_match_literal_scalar_bits_for_all_norm_ids ... ok
+test query::boolean_query::or_maxscore::tests::single_driver_batches_replay_every_dynamic_threshold_exactly ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1404 filtered out; finished in 0.06s
+

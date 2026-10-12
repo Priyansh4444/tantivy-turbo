@@ -1,0 +1,12 @@
+{
+  "failed_revision": "pre-capfixture-fix",
+  "failed_targeted": {
+    "passed": 28,
+    "failed": 1
+  },
+  "old_source_sha256": "bfa821570827f2ca95590ee08ead7bbc2b854067f9a32db215a702081c6733d0",
+  "final_source_sha256": "4ee0b044610d00a8f6fc508997bba250e23473d08b5f2c5c453372d6d9ff63e8",
+  "patch_sha256": "082be7ff93e6ab04d78714af73e125aa0015b91d2cb527bad65fcac01cc04e05",
+  "production_changed": false,
+  "reason": "Old stride3 corpus retains same TF30/TF20 and all literal callback/cursor oracles. Weak clauses become conservative tails after128, so capped geometry does not promise an exclusive382 interval. Require actual owned winner382 with real head strictly after it; the additive92-row fixture independently requires exclusive192 to remain unread and next refill owns192."
+}

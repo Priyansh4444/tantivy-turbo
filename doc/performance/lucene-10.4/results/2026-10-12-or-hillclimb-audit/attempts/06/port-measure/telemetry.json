@@ -1,0 +1,324 @@
+[
+  {
+    "at": 1791419290.5362473,
+    "loadavg": [
+      4.35205078125,
+      4.83935546875,
+      3.99560546875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 301806 cargo-hawk-driv 99.2",
+      " 295713 youtube-raw-sea 62.7",
+      " 301888 port_worker     51.8",
+      " 193666 helium          45.3",
+      " 301887 tantivy_worker  39.2",
+      " 301826 python          26.7",
+      " 240282 t3code          16.7",
+      "   2192 helium          13.1",
+      "  44668 vesktop         10.7",
+      " 240292 t3code           7.9",
+      "  44549 vesktop          7.5",
+      "   2142 helium           5.4"
+    ]
+  },
+  {
+    "at": 1791419296.1717067,
+    "loadavg": [
+      4.24365234375,
+      4.80859375,
+      3.990234375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 302041 ps               200",
+      " 302025 cargo-hawk-driv  100",
+      " 295713 youtube-raw-sea 62.6",
+      " 301888 port_worker     46.8",
+      " 193666 helium          45.2",
+      " 301887 tantivy_worker  44.2",
+      " 240282 t3code          16.6",
+      " 301826 python          15.7",
+      "   2192 helium          13.1",
+      "  44668 vesktop         10.7",
+      " 240292 t3code           7.9",
+      "  44549 vesktop          7.5"
+    ]
+  },
+  {
+    "at": 1791419301.881417,
+    "loadavg": [
+      4.2802734375,
+      4.79833984375,
+      3.99658203125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 302065 ps               200",
+      " 302025 cargo-hawk-driv 99.5",
+      " 295713 youtube-raw-sea 62.4",
+      " 301887 tantivy_worker  46.1",
+      " 193666 helium          45.2",
+      " 301888 port_worker     45.1",
+      " 240282 t3code          16.5",
+      "   2192 helium          13.1",
+      " 301826 python          12.0",
+      "  44668 vesktop         10.7",
+      " 240292 t3code           7.8",
+      "  44549 vesktop          7.5"
+    ]
+  },
+  {
+    "at": 1791419307.7819755,
+    "loadavg": [
+      4.41845703125,
+      4.818359375,
+      4.0078125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 302117 ps               200",
+      " 302025 cargo-hawk-driv 99.3",
+      " 295713 youtube-raw-sea 62.1",
+      " 301887 tantivy_worker  46.4",
+      " 193666 helium          45.2",
+      " 301888 port_worker     44.3",
+      " 240282 t3code          16.4",
+      "   2192 helium          13.1",
+      "  44668 vesktop         10.7",
+      " 301826 python          10.3",
+      " 240292 t3code           7.8",
+      "  44549 vesktop          7.5"
+    ]
+  },
+  {
+    "at": 1791419312.11702,
+    "loadavg": [
+      4.46533203125,
+      4.82177734375,
+      4.01318359375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 302025 cargo-hawk-driv 99.2",
+      " 295713 youtube-raw-sea 61.8",
+      " 301887 tantivy_worker  46.2",
+      " 193666 helium          45.3",
+      " 301888 port_worker     43.9",
+      " 240282 t3code          16.3",
+      "   2192 helium          13.1",
+      "  44668 vesktop         10.7",
+      " 301826 python           9.7",
+      " 240292 t3code           7.8",
+      "  44549 vesktop          7.5",
+      "   2142 helium           5.4"
+    ]
+  },
+  {
+    "at": 1791419316.2663956,
+    "loadavg": [
+      4.58837890625,
+      4.841796875,
+      4.02392578125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 302025 cargo-hawk-driv 99.3",
+      " 295713 youtube-raw-sea 61.5",
+      " 301887 tantivy_worker  46.3",
+      " 193666 helium          45.3",
+      " 301888 port_worker     43.7",
+      " 240282 t3code          16.3",
+      "   2192 helium          13.1",
+      "  44668 vesktop         10.7",
+      " 301826 python           9.3",
+      " 240292 t3code           7.8",
+      "  44549 vesktop          7.5",
+      "   2142 helium           5.4"
+    ]
+  },
+  {
+    "at": 1791419320.8575397,
+    "loadavg": [
+      4.58837890625,
+      4.841796875,
+      4.02392578125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 302025 cargo-hawk-driv 99.2",
+      " 295713 youtube-raw-sea 61.4",
+      " 301887 tantivy_worker  46.5",
+      " 193666 helium          45.2",
+      " 301888 port_worker     43.5",
+      " 240282 t3code          16.4",
+      "   2192 helium          13.1",
+      "  44668 vesktop         10.7",
+      " 301826 python           8.8",
+      " 240292 t3code           7.7",
+      "  44549 vesktop          7.5",
+      "   2142 helium           5.4"
+    ]
+  },
+  {
+    "at": 1791419323.4277892,
+    "loadavg": [
+      4.70166015625,
+      4.861328125,
+      4.03466796875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 302025 cargo-hawk-driv 99.2",
+      " 295713 youtube-raw-sea 61.2",
+      " 193666 helium          45.2",
+      " 302281 port_worker     44.8",
+      " 302282 port_worker     44.2",
+      " 240282 t3code          16.4",
+      "   2192 helium          13.1",
+      "  44668 vesktop         10.7",
+      " 301826 python           8.7",
+      " 240292 t3code           7.8",
+      "  44549 vesktop          7.5",
+      "   2142 helium           5.4"
+    ]
+  },
+  {
+    "at": 1791419327.5322907,
+    "loadavg": [
+      4.64501953125,
+      4.8466796875,
+      4.0341796875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 302339 ps               200",
+      " 302025 cargo-hawk-driv 99.1",
+      " 295713 youtube-raw-sea 60.9",
+      " 193666 helium          45.2",
+      " 302281 port_worker     44.1",
+      " 302282 port_worker     43.0",
+      " 240282 t3code          16.5",
+      "   2192 helium          13.1",
+      "  44668 vesktop         10.7",
+      " 301826 python           8.4",
+      " 240292 t3code           7.7",
+      "  44549 vesktop          7.5"
+    ]
+  },
+  {
+    "at": 1791419331.7431686,
+    "loadavg": [
+      4.51318359375,
+      4.81591796875,
+      4.0283203125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 302390 ps               200",
+      " 302025 cargo-hawk-driv 99.1",
+      " 295713 youtube-raw-sea 60.9",
+      " 193666 helium          45.2",
+      " 302281 port_worker     44.5",
+      " 302282 port_worker     44.2",
+      " 240282 t3code          16.5",
+      "   2192 helium          13.1",
+      "  44668 vesktop         10.7",
+      " 301826 python           8.2",
+      " 240292 t3code           7.8",
+      "  44549 vesktop          7.5"
+    ]
+  },
+  {
+    "at": 1791419336.6723053,
+    "loadavg": [
+      4.3115234375,
+      4.76904296875,
+      4.01708984375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 302411 ps               100",
+      " 302025 cargo-hawk-driv 99.1",
+      " 295713 youtube-raw-sea 60.8",
+      " 193666 helium          45.2",
+      " 302281 port_worker     44.7",
+      " 302282 port_worker     44.4",
+      " 240282 t3code          16.5",
+      "   2192 helium          13.1",
+      "  44668 vesktop         10.7",
+      " 301826 python           7.9",
+      " 240292 t3code           7.7",
+      "  44549 vesktop          7.5"
+    ]
+  },
+  {
+    "at": 1791419342.1722982,
+    "loadavg": [
+      4.36669921875,
+      4.77294921875,
+      4.0224609375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 302441 ps               100",
+      " 302025 cargo-hawk-driv 99.1",
+      " 295713 youtube-raw-sea 60.7",
+      " 193666 helium          45.2",
+      " 302282 port_worker     45.1",
+      " 302281 port_worker     44.9",
+      " 240282 t3code          16.6",
+      "   2192 helium          13.1",
+      "  44668 vesktop         10.7",
+      " 240292 t3code           7.7",
+      " 301826 python           7.5",
+      "  44549 vesktop          7.5"
+    ]
+  },
+  {
+    "at": 1791419346.909398,
+    "loadavg": [
+      4.2568359375,
+      4.7431640625,
+      4.0166015625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 302025 cargo-hawk-driv 99.1",
+      " 295713 youtube-raw-sea 60.6",
+      " 302282 port_worker     45.2",
+      " 193666 helium          45.1",
+      " 302281 port_worker     45.0",
+      " 240282 t3code          16.6",
+      "   2192 helium          13.1",
+      "  44668 vesktop         10.7",
+      " 240292 t3code           7.6",
+      "  44549 vesktop          7.5",
+      " 301826 python           7.3",
+      "   2142 helium           5.4"
+    ]
+  },
+  {
+    "at": 1791419351.1820772,
+    "loadavg": [
+      4.2568359375,
+      4.7431640625,
+      4.0166015625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 302558 ps               100",
+      " 302025 cargo-hawk-driv 99.0",
+      " 295713 youtube-raw-sea 60.6",
+      " 302282 port_worker     45.2",
+      " 193666 helium          45.1",
+      " 302281 port_worker     44.9",
+      " 240282 t3code          16.7",
+      "   2192 helium          13.1",
+      "  44668 vesktop         10.7",
+      " 240292 t3code           7.7",
+      "  44549 vesktop          7.5",
+      " 301826 python           7.2"
+    ]
+  }
+]

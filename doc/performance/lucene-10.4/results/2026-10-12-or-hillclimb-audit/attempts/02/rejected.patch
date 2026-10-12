@@ -1,0 +1,229 @@
+diff --git i/src/query/boolean_query/or_maxscore.rs w/src/query/boolean_query/or_maxscore.rs
+index 0efe0d61d..5dfdd877a 100644
+--- i/src/query/boolean_query/or_maxscore.rs
++++ w/src/query/boolean_query/or_maxscore.rs
+@@ -40,11 +40,23 @@ impl ClauseState {
+ #[cfg(test)]
+ type RegionChoice = (DocId, usize, usize, u64);
+ 
++#[cfg(test)]
++struct LocalPartitionChoice {
++    lo: DocId,
++    hi: DocId,
++    globally_optional: usize,
++    first_essential: usize,
++    ordinals: Vec<usize>,
++    decoded_docs: Vec<DocId>,
++}
++
+ #[cfg(test)]
+ thread_local! {
+     // Test-only region evidence; no observer or counter exists in release.
+     static GLOBAL_CHOICES: std::cell::RefCell<Option<Vec<RegionChoice>>> =
+         const { std::cell::RefCell::new(None) };
++    static LOCAL_PARTITIONS: std::cell::RefCell<Option<Vec<LocalPartitionChoice>>> =
++        const { std::cell::RefCell::new(None) };
+ }
+ 
+ /// Merge only clauses whose local score bounds can exceed the optional prefix.
+@@ -93,8 +105,12 @@ pub(crate) fn or_maxscore(
+             .total_cmp(&priority(right))
+             .then_with(|| left.ordinal.cmp(&right.ordinal))
+     });
+-    // prefix[k] includes precisely clauses[..k]; candidate tests use j+1 so the
+-    // next optional clause is included. No bound is formed by subtraction.
++    // Local ranks address the fixed global-preference records, never move
++    // scorers, and fit in this stack array for the admitted 3..=32 route.
++    let mut local_order = [0u8; 32];
++    let local_order = &mut local_order[..num_terms];
++    // prefix[k] includes precisely local_order[..k]; candidate tests use j+1
++    // so the next optional clause is included. No bound uses subtraction.
+     let mut prefix = vec![0.0f64; num_terms + 1];
+     let mut contributions = vec![0.0; num_terms];
+     let mut lo = clauses
+@@ -190,14 +206,30 @@ pub(crate) fn or_maxscore(
+             };
+         }
+         debug_assert!(hi > lo);
+-        for (rank, clause) in clauses.iter_mut().enumerate() {
++        for clause in &mut clauses {
+             // A real loaded position beyond the interval cannot contribute.
+-            // A stale position below lo does not justify a zero bound. Cleanup
+-            // and prefix construction share the same sequential record pass.
++            // A stale position below lo does not justify a zero bound.
+             if clause.doc >= hi {
+                 clause.local_max = 0.0;
+             }
+-            prefix[rank + 1] = prefix[rank] + f64::from(clause.local_max);
++        }
++        for (slot, rank) in local_order.iter_mut().zip(0u8..32) {
++            *slot = rank;
++        }
++        // Keep the density-selected global certificate at the front: those
++        // dense clauses omitted their block caps and must stay optional. Only
++        // the remaining group chooses a preference from this region's bounds.
++        local_order[globally_optional..].sort_unstable_by(|&left, &right| {
++            let left = &clauses[usize::from(left)];
++            let right = &clauses[usize::from(right)];
++            let priority =
++                |clause: &ClauseState| f64::from(clause.local_max) / f64::from(clause.cost.max(1));
++            priority(left)
++                .total_cmp(&priority(right))
++                .then_with(|| left.ordinal.cmp(&right.ordinal))
++        });
++        for (rank, &index) in local_order.iter().enumerate() {
++            prefix[rank + 1] = prefix[rank] + f64::from(clauses[usize::from(index)].local_max);
+         }
+         let mut first_essential = 0;
+         while first_essential < num_terms
+@@ -205,6 +237,23 @@ pub(crate) fn or_maxscore(
+         {
+             first_essential += 1;
+         }
++        debug_assert!(first_essential >= globally_optional);
++        #[cfg(test)]
++        LOCAL_PARTITIONS.with(|partitions| {
++            if let Some(partitions) = partitions.borrow_mut().as_mut() {
++                partitions.push(LocalPartitionChoice {
++                    lo,
++                    hi,
++                    globally_optional,
++                    first_essential,
++                    ordinals: local_order
++                        .iter()
++                        .map(|&index| clauses[usize::from(index)].ordinal)
++                        .collect(),
++                    decoded_docs: scorers.iter().map(TermScorer::doc).collect(),
++                });
++            }
++        });
+         if first_essential == num_terms {
+             debug_assert!(clauses
+                 .iter()
+@@ -213,7 +262,8 @@ pub(crate) fn or_maxscore(
+             continue;
+         }
+ 
+-        for clause in &mut clauses[first_essential..] {
++        for &index in &local_order[first_essential..] {
++            let clause = &mut clauses[usize::from(index)];
+             if clause.doc < lo {
+                 // If shallow selection moved, every old decoded doc is below
+                 // lo. seek(lo) therefore cannot take an old-doc shortcut.
+@@ -221,9 +271,9 @@ pub(crate) fn or_maxscore(
+             }
+         }
+         loop {
+-            let doc = clauses[first_essential..]
++            let doc = local_order[first_essential..]
+                 .iter()
+-                .map(|clause| clause.doc)
++                .map(|&index| clauses[usize::from(index)].doc)
+                 .min()
+                 .unwrap_or(TERMINATED);
+             if doc >= hi {
+@@ -231,7 +281,8 @@ pub(crate) fn or_maxscore(
+             }
+             contributions.fill(0.0);
+             let mut known = 0.0f64;
+-            for clause in &clauses[first_essential..] {
++            for &index in &local_order[first_essential..] {
++                let clause = &clauses[usize::from(index)];
+                 if clause.doc == doc {
+                     clause.assert_coherent(&scorers);
+                     let leaf = scorers[clause.ordinal].score();
+@@ -246,7 +297,7 @@ pub(crate) fn or_maxscore(
+                     competitive = false;
+                     break;
+                 }
+-                let clause = &mut clauses[rank];
++                let clause = &mut clauses[usize::from(local_order[rank])];
+                 if clause.doc < doc {
+                     clause.seek(&mut scorers, doc);
+                 }
+@@ -269,7 +320,8 @@ pub(crate) fn or_maxscore(
+                     threshold = next_threshold;
+                 }
+             }
+-            for clause in &mut clauses[first_essential..] {
++            for &index in &local_order[first_essential..] {
++                let clause = &mut clauses[usize::from(index)];
+                 if clause.doc == doc {
+                     clause.advance(&mut scorers);
+                 }
+@@ -393,6 +445,75 @@ mod tests {
+         check(scorers, 800, 1.5, 0);
+     }
+ 
++    #[test]
++    fn local_priority_reversals_reconcile_promoted_stale_decoders() {
++        let norms = vec![1; 512];
++        let a: Vec<_> = (0..384)
++            .map(|doc| (doc, if (128..256).contains(&doc) { 100 } else { 1 }))
++            .collect();
++        let b: Vec<_> = (0..384)
++            .map(|doc| (doc, if (128..256).contains(&doc) { 1 } else { 100 }))
++            .collect();
++        let rare = [(0, 1), (383, 1)];
++        // The dense clauses tie globally. Their local bounds reverse at each
++        // full-block boundary, so A is optional, then B, then A again. The
++        // newly essential decoder still holds the preceding region's last doc.
++        let scorers = vec![
++            fixture(&a, &norms, 1.0),
++            fixture(&b, &norms, 1.0),
++            fixture(&rare, &norms, 4.0),
++        ];
++        LOCAL_PARTITIONS.with(|partitions| *partitions.borrow_mut() = Some(Vec::new()));
++        let accepted = check(scorers.clone(), 512, 1.1, 0);
++        let partitions =
++            LOCAL_PARTITIONS.with(|partitions| partitions.borrow_mut().take().unwrap());
++        assert_eq!(
++            accepted.iter().map(|&(doc, _)| doc).collect::<Vec<_>>(),
++            (0..384).collect::<Vec<_>>()
++        );
++        for (lo, hi, optional, promoted) in [(0, 128, 0, 1), (128, 256, 1, 0), (256, 384, 0, 1)] {
++            let partition = partitions
++                .iter()
++                .find(|partition| partition.lo == lo)
++                .unwrap();
++            assert_eq!(partition.hi, hi);
++            assert_eq!(partition.globally_optional, 0);
++            let optionals = &partition.ordinals[..partition.first_essential];
++            let essentials = &partition.ordinals[partition.first_essential..];
++            assert!(
++                optionals.contains(&optional),
++                "lo={lo}: {:?}",
++                partition.ordinals
++            );
++            assert!(!optionals.contains(&promoted));
++            assert!(essentials.contains(&promoted));
++            if lo > 0 {
++                assert_eq!(partition.decoded_docs[promoted], lo - 1);
++            }
++        }
++        // The first Top-1 hit raises the threshold enough to certify both
++        // dense globals. Their fixed prefix must stay optional while the rare
++        // tail widens across the remaining dense physical block boundaries.
++        LOCAL_PARTITIONS.with(|partitions| *partitions.borrow_mut() = Some(Vec::new()));
++        let top_one = check(scorers.clone(), 512, 1.1, 1);
++        let partitions =
++            LOCAL_PARTITIONS.with(|partitions| partitions.borrow_mut().take().unwrap());
++        assert_eq!(top_one.iter().map(|&(doc, _)| doc).collect::<Vec<_>>(), [0]);
++        let widened = partitions
++            .iter()
++            .find(|partition| partition.globally_optional == 2)
++            .unwrap();
++        assert_eq!(&widened.ordinals[..2], &[0, 1]);
++        assert!(widened.first_essential >= 2);
++        assert_eq!((widened.lo, widened.hi), (128, 512));
++        // Growing heap thresholds and incoming-order permutations still use
++        // independent whole callback traces, not only final heap membership.
++        check(scorers.clone(), 512, 1.1, 10);
++        for limit in [1, 10] {
++            check(scorers.iter().rev().cloned().collect(), 512, 1.1, limit);
++        }
++    }
++
+     #[test]
+     fn globally_optional_dense_terms_cover_sparse_essential_gaps_and_tails() {
+         let norms = vec![1; 4096];

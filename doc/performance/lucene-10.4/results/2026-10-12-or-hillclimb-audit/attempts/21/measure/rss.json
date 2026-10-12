@@ -1,0 +1,41 @@
+[
+  {
+    "pair": 0,
+    "A": {
+      "VmSize": "620628 kB",
+      "VmHWM": "177868 kB",
+      "VmRSS": "177868 kB"
+    },
+    "B": {
+      "VmSize": "620628 kB",
+      "VmHWM": "177760 kB",
+      "VmRSS": "177760 kB"
+    }
+  },
+  {
+    "pair": 1,
+    "A": {
+      "VmSize": "620628 kB",
+      "VmHWM": "177832 kB",
+      "VmRSS": "177832 kB"
+    },
+    "B": {
+      "VmSize": "620628 kB",
+      "VmHWM": "177816 kB",
+      "VmRSS": "177816 kB"
+    }
+  },
+  {
+    "pair": 2,
+    "A": {
+      "VmSize": "620628 kB",
+      "VmHWM": "177880 kB",
+      "VmRSS": "177880 kB"
+    },
+    "B": {
+      "VmSize": "620628 kB",
+      "VmHWM": "177784 kB",
+      "VmRSS": "177784 kB"
+    }
+  }
+]

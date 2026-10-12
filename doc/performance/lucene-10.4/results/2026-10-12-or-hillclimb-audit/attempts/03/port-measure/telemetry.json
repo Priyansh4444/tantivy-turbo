@@ -1,0 +1,324 @@
+[
+  {
+    "at": 1791417678.0202918,
+    "loadavg": [
+      3.04052734375,
+      3.01513671875,
+      2.84716796875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 193666 helium          44.7",
+      " 233480 tantivy_worker  44.3",
+      " 233481 port_worker     39.3",
+      " 233441 python          26.8",
+      "   2192 helium          12.4",
+      "  44668 vesktop         11.4",
+      "  44549 vesktop          7.6",
+      " 231429 helium           6.9",
+      " 223802 helium           5.7",
+      "   2142 helium           5.1",
+      " 232208 codex            4.9",
+      "   1439 Hyprland         4.6"
+    ]
+  },
+  {
+    "at": 1791417686.0702243,
+    "loadavg": [
+      3.2685546875,
+      3.064453125,
+      2.865234375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 233545 ps               100",
+      " 233480 tantivy_worker  45.4",
+      " 193666 helium          44.8",
+      " 233481 port_worker     40.2",
+      " 233441 python          16.3",
+      "   2192 helium          12.4",
+      "  44668 vesktop         11.4",
+      "  44549 vesktop          7.6",
+      " 223802 helium           5.6",
+      "   2142 helium           5.1",
+      "   1439 Hyprland         4.6",
+      " 205348 opencode         4.6"
+    ]
+  },
+  {
+    "at": 1791417694.1560633,
+    "loadavg": [
+      3.3271484375,
+      3.080078125,
+      2.87158203125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 233480 tantivy_worker  45.6",
+      " 193666 helium          44.8",
+      " 233481 port_worker     40.5",
+      " 233441 python          13.0",
+      "   2192 helium          12.4",
+      "  44668 vesktop         11.4",
+      "  44549 vesktop          7.6",
+      " 223802 helium           5.5",
+      "   2142 helium           5.1",
+      " 232208 codex            4.8",
+      " 205348 opencode         4.6",
+      "   1439 Hyprland         4.6"
+    ]
+  },
+  {
+    "at": 1791417702.0195735,
+    "loadavg": [
+      3.1904296875,
+      3.060546875,
+      2.86767578125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 233480 tantivy_worker  45.9",
+      " 193666 helium          44.8",
+      " 233481 port_worker     40.5",
+      "   2192 helium          12.4",
+      "  44668 vesktop         11.4",
+      " 233441 python          11.4",
+      "  44549 vesktop          7.6",
+      " 223802 helium           5.4",
+      "   2142 helium           5.1",
+      " 232208 codex            4.8",
+      "   1439 Hyprland         4.6",
+      " 205348 opencode         4.6"
+    ]
+  },
+  {
+    "at": 1791417710.0170882,
+    "loadavg": [
+      3.1748046875,
+      3.05908203125,
+      2.86865234375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 233480 tantivy_worker  45.9",
+      " 193666 helium          44.8",
+      " 233481 port_worker     40.6",
+      "   2192 helium          12.4",
+      "  44668 vesktop         11.4",
+      " 233441 python          10.6",
+      "  44549 vesktop          7.6",
+      " 223802 helium           5.3",
+      "   2142 helium           5.1",
+      "   1439 Hyprland         4.6",
+      " 232208 codex            4.6",
+      " 205348 opencode         4.6"
+    ]
+  },
+  {
+    "at": 1791417718.069523,
+    "loadavg": [
+      3.13525390625,
+      3.05615234375,
+      2.8701171875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 233480 tantivy_worker  46.0",
+      " 193666 helium          44.8",
+      " 233481 port_worker     40.6",
+      "   2192 helium          12.4",
+      "  44668 vesktop         11.4",
+      " 233441 python          10.0",
+      "  44549 vesktop          7.6",
+      " 223802 helium           5.3",
+      "   2142 helium           5.1",
+      "   1439 Hyprland         4.6",
+      " 205348 opencode         4.6",
+      " 232208 codex            4.5"
+    ]
+  },
+  {
+    "at": 1791417725.9749515,
+    "loadavg": [
+      3.11376953125,
+      3.05419921875,
+      2.8720703125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 233480 tantivy_worker  46.0",
+      " 193666 helium          44.8",
+      " 233481 port_worker     40.7",
+      "   2192 helium          12.4",
+      "  44668 vesktop         11.4",
+      " 233441 python           9.5",
+      "  44549 vesktop          7.6",
+      " 223802 helium           5.2",
+      "   2142 helium           5.1",
+      "   1439 Hyprland         4.6",
+      " 205348 opencode         4.6",
+      " 232208 codex            4.3"
+    ]
+  },
+  {
+    "at": 1791417731.0921981,
+    "loadavg": [
+      3.1044921875,
+      3.05322265625,
+      2.873046875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 233800 ps               200",
+      " 193666 helium          44.8",
+      " 233789 port_worker     41.5",
+      " 233790 port_worker     41.4",
+      "   2192 helium          12.4",
+      "  44668 vesktop         11.4",
+      " 233441 python           9.5",
+      "  44549 vesktop          7.6",
+      " 223802 helium           5.2",
+      "   2142 helium           5.1",
+      "   1439 Hyprland         4.6",
+      " 205348 opencode         4.6"
+    ]
+  },
+  {
+    "at": 1791417738.4967182,
+    "loadavg": [
+      3.095703125,
+      3.05224609375,
+      2.8740234375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 193666 helium          44.8",
+      " 233789 port_worker     43.1",
+      " 233790 port_worker     42.5",
+      "   2192 helium          12.4",
+      "  44668 vesktop         11.4",
+      " 233441 python           9.2",
+      "  44549 vesktop          7.6",
+      "   2142 helium           5.1",
+      " 223802 helium           5.1",
+      "   1439 Hyprland         4.6",
+      " 205348 opencode         4.6",
+      "  15472 t3code           4.1"
+    ]
+  },
+  {
+    "at": 1791417746.114715,
+    "loadavg": [
+      3.228515625,
+      3.08349609375,
+      2.88671875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 193666 helium          44.7",
+      " 233790 port_worker     42.8",
+      " 233789 port_worker     42.3",
+      "   2192 helium          12.4",
+      "  44668 vesktop         11.4",
+      " 233441 python           9.0",
+      "  44549 vesktop          7.6",
+      "   2142 helium           5.1",
+      " 223802 helium           5.0",
+      " 205348 opencode         4.6",
+      "   1439 Hyprland         4.6",
+      "  15472 t3code           4.1"
+    ]
+  },
+  {
+    "at": 1791417753.906059,
+    "loadavg": [
+      3.37060546875,
+      3.11572265625,
+      2.8984375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 193666 helium          44.8",
+      " 233789 port_worker     42.4",
+      " 233790 port_worker     42.2",
+      "   2192 helium          12.4",
+      "  44668 vesktop         11.4",
+      " 233441 python           8.9",
+      "  44549 vesktop          7.6",
+      "   2142 helium           5.1",
+      " 223802 helium           5.0",
+      " 205348 opencode         4.7",
+      "   1439 Hyprland         4.6",
+      "  15472 t3code           4.1"
+    ]
+  },
+  {
+    "at": 1791417761.5489457,
+    "loadavg": [
+      3.3203125,
+      3.1123046875,
+      2.89990234375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 193666 helium          44.8",
+      " 233790 port_worker     42.5",
+      " 233789 port_worker     42.2",
+      "   2192 helium          12.4",
+      "  44668 vesktop         11.4",
+      " 233441 python           8.7",
+      "  44549 vesktop          7.6",
+      "   2142 helium           5.1",
+      " 223802 helium           4.9",
+      " 205348 opencode         4.7",
+      "   1439 Hyprland         4.6",
+      "  15472 t3code           4.1"
+    ]
+  },
+  {
+    "at": 1791417769.1045141,
+    "loadavg": [
+      3.21435546875,
+      3.09375,
+      2.89501953125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 193666 helium          44.8",
+      " 233790 port_worker     42.4",
+      " 233789 port_worker     42.4",
+      "   2192 helium          12.4",
+      "  44668 vesktop         11.4",
+      " 233441 python           8.6",
+      "  44549 vesktop          7.6",
+      "   2142 helium           5.1",
+      " 223802 helium           4.8",
+      " 205348 opencode         4.7",
+      "   1439 Hyprland         4.6",
+      "  15472 t3code           4.1"
+    ]
+  },
+  {
+    "at": 1791417776.559372,
+    "loadavg": [
+      3.11376953125,
+      3.07470703125,
+      2.89111328125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 234272 ps               200",
+      " 234269 clippy-driver   99.1",
+      " 193666 helium          44.8",
+      " 233790 port_worker     42.6",
+      " 233789 port_worker     42.4",
+      "   2192 helium          12.4",
+      "  44668 vesktop         11.4",
+      " 233441 python           8.5",
+      "  44549 vesktop          7.6",
+      "   2142 helium           5.1",
+      " 223802 helium           4.8",
+      " 205348 opencode         4.7"
+    ]
+  }
+]

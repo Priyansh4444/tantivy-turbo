@@ -1,0 +1,53 @@
+diff --git a/src/query/boolean_query/or_maxscore.rs b/src/query/boolean_query/or_maxscore.rs
+--- a/src/query/boolean_query/or_maxscore.rs
++++ b/src/query/boolean_query/or_maxscore.rs
+@@ -694,6 +694,16 @@ mod tests {
+         TermScorer::create_for_test(postings, norms, weight)
+     }
+ 
++    // A fixture floor is a lower bound; an already later real head stays put.
++    // TermScorer::seek itself requires a forward target, including in tests.
++    fn seek_fixture_floor(scorers: &mut [TermScorer], floor: DocId) {
++        for scorer in scorers {
++            if scorer.doc() < floor {
++                scorer.seek(floor);
++            }
++        }
++    }
++
+     // Record every callback, not just the final heap. The independent buffered
+     // union visits every matching doc and applies the canonical SumCombiner.
+     fn trace(
+@@ -1825,9 +1835,7 @@ mod tests {
+                     .collect();
+                 originals.push(fixture(&future, &norms, if reject { 0.02 } else { 0.001 }));
+                 originals.push(fixture(&driver, &norms, 0.1));
+-                for scorer in &mut originals {
+-                    scorer.seek(100);
+-                }
++                seek_fixture_floor(&mut originals, 100);
+                 for reverse in [false, true] {
+                     let mut ordered = originals.clone();
+                     if reverse {
+@@ -1889,9 +1897,7 @@ mod tests {
+             fixture(&later_optional, &norms, 0.03),
+             fixture(&driver, &norms, 0.1),
+         ];
+-        for scorer in &mut originals {
+-            scorer.seek(100);
+-        }
++        seek_fixture_floor(&mut originals, 100);
+         for reverse in [false, true] {
+             let mut ordered = originals.clone();
+             if reverse {
+@@ -1980,9 +1986,7 @@ mod tests {
+                 .map(|i| fixture(&weak, &norms, 0.00001 * (i + 1) as Score))
+                 .collect();
+             scorers.push(fixture(&driver, &norms, 1.0));
+-            for scorer in &mut scorers {
+-                scorer.seek(100);
+-            }
++            seek_fixture_floor(&mut scorers, 100);
+             let (accepted, evidence) = check_widening(scorers, 600, 0.05, 0);
+             let first = &evidence.proposals[0];
+             assert_eq!(

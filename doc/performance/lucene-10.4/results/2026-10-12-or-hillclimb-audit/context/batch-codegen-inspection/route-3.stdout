@@ -1,0 +1,365 @@
+
+/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-11/tantivy_worker:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000255450 <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>>:
+  255450:	55                   	push   %rbp
+  255451:	41 57                	push   %r15
+  255453:	41 56                	push   %r14
+  255455:	41 55                	push   %r13
+  255457:	41 54                	push   %r12
+  255459:	53                   	push   %rbx
+  25545a:	48 81 ec 98 04 00 00 	sub    $0x498,%rsp
+  255461:	48 89 34 24          	mov    %rsi,(%rsp)
+  255465:	48 83 fe 02          	cmp    $0x2,%rsi
+  255469:	0f 82 3b 05 00 00    	jb     2559aa <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x55a>
+  25546f:	48 8b 0c 24          	mov    (%rsp),%rcx
+  255473:	49 89 cc             	mov    %rcx,%r12
+  255476:	49 d1 ec             	shr    $1,%r12
+  255479:	4a 8d 04 e5 00 00 00 	lea    0x0(,%r12,8),%rax
+  255480:	00 
+  255481:	48 8d 04 40          	lea    (%rax,%rax,2),%rax
+  255485:	4c 8d 34 07          	lea    (%rdi,%rax,1),%r14
+  255489:	48 8d 1c 04          	lea    (%rsp,%rax,1),%rbx
+  25548d:	48 83 c3 10          	add    $0x10,%rbx
+  255491:	48 83 f9 08          	cmp    $0x8,%rcx
+  255495:	72 31                	jb     2554c8 <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x78>
+  255497:	48 8d 74 24 10       	lea    0x10(%rsp),%rsi
+  25549c:	49 89 ff             	mov    %rdi,%r15
+  25549f:	e8 ec 08 00 00       	call   255d90 <core::slice::sort::shared::smallsort::sort4_stable::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>>
+  2554a4:	4c 89 f7             	mov    %r14,%rdi
+  2554a7:	48 89 de             	mov    %rbx,%rsi
+  2554aa:	e8 e1 08 00 00       	call   255d90 <core::slice::sort::shared::smallsort::sort4_stable::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>>
+  2554af:	4c 89 ff             	mov    %r15,%rdi
+  2554b2:	b8 04 00 00 00       	mov    $0x4,%eax
+  2554b7:	48 8b 34 24          	mov    (%rsp),%rsi
+  2554bb:	4c 29 e6             	sub    %r12,%rsi
+  2554be:	4c 39 e0             	cmp    %r12,%rax
+  2554c1:	72 3e                	jb     255501 <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0xb1>
+  2554c3:	e9 c2 01 00 00       	jmp    25568a <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x23a>
+  2554c8:	48 8b 47 10          	mov    0x10(%rdi),%rax
+  2554cc:	48 89 44 24 20       	mov    %rax,0x20(%rsp)
+  2554d1:	c5 f8 10 07          	vmovups (%rdi),%xmm0
+  2554d5:	c5 f8 29 44 24 10    	vmovaps %xmm0,0x10(%rsp)
+  2554db:	49 8b 46 10          	mov    0x10(%r14),%rax
+  2554df:	48 89 43 10          	mov    %rax,0x10(%rbx)
+  2554e3:	c4 c1 7a 6f 06       	vmovdqu (%r14),%xmm0
+  2554e8:	c5 fa 7f 03          	vmovdqu %xmm0,(%rbx)
+  2554ec:	b8 01 00 00 00       	mov    $0x1,%eax
+  2554f1:	48 8b 34 24          	mov    (%rsp),%rsi
+  2554f5:	4c 29 e6             	sub    %r12,%rsi
+  2554f8:	4c 39 e0             	cmp    %r12,%rax
+  2554fb:	0f 83 89 01 00 00    	jae    25568a <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x23a>
+  255501:	8d 14 c5 00 00 00 00 	lea    0x0(,%rax,8),%edx
+  255508:	48 8d 14 52          	lea    (%rdx,%rdx,2),%rdx
+  25550c:	c4 e2 79 58 05 bb df 	vpbroadcastd -0x1f2045(%rip),%xmm0        # 634d0 <serde_json::ser::Formatter::write_char_escape::HEX_DIGITS+0x3d80>
+  255513:	e0 ff 
+  255515:	c4 e2 79 59 0d 8a 77 	vpbroadcastq -0x1f8876(%rip),%xmm1        # 5cca8 <__abi_tag+0x5c9ac>
+  25551c:	e0 ff 
+  25551e:	c5 e9 ef d2          	vpxor  %xmm2,%xmm2,%xmm2
+  255522:	49 89 c1             	mov    %rax,%r9
+  255525:	4c 89 74 24 08       	mov    %r14,0x8(%rsp)
+  25552a:	eb 32                	jmp    25555e <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x10e>
+  25552c:	0f 1f 40 00          	nopl   0x0(%rax)
+  255530:	4c 8d 7c 24 10       	lea    0x10(%rsp),%r15
+  255535:	4c 89 f6             	mov    %r14,%rsi
+  255538:	4d 89 1f             	mov    %r11,(%r15)
+  25553b:	c4 c1 7a 11 5f 08    	vmovss %xmm3,0x8(%r15)
+  255541:	45 89 57 0c          	mov    %r10d,0xc(%r15)
+  255545:	4d 89 6f 10          	mov    %r13,0x10(%r15)
+  255549:	4c 8b 74 24 08       	mov    0x8(%rsp),%r14
+  25554e:	49 ff c1             	inc    %r9
+  255551:	48 83 c2 18          	add    $0x18,%rdx
+  255555:	4d 39 e1             	cmp    %r12,%r9
+  255558:	0f 84 2c 01 00 00    	je     25568a <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x23a>
+  25555e:	4a 8d 0c cd 00 00 00 	lea    0x0(,%r9,8),%rcx
+  255565:	00 
+  255566:	4c 8d 2c 49          	lea    (%rcx,%rcx,2),%r13
+  25556a:	c4 a1 78 10 1c 2f    	vmovups (%rdi,%r13,1),%xmm3
+  255570:	c4 a1 78 11 5c 2c 10 	vmovups %xmm3,0x10(%rsp,%r13,1)
+  255577:	4a 8b 4c 2f 10       	mov    0x10(%rdi,%r13,1),%rcx
+  25557c:	4a 89 4c 2c 20       	mov    %rcx,0x20(%rsp,%r13,1)
+  255581:	c4 a1 7a 10 5c 2c 18 	vmovss 0x18(%rsp,%r13,1),%xmm3
+  255588:	c4 a3 61 21 24 2c 10 	vinsertps $0x10,(%rsp,%r13,1),%xmm3,%xmm4
+  25558f:	46 8b 54 2c 1c       	mov    0x1c(%rsp,%r13,1),%r10d
+  255594:	c5 f8 5a e4          	vcvtps2pd %xmm4,%xmm4
+  255598:	c4 c1 79 6e ea       	vmovd  %r10d,%xmm5
+  25559d:	c4 a3 51 22 6c 2c 04 	vpinsrd $0x1,0x4(%rsp,%r13,1),%xmm5,%xmm5
+  2555a4:	01 
+  2555a5:	c4 e2 51 3f e8       	vpmaxud %xmm0,%xmm5,%xmm5
+  2555aa:	c4 e2 79 35 ed       	vpmovzxdq %xmm5,%xmm5
+  2555af:	c5 d1 eb e9          	vpor   %xmm1,%xmm5,%xmm5
+  2555b3:	c5 d1 5c e9          	vsubpd %xmm1,%xmm5,%xmm5
+  2555b7:	c5 d9 5e e5          	vdivpd %xmm5,%xmm4,%xmm4
+  2555bb:	c4 e2 69 37 ec       	vpcmpgtq %xmm4,%xmm2,%xmm5
+  2555c0:	c5 d1 73 d5 01       	vpsrlq $0x1,%xmm5,%xmm5
+  2555c5:	c5 d1 ef e4          	vpxor  %xmm4,%xmm5,%xmm4
+  2555c9:	c4 c1 f9 7e e7       	vmovq  %xmm4,%r15
+  2555ce:	c4 e3 f9 16 e1 01    	vpextrq $0x1,%xmm4,%rcx
+  2555d4:	4e 8b 5c 2c 10       	mov    0x10(%rsp,%r13,1),%r11
+  2555d9:	31 ed                	xor    %ebp,%ebp
+  2555db:	4e 3b 5c 2c f8       	cmp    -0x8(%rsp,%r13,1),%r11
+  2555e0:	40 0f 92 c5          	setb   %bpl
+  2555e4:	45 31 c0             	xor    %r8d,%r8d
+  2555e7:	49 39 cf             	cmp    %rcx,%r15
+  2555ea:	41 0f 9c c0          	setl   %r8b
+  2555ee:	41 0f 45 e8          	cmovne %r8d,%ebp
+  2555f2:	40 80 fd 01          	cmp    $0x1,%bpl
+  2555f6:	0f 85 52 ff ff ff    	jne    25554e <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0xfe>
+  2555fc:	49 89 f6             	mov    %rsi,%r14
+  2555ff:	4a 8d 0c 2c          	lea    (%rsp,%r13,1),%rcx
+  255603:	48 83 c1 10          	add    $0x10,%rcx
+  255607:	4c 8b 69 10          	mov    0x10(%rcx),%r13
+  25560b:	48 89 d5             	mov    %rdx,%rbp
+  25560e:	66 90                	xchg   %ax,%ax
+  255610:	48 8b 4c 2c 08       	mov    0x8(%rsp,%rbp,1),%rcx
+  255615:	48 89 4c 2c 20       	mov    %rcx,0x20(%rsp,%rbp,1)
+  25561a:	c5 f9 10 64 2c f8    	vmovupd -0x8(%rsp,%rbp,1),%xmm4
+  255620:	c5 f9 11 64 2c 10    	vmovupd %xmm4,0x10(%rsp,%rbp,1)
+  255626:	48 83 fd 18          	cmp    $0x18,%rbp
+  25562a:	0f 84 00 ff ff ff    	je     255530 <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0xe0>
+  255630:	c5 fa 10 64 2c e8    	vmovss -0x18(%rsp,%rbp,1),%xmm4
+  255636:	c5 da 5a e4          	vcvtss2sd %xmm4,%xmm4,%xmm4
+  25563a:	8b 4c 2c ec          	mov    -0x14(%rsp,%rbp,1),%ecx
+  25563e:	83 f9 01             	cmp    $0x1,%ecx
+  255641:	83 d1 00             	adc    $0x0,%ecx
+  255644:	c4 e1 83 2a e9       	vcvtsi2sd %rcx,%xmm15,%xmm5
+  255649:	c5 db 5e e5          	vdivsd %xmm5,%xmm4,%xmm4
+  25564d:	c4 e1 f9 7e e1       	vmovq  %xmm4,%rcx
+  255652:	49 89 c8             	mov    %rcx,%r8
+  255655:	49 c1 f8 3f          	sar    $0x3f,%r8
+  255659:	49 d1 e8             	shr    $1,%r8
+  25565c:	49 31 c8             	xor    %rcx,%r8
+  25565f:	31 c9                	xor    %ecx,%ecx
+  255661:	4c 3b 5c 2c e0       	cmp    -0x20(%rsp,%rbp,1),%r11
+  255666:	0f 92 c1             	setb   %cl
+  255669:	31 f6                	xor    %esi,%esi
+  25566b:	4d 39 c7             	cmp    %r8,%r15
+  25566e:	40 0f 9c c6          	setl   %sil
+  255672:	0f 45 ce             	cmovne %esi,%ecx
+  255675:	48 83 c5 e8          	add    $0xffffffffffffffe8,%rbp
+  255679:	84 c9                	test   %cl,%cl
+  25567b:	75 93                	jne    255610 <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x1c0>
+  25567d:	4c 8d 3c 2c          	lea    (%rsp,%rbp,1),%r15
+  255681:	49 83 c7 10          	add    $0x10,%r15
+  255685:	e9 ab fe ff ff       	jmp    255535 <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0xe5>
+  25568a:	48 39 f0             	cmp    %rsi,%rax
+  25568d:	0f 83 7a 01 00 00    	jae    25580d <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x3bd>
+  255693:	8d 14 c5 00 00 00 00 	lea    0x0(,%rax,8),%edx
+  25569a:	48 8d 14 52          	lea    (%rdx,%rdx,2),%rdx
+  25569e:	c4 e2 79 58 05 29 de 	vpbroadcastd -0x1f21d7(%rip),%xmm0        # 634d0 <serde_json::ser::Formatter::write_char_escape::HEX_DIGITS+0x3d80>
+  2556a5:	e0 ff 
+  2556a7:	c4 e2 79 59 0d f8 75 	vpbroadcastq -0x1f8a08(%rip),%xmm1        # 5cca8 <__abi_tag+0x5c9ac>
+  2556ae:	e0 ff 
+  2556b0:	c5 e9 ef d2          	vpxor  %xmm2,%xmm2,%xmm2
+  2556b4:	eb 2e                	jmp    2556e4 <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x294>
+  2556b6:	66 2e 0f 1f 84 00 00 	cs nopw 0x0(%rax,%rax,1)
+  2556bd:	00 00 00 
+  2556c0:	49 89 df             	mov    %rbx,%r15
+  2556c3:	4d 89 0f             	mov    %r9,(%r15)
+  2556c6:	c4 c1 7a 11 5f 08    	vmovss %xmm3,0x8(%r15)
+  2556cc:	45 89 47 0c          	mov    %r8d,0xc(%r15)
+  2556d0:	4d 89 5f 10          	mov    %r11,0x10(%r15)
+  2556d4:	48 ff c0             	inc    %rax
+  2556d7:	48 83 c2 18          	add    $0x18,%rdx
+  2556db:	48 39 f0             	cmp    %rsi,%rax
+  2556de:	0f 84 29 01 00 00    	je     25580d <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x3bd>
+  2556e4:	4c 8d 04 c5 00 00 00 	lea    0x0(,%rax,8),%r8
+  2556eb:	00 
+  2556ec:	4f 8d 1c 40          	lea    (%r8,%r8,2),%r11
+  2556f0:	c4 81 78 10 1c 1e    	vmovups (%r14,%r11,1),%xmm3
+  2556f6:	c4 a1 78 11 1c 1b    	vmovups %xmm3,(%rbx,%r11,1)
+  2556fc:	4f 8b 44 1e 10       	mov    0x10(%r14,%r11,1),%r8
+  255701:	4e 89 44 1b 10       	mov    %r8,0x10(%rbx,%r11,1)
+  255706:	c4 a1 7a 10 5c 1b 08 	vmovss 0x8(%rbx,%r11,1),%xmm3
+  25570d:	c4 a3 61 21 64 1b f0 	vinsertps $0x10,-0x10(%rbx,%r11,1),%xmm3,%xmm4
+  255714:	10 
+  255715:	46 8b 44 1b 0c       	mov    0xc(%rbx,%r11,1),%r8d
+  25571a:	c5 f8 5a e4          	vcvtps2pd %xmm4,%xmm4
+  25571e:	c4 c1 79 6e e8       	vmovd  %r8d,%xmm5
+  255723:	c4 a3 51 22 6c 1b f4 	vpinsrd $0x1,-0xc(%rbx,%r11,1),%xmm5,%xmm5
+  25572a:	01 
+  25572b:	c4 e2 51 3f e8       	vpmaxud %xmm0,%xmm5,%xmm5
+  255730:	c4 e2 79 35 ed       	vpmovzxdq %xmm5,%xmm5
+  255735:	c5 d1 eb e9          	vpor   %xmm1,%xmm5,%xmm5
+  255739:	c5 d1 5c e9          	vsubpd %xmm1,%xmm5,%xmm5
+  25573d:	c5 d9 5e e5          	vdivpd %xmm5,%xmm4,%xmm4
+  255741:	c4 e2 69 37 ec       	vpcmpgtq %xmm4,%xmm2,%xmm5
+  255746:	c5 d1 73 d5 01       	vpsrlq $0x1,%xmm5,%xmm5
+  25574b:	c5 d1 ef e4          	vpxor  %xmm4,%xmm5,%xmm4
+  25574f:	c4 c1 f9 7e e2       	vmovq  %xmm4,%r10
+  255754:	c4 c3 f9 16 e7 01    	vpextrq $0x1,%xmm4,%r15
+  25575a:	4e 8b 0c 1b          	mov    (%rbx,%r11,1),%r9
+  25575e:	31 ed                	xor    %ebp,%ebp
+  255760:	4e 3b 4c 1b e8       	cmp    -0x18(%rbx,%r11,1),%r9
+  255765:	40 0f 92 c5          	setb   %bpl
+  255769:	45 31 ed             	xor    %r13d,%r13d
+  25576c:	4d 39 fa             	cmp    %r15,%r10
+  25576f:	41 0f 9c c5          	setl   %r13b
+  255773:	41 0f 45 ed          	cmovne %r13d,%ebp
+  255777:	40 80 fd 01          	cmp    $0x1,%bpl
+  25577b:	0f 85 53 ff ff ff    	jne    2556d4 <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x284>
+  255781:	49 01 db             	add    %rbx,%r11
+  255784:	4d 8b 5b 10          	mov    0x10(%r11),%r11
+  255788:	49 89 d7             	mov    %rdx,%r15
+  25578b:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+  255790:	4e 8b 6c 3b f8       	mov    -0x8(%rbx,%r15,1),%r13
+  255795:	4e 89 6c 3b 10       	mov    %r13,0x10(%rbx,%r15,1)
+  25579a:	c4 a1 79 10 64 3b e8 	vmovupd -0x18(%rbx,%r15,1),%xmm4
+  2557a1:	c4 a1 79 11 24 3b    	vmovupd %xmm4,(%rbx,%r15,1)
+  2557a7:	49 83 ff 18          	cmp    $0x18,%r15
+  2557ab:	0f 84 0f ff ff ff    	je     2556c0 <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x270>
+  2557b1:	c4 a1 7a 10 64 3b d8 	vmovss -0x28(%rbx,%r15,1),%xmm4
+  2557b8:	c5 da 5a e4          	vcvtss2sd %xmm4,%xmm4,%xmm4
+  2557bc:	46 8b 6c 3b dc       	mov    -0x24(%rbx,%r15,1),%r13d
+  2557c1:	41 83 fd 01          	cmp    $0x1,%r13d
+  2557c5:	41 83 d5 00          	adc    $0x0,%r13d
+  2557c9:	c4 c1 83 2a ed       	vcvtsi2sd %r13,%xmm15,%xmm5
+  2557ce:	c5 db 5e e5          	vdivsd %xmm5,%xmm4,%xmm4
+  2557d2:	c4 c1 f9 7e e5       	vmovq  %xmm4,%r13
+  2557d7:	4c 89 ed             	mov    %r13,%rbp
+  2557da:	48 c1 fd 3f          	sar    $0x3f,%rbp
+  2557de:	48 d1 ed             	shr    $1,%rbp
+  2557e1:	4c 31 ed             	xor    %r13,%rbp
+  2557e4:	45 31 ed             	xor    %r13d,%r13d
+  2557e7:	4e 3b 4c 3b d0       	cmp    -0x30(%rbx,%r15,1),%r9
+  2557ec:	41 0f 92 c5          	setb   %r13b
+  2557f0:	31 c9                	xor    %ecx,%ecx
+  2557f2:	49 39 ea             	cmp    %rbp,%r10
+  2557f5:	0f 9c c1             	setl   %cl
+  2557f8:	44 0f 45 e9          	cmovne %ecx,%r13d
+  2557fc:	49 83 c7 e8          	add    $0xffffffffffffffe8,%r15
+  255800:	45 84 ed             	test   %r13b,%r13b
+  255803:	75 8b                	jne    255790 <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x340>
+  255805:	49 01 df             	add    %rbx,%r15
+  255808:	e9 b6 fe ff ff       	jmp    2556c3 <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x273>
+  25580d:	48 8b 04 24          	mov    (%rsp),%rax
+  255811:	48 8d 04 40          	lea    (%rax,%rax,2),%rax
+  255815:	48 8d 14 c7          	lea    (%rdi,%rax,8),%rdx
+  255819:	48 83 c2 e8          	add    $0xffffffffffffffe8,%rdx
+  25581d:	48 8d 4c c4 f8       	lea    -0x8(%rsp,%rax,8),%rcx
+  255822:	48 8d 43 e8          	lea    -0x18(%rbx),%rax
+  255826:	4c 8d 44 24 10       	lea    0x10(%rsp),%r8
+  25582b:	c4 e2 79 58 05 9c dc 	vpbroadcastd -0x1f2364(%rip),%xmm0        # 634d0 <serde_json::ser::Formatter::write_char_escape::HEX_DIGITS+0x3d80>
+  255832:	e0 ff 
+  255834:	c4 e2 79 59 0d 6b 74 	vpbroadcastq -0x1f8b95(%rip),%xmm1        # 5cca8 <__abi_tag+0x5c9ac>
+  25583b:	e0 ff 
+  25583d:	c5 e9 ef d2          	vpxor  %xmm2,%xmm2,%xmm2
+  255841:	66 66 66 66 66 66 2e 	data16 data16 data16 data16 data16 cs nopw 0x0(%rax,%rax,1)
+  255848:	0f 1f 84 00 00 00 00 
+  25584f:	00 
+  255850:	49 89 d9             	mov    %rbx,%r9
+  255853:	4d 89 c2             	mov    %r8,%r10
+  255856:	c5 fa 10 5b 08       	vmovss 0x8(%rbx),%xmm3
+  25585b:	c4 c3 61 21 58 08 10 	vinsertps $0x10,0x8(%r8),%xmm3,%xmm3
+  255862:	c5 f8 5a db          	vcvtps2pd %xmm3,%xmm3
+  255866:	c5 f9 6e 63 0c       	vmovd  0xc(%rbx),%xmm4
+  25586b:	c4 c3 59 22 60 0c 01 	vpinsrd $0x1,0xc(%r8),%xmm4,%xmm4
+  255872:	c4 e2 59 3f e0       	vpmaxud %xmm0,%xmm4,%xmm4
+  255877:	c4 e2 79 35 e4       	vpmovzxdq %xmm4,%xmm4
+  25587c:	c5 d9 eb e1          	vpor   %xmm1,%xmm4,%xmm4
+  255880:	c5 d9 5c e1          	vsubpd %xmm1,%xmm4,%xmm4
+  255884:	c5 e1 5e dc          	vdivpd %xmm4,%xmm3,%xmm3
+  255888:	c4 e2 69 37 e3       	vpcmpgtq %xmm3,%xmm2,%xmm4
+  25588d:	c5 d9 73 d4 01       	vpsrlq $0x1,%xmm4,%xmm4
+  255892:	c5 d9 ef db          	vpxor  %xmm3,%xmm4,%xmm3
+  255896:	c4 e1 f9 7e de       	vmovq  %xmm3,%rsi
+  25589b:	c4 c3 f9 16 d8 01    	vpextrq $0x1,%xmm3,%r8
+  2558a1:	4c 8b 1b             	mov    (%rbx),%r11
+  2558a4:	31 db                	xor    %ebx,%ebx
+  2558a6:	4d 3b 1a             	cmp    (%r10),%r11
+  2558a9:	0f 92 c3             	setb   %bl
+  2558ac:	45 31 db             	xor    %r11d,%r11d
+  2558af:	4c 39 c6             	cmp    %r8,%rsi
+  2558b2:	41 0f 9c c3          	setl   %r11b
+  2558b6:	41 0f 45 db          	cmovne %r11d,%ebx
+  2558ba:	4d 8d 42 18          	lea    0x18(%r10),%r8
+  2558be:	84 db                	test   %bl,%bl
+  2558c0:	4d 0f 45 c2          	cmovne %r10,%r8
+  2558c4:	4d 0f 45 d1          	cmovne %r9,%r10
+  2558c8:	49 8b 72 10          	mov    0x10(%r10),%rsi
+  2558cc:	48 89 77 10          	mov    %rsi,0x10(%rdi)
+  2558d0:	c4 c1 78 10 1a       	vmovups (%r10),%xmm3
+  2558d5:	c5 f8 11 1f          	vmovups %xmm3,(%rdi)
+  2558d9:	49 8d 59 18          	lea    0x18(%r9),%rbx
+  2558dd:	49 0f 44 d9          	cmove  %r9,%rbx
+  2558e1:	48 83 c7 18          	add    $0x18,%rdi
+  2558e5:	c5 fa 10 59 08       	vmovss 0x8(%rcx),%xmm3
+  2558ea:	c4 e3 61 21 58 08 10 	vinsertps $0x10,0x8(%rax),%xmm3,%xmm3
+  2558f1:	c5 f8 5a db          	vcvtps2pd %xmm3,%xmm3
+  2558f5:	c5 f9 6e 61 0c       	vmovd  0xc(%rcx),%xmm4
+  2558fa:	c4 e3 59 22 60 0c 01 	vpinsrd $0x1,0xc(%rax),%xmm4,%xmm4
+  255901:	c4 e2 59 3f e0       	vpmaxud %xmm0,%xmm4,%xmm4
+  255906:	c4 e2 79 35 e4       	vpmovzxdq %xmm4,%xmm4
+  25590b:	c5 d9 eb e1          	vpor   %xmm1,%xmm4,%xmm4
+  25590f:	c5 d9 5c e1          	vsubpd %xmm1,%xmm4,%xmm4
+  255913:	c5 e1 5e dc          	vdivpd %xmm4,%xmm3,%xmm3
+  255917:	c4 e2 69 37 e3       	vpcmpgtq %xmm3,%xmm2,%xmm4
+  25591c:	c5 d9 73 d4 01       	vpsrlq $0x1,%xmm4,%xmm4
+  255921:	c5 d9 ef db          	vpxor  %xmm3,%xmm4,%xmm3
+  255925:	c4 e1 f9 7e de       	vmovq  %xmm3,%rsi
+  25592a:	c4 c3 f9 16 d9 01    	vpextrq $0x1,%xmm3,%r9
+  255930:	4c 8b 11             	mov    (%rcx),%r10
+  255933:	45 31 db             	xor    %r11d,%r11d
+  255936:	4c 3b 10             	cmp    (%rax),%r10
+  255939:	41 0f 92 c3          	setb   %r11b
+  25593d:	45 31 d2             	xor    %r10d,%r10d
+  255940:	4c 39 ce             	cmp    %r9,%rsi
+  255943:	41 0f 9c c2          	setl   %r10b
+  255947:	45 0f 45 da          	cmovne %r10d,%r11d
+  25594b:	45 84 db             	test   %r11b,%r11b
+  25594e:	48 89 ce             	mov    %rcx,%rsi
+  255951:	48 0f 45 f0          	cmovne %rax,%rsi
+  255955:	4c 8b 4e 10          	mov    0x10(%rsi),%r9
+  255959:	4c 89 4a 10          	mov    %r9,0x10(%rdx)
+  25595d:	c5 f8 10 1e          	vmovups (%rsi),%xmm3
+  255961:	c5 f8 11 1a          	vmovups %xmm3,(%rdx)
+  255965:	41 0f b6 f3          	movzbl %r11b,%esi
+  255969:	4c 8d 0c 76          	lea    (%rsi,%rsi,2),%r9
+  25596d:	4a 8d 0c c9          	lea    (%rcx,%r9,8),%rcx
+  255971:	48 83 c1 e8          	add    $0xffffffffffffffe8,%rcx
+  255975:	48 f7 de             	neg    %rsi
+  255978:	48 8d 34 76          	lea    (%rsi,%rsi,2),%rsi
+  25597c:	48 8d 04 f0          	lea    (%rax,%rsi,8),%rax
+  255980:	48 83 c2 e8          	add    $0xffffffffffffffe8,%rdx
+  255984:	49 ff cc             	dec    %r12
+  255987:	0f 85 c3 fe ff ff    	jne    255850 <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x400>
+  25598d:	48 83 c0 18          	add    $0x18,%rax
+  255991:	48 83 c1 18          	add    $0x18,%rcx
+  255995:	f6 04 24 01          	testb  $0x1,(%rsp)
+  255999:	75 21                	jne    2559bc <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x56c>
+  25599b:	48 39 cb             	cmp    %rcx,%rbx
+  25599e:	0f 95 c1             	setne  %cl
+  2559a1:	49 39 c0             	cmp    %rax,%r8
+  2559a4:	75 4b                	jne    2559f1 <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x5a1>
+  2559a6:	84 c9                	test   %cl,%cl
+  2559a8:	75 4d                	jne    2559f7 <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x5a7>
+  2559aa:	48 81 c4 98 04 00 00 	add    $0x498,%rsp
+  2559b1:	5b                   	pop    %rbx
+  2559b2:	41 5c                	pop    %r12
+  2559b4:	41 5d                	pop    %r13
+  2559b6:	41 5e                	pop    %r14
+  2559b8:	41 5f                	pop    %r15
+  2559ba:	5d                   	pop    %rbp
+  2559bb:	c3                   	ret
+  2559bc:	49 8d 50 18          	lea    0x18(%r8),%rdx
+  2559c0:	49 39 c0             	cmp    %rax,%r8
+  2559c3:	48 89 de             	mov    %rbx,%rsi
+  2559c6:	49 0f 42 f0          	cmovb  %r8,%rsi
+  2559ca:	4c 8b 4e 10          	mov    0x10(%rsi),%r9
+  2559ce:	4c 89 4f 10          	mov    %r9,0x10(%rdi)
+  2559d2:	4c 8d 4b 18          	lea    0x18(%rbx),%r9
+  2559d6:	c5 fa 6f 06          	vmovdqu (%rsi),%xmm0
+  2559da:	c5 fa 7f 07          	vmovdqu %xmm0,(%rdi)
+  2559de:	4c 0f 42 c2          	cmovb  %rdx,%r8
+  2559e2:	49 0f 43 d9          	cmovae %r9,%rbx
+  2559e6:	48 39 cb             	cmp    %rcx,%rbx
+  2559e9:	0f 95 c1             	setne  %cl
+  2559ec:	49 39 c0             	cmp    %rax,%r8
+  2559ef:	74 b5                	je     2559a6 <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x556>
+  2559f1:	b1 01                	mov    $0x1,%cl
+  2559f3:	84 c9                	test   %cl,%cl
+  2559f5:	74 b3                	je     2559aa <core::slice::sort::shared::smallsort::small_sort_general::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x55a>
+  2559f7:	e8 14 e2 f2 ff       	call   183c10 <core::slice::sort::shared::smallsort::panic_on_ord_violation>

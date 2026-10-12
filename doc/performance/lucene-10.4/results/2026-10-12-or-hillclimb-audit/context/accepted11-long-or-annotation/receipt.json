@@ -1,0 +1,15 @@
+{
+  "pass": true,
+  "returncode": 0,
+  "before": {
+    "trace": "769f144b1ac0e277b04df4b01d5566130f3b0fb210e469b324e4a00bfbe95c91",
+    "profile": "3a9fe2cc6950cfab0af92e447e6adc88f8099e59c66f1202fe1d05f16f6dee37",
+    "binary": "e11c4939984690d2c2d781cb6ace40d5e818e3a18a3f9f558d6cbcfd62546e5d"
+  },
+  "after": {
+    "trace": "769f144b1ac0e277b04df4b01d5566130f3b0fb210e469b324e4a00bfbe95c91",
+    "profile": "3a9fe2cc6950cfab0af92e447e6adc88f8099e59c66f1202fe1d05f16f6dee37",
+    "binary": "e11c4939984690d2c2d781cb6ace40d5e818e3a18a3f9f558d6cbcfd62546e5d"
+  },
+  "purpose": "Instruction sample attribution in existing accepted11 longOR profile; no comparative latency or causal speed claim"
+}

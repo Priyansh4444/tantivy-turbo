@@ -1,0 +1,12 @@
+{
+  "pass": true,
+  "responses": 412,
+  "cases": 103,
+  "ready_exact": true,
+  "complete_request_order": true,
+  "positive_integer_timings": true,
+  "checksums": true,
+  "latency_acceptance": false,
+  "limitations": "Diagnostic only. Replies JSON retained; original raw wire not retained. Does not revalidate external index payload or prove causal cycles. Immutable accepted11 has separate exact gates.",
+  "replies_sha256": "a13b52d722ca33315af6eba96d852631f68eccadbc13c190d705193f2e1cab60"
+}

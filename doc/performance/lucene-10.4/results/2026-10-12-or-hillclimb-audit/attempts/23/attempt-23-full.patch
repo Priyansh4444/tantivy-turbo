@@ -1,0 +1,151 @@
+diff --git i/src/query/boolean_query/or_maxscore.rs w/src/query/boolean_query/or_maxscore.rs
+index 25d86439d..1f8f947e2 100644
+--- i/src/query/boolean_query/or_maxscore.rs
++++ w/src/query/boolean_query/or_maxscore.rs
+@@ -97,7 +97,7 @@ pub(crate) fn or_maxscore(
+     // prefix/probe sum contains at most the admitted number of original terms.
+     let upper_bound =
+         SmallScoreSumUpperBound::new(num_terms).expect("admitted 3..=32-term score sum");
+-    let mut optional_cutoff = ScoreSumThresholdCutoff::new(threshold);
++    let mut threshold_cutoff = ScoreSumThresholdCutoff::new(threshold);
+     let mut clauses: Vec<ClauseState> = scorers
+         .iter()
+         .enumerate()
+@@ -143,7 +143,10 @@ pub(crate) fn or_maxscore(
+             .all(|clause| clause.doc == scorers[clause.ordinal].doc()));
+         while certified_global < num_terms {
+             let next_sum = certified_global_sum + f64::from(clauses[certified_global].global_max);
+-            if upper_bound.score(next_sum) > threshold {
++            let exceeds = upper_bound.score_is_greater(next_sum, &threshold_cutoff);
++            #[cfg(test)]
++            assert_eq!(exceeds, upper_bound.score(next_sum) > threshold);
++            if exceeds {
+                 break;
+             }
+             certified_global_sum = next_sum;
+@@ -268,9 +271,13 @@ pub(crate) fn or_maxscore(
+             prefix[rank + 1] = prefix[rank] + f64::from(clause.local_max);
+         }
+         let mut first_essential = 0;
+-        while first_essential < num_terms
+-            && upper_bound.score(prefix[first_essential + 1]) <= threshold
+-        {
++        while first_essential < num_terms && {
++            let local_sum = prefix[first_essential + 1];
++            let at_most = upper_bound.score_is_at_most(local_sum, &threshold_cutoff);
++            #[cfg(test)]
++            assert_eq!(at_most, upper_bound.score(local_sum) <= threshold);
++            at_most
++        } {
+             first_essential += 1;
+         }
+         if first_essential == num_terms {
+@@ -344,7 +351,7 @@ pub(crate) fn or_maxscore(
+             let mut competitive = true;
+             for rank in (0..first_essential).rev() {
+                 let optional_sum = known + prefix[rank + 1];
+-                let rejected = upper_bound.score_is_at_most(optional_sum, &optional_cutoff);
++                let rejected = upper_bound.score_is_at_most(optional_sum, &threshold_cutoff);
+                 #[cfg(test)]
+                 debug_assert_eq!(rejected, upper_bound.score(optional_sum) <= threshold);
+                 if rejected {
+@@ -372,7 +379,7 @@ pub(crate) fn or_maxscore(
+                     let next_threshold = callback(doc, score);
+                     debug_assert!(next_threshold >= threshold);
+                     threshold = next_threshold;
+-                    optional_cutoff = ScoreSumThresholdCutoff::new(threshold);
++                    threshold_cutoff = ScoreSumThresholdCutoff::new(threshold);
+                 }
+             }
+             if single_essential {
+diff --git i/src/query/score_combiner.rs w/src/query/score_combiner.rs
+index a0dc74844..f3711064d 100644
+--- i/src/query/score_combiner.rs
++++ w/src/query/score_combiner.rs
+@@ -190,6 +190,13 @@ impl SmallScoreSumUpperBound {
+         debug_assert!(sum.is_finite() && sum >= 0.0 && sum <= 32.0 * f64::from(Score::MAX));
+         (sum * self.factor) <= cutoff.0
+     }
++
++    /// Ordered greater comparison: both predicates must be false for NaN.
++    #[inline]
++    pub(crate) fn score_is_greater(&self, sum: f64, cutoff: &ScoreSumThresholdCutoff) -> bool {
++        debug_assert!(sum.is_finite() && sum >= 0.0 && sum <= 32.0 * f64::from(Score::MAX));
++        (sum * self.factor) > cutoff.0
++    }
+ }
+ 
+ /// Take max score of different scorers
+@@ -270,6 +277,14 @@ mod tests {
+             threshold.to_bits(),
+             small.factor.to_bits()
+         );
++        assert_eq!(
++            small.score_is_greater(sum, &cutoff),
++            small.score(sum) > threshold,
++            "sum_bits={:#018x} threshold_bits={:#010x} factor_bits={:#018x}",
++            sum.to_bits(),
++            threshold.to_bits(),
++            small.factor.to_bits()
++        );
+     }
+ 
+     #[test]
+@@ -362,11 +377,25 @@ mod tests {
+                     "threshold_bits={bits:#010x} product_bits={:#018x}",
+                     product.to_bits()
+                 );
++                assert_eq!(
++                    product > cutoff,
++                    old_score > threshold,
++                    "threshold_bits={bits:#010x} product_bits={:#018x}",
++                    product.to_bits()
++                );
+             }
+             let even = bits & 1 == 0;
+             assert!(pred2 <= cutoff);
+             assert_eq!(pred1 <= cutoff, even);
++            assert_eq!(pred1 > cutoff, !even);
+             assert!(midpoint > cutoff);
++            for (product, expected) in [(cutoff, false), (cutoff.next_up(), true)] {
++                let old_score = f64::from_bits(product.to_bits() + 1) as f32;
++                assert_eq!(
++                    (product > cutoff, old_score > threshold),
++                    (expected, expected)
++                );
++            }
+             assert_eq!(
+                 cutoff.to_bits(),
+                 if even {
+@@ -387,6 +416,31 @@ mod tests {
+             saw_odd |= !even;
+         }
+         assert!(saw_even && saw_odd);
++        // Ordered NaN comparisons are both false; greater is not the
++        // complement of at-most. Include either sign and NaN payload class.
++        for bits in [0x7f80_0001, 0x7fc0_0000, 0xff80_0001, 0xffc0_0000] {
++            let threshold = f32::from_bits(bits);
++            let cutoff = ScoreSumThresholdCutoff::new(threshold).0;
++            let product = 1.0f64;
++            let old_score = f64::from_bits(product.to_bits() + 1) as f32;
++            assert_eq!(
++                (old_score <= threshold, old_score > threshold),
++                (false, false)
++            );
++            assert_eq!((product <= cutoff, product > cutoff), (false, false));
++        }
++        // An overflowing old bound equals +infinity; it must not be greater
++        // than a +infinity threshold, even though it exceeds f32::MAX.
++        let product = f64::from(f32::MAX) + 2.0f64.powi(103);
++        let old_score = f64::from_bits(product.to_bits() + 1) as f32;
++        assert_eq!(old_score, f32::INFINITY);
++        assert!(old_score > f32::MAX);
++        assert_eq!(
++            (old_score <= f32::INFINITY, old_score > f32::INFINITY),
++            (true, false)
++        );
++        let cutoff = ScoreSumThresholdCutoff::new(f32::INFINITY).0;
++        assert_eq!((product <= cutoff, product > cutoff), (true, false));
+     }
+ 
+     #[test]

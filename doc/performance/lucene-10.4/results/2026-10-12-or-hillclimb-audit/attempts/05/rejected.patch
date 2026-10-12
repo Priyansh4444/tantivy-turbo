@@ -1,0 +1,12 @@
+diff --git i/src/query/boolean_query/block_wand_union.rs w/src/query/boolean_query/block_wand_union.rs
+index ebadbcd53..91fcedef8 100644
+--- i/src/query/boolean_query/block_wand_union.rs
++++ w/src/query/boolean_query/block_wand_union.rs
+@@ -133,6 +133,7 @@ thread_local! {
+ /// The post-warm two-term fallback: establish one local certificate, then use
+ /// a fixed merge or one essential stream until its physical half-open end.
+ /// Local required/optional roles expire at that end; this remains an OR query.
++#[inline(never)]
+ fn two_term_regions(
+     mut scorers: Vec<TermScorer>,
+     max_doc: DocId,

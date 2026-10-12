@@ -1,0 +1,9 @@
+{
+  "parent": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "source_sha256": {
+    "src/query/boolean_query/or_maxscore.rs": "25e73721d3ac6e4d830594ba399195d5a64082031726d0883fb67042c1e4acbe",
+    "src/query/term_query/term_scorer.rs": "21b05a2b6513223a81613ee0f40c4a31f6990a427bb0d4b60324154a55753cdb"
+  },
+  "patch_sha256": "c99ba22c7f2983824f965fa2f9fe674eb374faf5c5ca33c9dc1d10fb95a558fa",
+  "review": "Root read full13 inherited mechanism, full17-vs13 patch and final implementation matrix; exact proposed original-n prefix, admission and chosen cursor certificates reviewed. Root owns runtime."
+}

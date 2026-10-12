@@ -1,0 +1,368 @@
+{
+  "seconds": 8.873802223999519,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 227093.1836461126,
+        "baseline_mean_ns": 224992.29758713135,
+        "ratio_mean": 1.0093375910265001,
+        "median_ratio": 0.9905754751750645
+      },
+      "BA": {
+        "candidate_mean_ns": 218828.76139410186,
+        "baseline_mean_ns": 233315.79892761394,
+        "ratio_mean": 0.9379080302315633,
+        "median_ratio": 0.9669900954774259
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 516214.26699029125,
+        "baseline_mean_ns": 515078.72330097086,
+        "ratio_mean": 1.0022046022053543,
+        "median_ratio": 0.9800623889403922
+      },
+      "BA": {
+        "candidate_mean_ns": 495015.7961165049,
+        "baseline_mean_ns": 527650.1844660194,
+        "ratio_mean": 0.9381514698368949,
+        "median_ratio": 0.9515697662402084
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 77653.11633663367,
+        "baseline_mean_ns": 79457.94306930693,
+        "ratio_mean": 0.977285760706151,
+        "median_ratio": 0.9885597248703879
+      },
+      "BA": {
+        "candidate_mean_ns": 79697.04455445544,
+        "baseline_mean_ns": 82867.73514851485,
+        "ratio_mean": 0.9617379359001798,
+        "median_ratio": 0.9492359665540268
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 711,
+      "kind": "OR",
+      "terms": [
+        "ford",
+        "parts"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2193932569258223,
+      "BA": 1.1464920740442506
+    },
+    {
+      "id": 339,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "english",
+        "restoration"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0687227600128457,
+      "BA": 1.1309211567216564
+    },
+    {
+      "id": 1105,
+      "kind": "PHRASE",
+      "terms": [
+        "bismarck",
+        "state",
+        "college"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1313253137314023,
+      "BA": 1.0658804636924775
+    },
+    {
+      "id": 821,
+      "kind": "OR",
+      "terms": [
+        "music",
+        "videos"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0637902160283437,
+      "BA": 1.181452727318409
+    },
+    {
+      "id": 255,
+      "kind": "TERM",
+      "terms": [
+        "ink"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0550932760703262,
+      "BA": 1.1255203330131285
+    },
+    {
+      "id": 331,
+      "kind": "OR",
+      "terms": [
+        "borders",
+        "books"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0536137567191488,
+      "BA": 1.0940282355936755
+    },
+    {
+      "id": 737,
+      "kind": "OR",
+      "terms": [
+        "playa",
+        "del",
+        "rey"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.059539659122258,
+      "BA": 1.0484687179242356
+    },
+    {
+      "id": 885,
+      "kind": "OR",
+      "terms": [
+        "warren",
+        "county"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0458134913195096,
+      "BA": 1.0573442083422766
+    },
+    {
+      "id": 727,
+      "kind": "OR",
+      "terms": [
+        "term",
+        "life",
+        "insurance"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1414414975765856,
+      "BA": 1.042422219446316
+    },
+    {
+      "id": 306,
+      "kind": "TERM",
+      "terms": [
+        "camp"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1905442663126724,
+      "BA": 1.042229133934011
+    },
+    {
+      "id": 238,
+      "kind": "TERM",
+      "terms": [
+        "edith"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0505580207072744,
+      "BA": 1.0380533964177088
+    },
+    {
+      "id": 1139,
+      "kind": "PHRASE",
+      "terms": [
+        "business",
+        "consultants"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0739759266945499,
+      "BA": 1.0373232149016902
+    },
+    {
+      "id": 609,
+      "kind": "OR",
+      "terms": [
+        "pump",
+        "it",
+        "up"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.035571603844021,
+      "BA": 1.0616497179122424
+    },
+    {
+      "id": 855,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "british",
+        "embassy"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0351167034866968,
+      "BA": 1.060319195871938
+    },
+    {
+      "id": 1020,
+      "kind": "PHRASE",
+      "terms": [
+        "hotel",
+        "del",
+        "coronado"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.040873834354937,
+      "BA": 1.0348234059913743
+    },
+    {
+      "id": 136,
+      "kind": "TERM",
+      "terms": [
+        "kitchen"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0369609028617492,
+      "BA": 1.0337322652253644
+    },
+    {
+      "id": 34,
+      "kind": "TERM",
+      "terms": [
+        "helen"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0303847096299927,
+      "BA": 1.175748088385815
+    },
+    {
+      "id": 6,
+      "kind": "TERM",
+      "terms": [
+        "york"
+      ],
+      "tags": [
+        "wiki20",
+        "term",
+        "med"
+      ],
+      "AB": 1.2131231033677823,
+      "BA": 1.0278473906854588
+    },
+    {
+      "id": 7,
+      "kind": "TERM",
+      "terms": [
+        "saxophone"
+      ],
+      "tags": [
+        "wiki20",
+        "term",
+        "low"
+      ],
+      "AB": 1.027588090685605,
+      "BA": 1.028050233751948
+    },
+    {
+      "id": 447,
+      "kind": "OR",
+      "terms": [
+        "child",
+        "support"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0446733376149502,
+      "BA": 1.0274502945953337
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791505401.724907,
+      "loadavg": [
+        5.54248046875,
+        4.82421875,
+        4.55908203125
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 261686 python          94.5",
+        " 235106 helium          22.1",
+        " 261894 xearch-search   16.6",
+        "   2339 vesktop          6.1",
+        " 261380 snapperd         5.1",
+        "   6068 t3code           2.7",
+        "   2156 vesktop          2.4",
+        "   2423 helium           2.1",
+        "   2373 helium           1.6",
+        "   1441 Hyprland         1.2",
+        "   6078 t3code           1.2",
+        "   5874 t3code           1.0"
+      ]
+    },
+    {
+      "at": 1791505407.9759629,
+      "loadavg": [
+        5.4990234375,
+        4.8271484375,
+        4.5615234375
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 261686 python          24.7",
+        " 235106 helium          21.6",
+        "   2339 vesktop          6.1",
+        "   6068 t3code           2.7",
+        "   2156 vesktop          2.4",
+        "   2423 helium           2.1",
+        " 261380 snapperd         1.7",
+        "   2373 helium           1.6",
+        "   1441 Hyprland         1.2",
+        "   6078 t3code           1.2",
+        "   5874 t3code           1.0",
+        "   2269 vesktop          1.0"
+      ]
+    }
+  ]
+}

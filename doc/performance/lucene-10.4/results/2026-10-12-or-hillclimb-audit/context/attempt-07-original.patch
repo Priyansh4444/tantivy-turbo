@@ -1,0 +1,250 @@
+diff --git i/src/query/boolean_query/or_maxscore.rs w/src/query/boolean_query/or_maxscore.rs
+index 36ddc829d..6a475b642 100644
+--- i/src/query/boolean_query/or_maxscore.rs
++++ w/src/query/boolean_query/or_maxscore.rs
+@@ -63,6 +63,23 @@ thread_local! {
+         const { std::cell::RefCell::new(None) };
+ }
+ 
++#[cfg(test)]
++struct RepartitionEvent {
++    lo: DocId,
++    hi: DocId,
++    doc: DocId,
++    old_first: usize,
++    new_first: usize,
++    threshold_bits: u32,
++    old_suffix_min: DocId,
++}
++
++#[cfg(test)]
++thread_local! {
++    static REPARTITIONS: std::cell::RefCell<Option<Vec<RepartitionEvent>>> =
++        const { std::cell::RefCell::new(None) };
++}
++
+ /// Merge only clauses whose local score bounds can exceed the optional prefix.
+ /// Scorers stay in incoming order: the preference order is for pruning only,
+ /// while published scores replay the original f32 leaves in f64.
+@@ -237,8 +254,10 @@ pub(crate) fn or_maxscore(
+                 clause.seek(&mut scorers, lo);
+             }
+         }
+-        // The buffered phase retains the current certified partition. Cursor
+-        // docs always mean first unread; batch docs own the replay candidates.
++        // Fix the execution mode at region entry. Prefetched batch rows own
++        // their partition; only an initially multi-essential scalar region may
++        // shrink its suffix, and it remains scalar even with one essential.
++        // Cursor docs mean first unread; batch docs own the replay candidates.
+         let single_essential = num_terms - first_essential == 1;
+         let mut batch_len = 0;
+         let mut batch_index = 0;
+@@ -273,6 +292,8 @@ pub(crate) fn or_maxscore(
+             if doc >= hi {
+                 break;
+             }
++            // Keep this candidate's old scalar suffix through every advance.
++            let mut next_first_essential = first_essential;
+             contributions.fill(0.0);
+             let mut known = 0.0f64;
+             if single_essential {
+@@ -316,6 +337,13 @@ pub(crate) fn or_maxscore(
+                 if score > threshold {
+                     let next_threshold = callback(doc, score);
+                     debug_assert!(next_threshold >= threshold);
++                    if !single_essential && next_threshold > threshold {
++                        while next_first_essential < num_terms
++                            && upper_bound.score(prefix[next_first_essential + 1]) <= next_threshold
++                        {
++                            next_first_essential += 1;
++                        }
++                    }
+                     threshold = next_threshold;
+                 }
+             }
+@@ -328,6 +356,35 @@ pub(crate) fn or_maxscore(
+                     }
+                 }
+             }
++            if next_first_essential != first_essential {
++                debug_assert!(clauses[first_essential..]
++                    .iter()
++                    .all(|clause| clause.doc > doc));
++                #[cfg(test)]
++                REPARTITIONS.with(|events| {
++                    if let Some(events) = events.borrow_mut().as_mut() {
++                        events.push(RepartitionEvent {
++                            lo,
++                            hi,
++                            doc,
++                            old_first: first_essential,
++                            new_first: next_first_essential,
++                            threshold_bits: threshold.to_bits(),
++                            old_suffix_min: clauses[first_essential..]
++                                .iter()
++                                .map(|clause| clause.doc)
++                                .min()
++                                .unwrap_or(TERMINATED),
++                        });
++                    }
++                });
++                // A suffix only shrinks within this fixed certificate; every
++                // remaining essential was reconciled at region entry already.
++                first_essential = next_first_essential;
++                if first_essential == num_terms {
++                    break;
++                }
++            }
+         }
+         debug_assert!(clauses
+             .iter()
+@@ -422,7 +479,9 @@ mod tests {
+             fixture(&weak, &norms, 0.002),
+         ];
+         BATCH_LENGTHS.with(|lengths| *lengths.borrow_mut() = Some(Vec::new()));
++        REPARTITIONS.with(|events| *events.borrow_mut() = Some(Vec::new()));
+         let accepted = check(scorers.clone(), 4096, 0.1, 1);
++        assert!(REPARTITIONS.with(|events| events.borrow_mut().take().unwrap().is_empty()));
+         let lengths = BATCH_LENGTHS.with(|lengths| lengths.borrow_mut().take().unwrap());
+         assert!(
+             lengths.contains(&128),
+@@ -432,6 +491,14 @@ mod tests {
+             accepted.iter().map(|&(doc, _)| doc).collect::<Vec<_>>(),
+             [0, 132, 960]
+         );
++        // The same rising raw callback trace must retain the prefetched route
++        // in reversed incoming order, with no within-region repartition event.
++        REPARTITIONS.with(|events| *events.borrow_mut() = Some(Vec::new()));
++        assert_eq!(
++            check(scorers.iter().rev().cloned().collect(), 4096, 0.1, 1),
++            accepted
++        );
++        assert!(REPARTITIONS.with(|events| events.borrow_mut().take().unwrap().is_empty()));
+         check(scorers.clone(), 4096, 0.1, 0);
+         check(scorers.clone(), 4096, 0.1, 10);
+         // Model collector-owned deletions: rejected early winners must leave
+@@ -471,6 +538,124 @@ mod tests {
+         );
+     }
+ 
++    #[test]
++    fn callback_growth_repartitions_only_after_old_essential_advances() {
++        let norms = vec![1; 500];
++        let dense: Vec<_> = (0..300).map(|doc| (doc, 1)).collect();
++        let rare = [(0, 1), (10, 1000), (300, 1)];
++        let scorers = vec![
++            fixture(&dense, &norms, 0.1),
++            fixture(&dense, &norms, 0.2),
++            fixture(&rare, &norms, 1.0),
++        ];
++        let upper = ScoreSumUpperBound::new(3);
++        let weak_certificate = upper.score(
++            f64::from(scorers[0].clone().block_max_score())
++                + f64::from(scorers[1].clone().block_max_score()),
++        );
++        let whole_certificate = upper.score(
++            f64::from(scorers[0].clone().block_max_score())
++                + f64::from(scorers[1].clone().block_max_score())
++                + f64::from(scorers[2].clone().block_max_score()),
++        );
++        // Independently enumerate every hit and replay the same callback. The
++        // callback can reject one deleted doc or hold a fixed competitive floor.
++        let run = |optimized: bool,
++                   scorers: Vec<TermScorer>,
++                   rejected: Option<DocId>,
++                   fixed_floor: Option<Score>| {
++            if optimized {
++                BATCH_LENGTHS.with(|lengths| *lengths.borrow_mut() = Some(Vec::new()));
++            }
++            let mut accepted = Vec::new();
++            let mut threshold = 0.0f32;
++            let callback = &mut |doc, score: Score| {
++                if optimized && doc < 128 {
++                    // The initial scalar region stays scalar after its 0->2
++                    // transition, even though only one essential remains.
++                    assert!(BATCH_LENGTHS.with(|lengths| lengths
++                        .borrow()
++                        .as_ref()
++                        .unwrap()
++                        .is_empty()));
++                }
++                accepted.push((doc, score.to_bits()));
++                if rejected != Some(doc) {
++                    threshold = threshold.max(fixed_floor.unwrap_or(score));
++                }
++                threshold
++            };
++            if optimized {
++                or_maxscore(scorers, 500, 0.0, callback);
++                BATCH_LENGTHS.with(|lengths| lengths.borrow_mut().take());
++            } else {
++                let mut union = BufferedUnionScorer::build(scorers, SumCombiner::default, 500);
++                for_each_pruning_scorer(&mut union, 0.0, callback);
++            }
++            assert!(accepted.windows(2).all(|pair| pair[0].0 < pair[1].0));
++            accepted
++        };
++        for reverse in [false, true] {
++            let mut ordered = scorers.clone();
++            if reverse {
++                ordered.reverse();
++            }
++            for (rejected, fixed_floor) in [
++                (None, None),
++                (Some(0), None),
++                (None, Some(weak_certificate)),
++            ] {
++                let expected = run(false, ordered.clone(), rejected, fixed_floor);
++                REPARTITIONS.with(|events| *events.borrow_mut() = Some(Vec::new()));
++                let actual = run(true, ordered.clone(), rejected, fixed_floor);
++                let events = REPARTITIONS.with(|events| events.borrow_mut().take().unwrap());
++                assert_eq!(actual, expected);
++                let first = &events[0];
++                assert_eq!(
++                    (first.lo, first.hi, first.old_first, first.new_first),
++                    (0, 128, 0, 2)
++                );
++                assert_eq!(first.doc, if rejected.is_some() { 1 } else { 0 });
++                // Demoted matching dense clauses still advance under the OLD
++                // suffix. Updating first_essential too early would leave this
++                // minimum equal to the just-processed document.
++                assert_eq!(first.old_suffix_min, first.doc + 1);
++                if rejected.is_some() || fixed_floor.is_some() {
++                    assert_eq!(first.threshold_bits, weak_certificate.to_bits());
++                }
++                if fixed_floor.is_some() {
++                    assert_eq!(events.len(), 1);
++                    assert_eq!(
++                        actual.iter().map(|&(doc, _)| doc).collect::<Vec<_>>(),
++                        [0, 10, 300]
++                    );
++                } else {
++                    assert_eq!(events.len(), 2);
++                    let last = &events[1];
++                    assert_eq!(
++                        (last.lo, last.hi, last.doc, last.old_first, last.new_first),
++                        (0, 128, 10, 2, 3)
++                    );
++                    assert_eq!(last.threshold_bits, whole_certificate.to_bits());
++                    assert_eq!(last.old_suffix_min, 300);
++                    assert_eq!(actual.last().unwrap().0, 10);
++                }
++                assert!(events.iter().all(|event| event.old_suffix_min > event.doc));
++            }
++        }
++        // Signed admission remains the untouched canonical fallback and cannot
++        // produce a region transition, despite increasing callback thresholds.
++        let signed = vec![
++            fixture(&dense, &norms, -0.1),
++            scorers[1].clone(),
++            scorers[2].clone(),
++        ];
++        let expected = run(false, signed.clone(), None, None);
++        REPARTITIONS.with(|events| *events.borrow_mut() = Some(Vec::new()));
++        assert_eq!(run(true, signed, None, None), expected);
++        assert!(REPARTITIONS.with(|events| events.borrow_mut().take().unwrap().is_empty()));
++    }
++
+     #[test]
+     fn exact_traces_at_full_block_and_tail_boundaries() {
+         let norms: Vec<u32> = (0..1024).map(|i| 1 + (i % 13)).collect();

@@ -1,0 +1,8 @@
+{
+  "parent": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "source_sha256": {
+    "src/query/boolean_query/or_maxscore.rs": "1a1ce59b330b4a207d353385bf90cac96333cd4c6da49ed52a7c40cd5bb30804",
+    "src/query/term_query/term_scorer.rs": "21b05a2b6513223a81613ee0f40c4a31f6990a427bb0d4b60324154a55753cdb"
+  },
+  "review": "Root full actual diff and independent13 review; rejected12 geometry plus one metadata-range mechanism. No candidate14 imported."
+}

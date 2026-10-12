@@ -1,0 +1,192 @@
+{
+  "queries": 103,
+  "controlled_wins": [
+    "920"
+  ],
+  "controlled_losses": [
+    "493",
+    "609",
+    "653",
+    "679",
+    "725",
+    "793",
+    "831",
+    "839",
+    "883",
+    "909",
+    "917",
+    "919"
+  ],
+  "orders": {
+    "AB": {
+      "parent_sum_ns": 59446402.0,
+      "candidate_sum_ns": 58101752.5,
+      "total_saved_ns": 1344649.5,
+      "top_savings": [
+        [
+          3090660.0,
+          "920",
+          "a search engine is an information retrieval software system designed to help find information stored on one or more computer systems"
+        ],
+        [
+          15997.5,
+          "433",
+          "lord of the rings"
+        ],
+        [
+          10526.0,
+          "635",
+          "jefferson davis high school"
+        ],
+        [
+          9812.5,
+          "655",
+          "time in denver"
+        ],
+        [
+          8518.5,
+          "585",
+          "jaguar x type"
+        ],
+        [
+          7718.5,
+          "567",
+          "critical care nurse"
+        ],
+        [
+          7626.5,
+          "407",
+          "hempstead new york"
+        ],
+        [
+          7234.5,
+          "683",
+          "the actors studio"
+        ],
+        [
+          6794.5,
+          "905",
+          "boulder city nevada"
+        ],
+        [
+          4740.5,
+          "827",
+          "national security cutter"
+        ]
+      ],
+      "largest_losses": [
+        [
+          -404661.0,
+          "919",
+          "to be or not to be"
+        ],
+        [
+          -253541.5,
+          "917",
+          "laborers international union of north america"
+        ],
+        [
+          -100121.5,
+          "831",
+          "new york times best sellers list"
+        ],
+        [
+          -82872.0,
+          "793",
+          "the news journal"
+        ],
+        [
+          -76054.0,
+          "493",
+          "american academy of child and adolescent psychiatry"
+        ]
+      ],
+      "descriptive_without_920_ratio": 1.0397531137019644
+    },
+    "BA": {
+      "parent_sum_ns": 58916817.5,
+      "candidate_sum_ns": 57156023.5,
+      "total_saved_ns": 1760794.0,
+      "top_savings": [
+        [
+          2870598.0,
+          "920",
+          "a search engine is an information retrieval software system designed to help find information stored on one or more computer systems"
+        ],
+        [
+          25936.5,
+          "531",
+          "walk the line"
+        ],
+        [
+          20734.0,
+          "861",
+          "the book of life"
+        ],
+        [
+          18085.0,
+          "391",
+          "people having sex"
+        ],
+        [
+          16417.5,
+          "585",
+          "jaguar x type"
+        ],
+        [
+          15866.0,
+          "409",
+          "university of washington"
+        ],
+        [
+          13561.0,
+          "727",
+          "term life insurance"
+        ],
+        [
+          13130.0,
+          "595",
+          "books on cd"
+        ],
+        [
+          12576.5,
+          "395",
+          "most improved player"
+        ],
+        [
+          11694.5,
+          "365",
+          "ford modeling agency"
+        ]
+      ],
+      "largest_losses": [
+        [
+          -465857.5,
+          "919",
+          "to be or not to be"
+        ],
+        [
+          -304399.5,
+          "917",
+          "laborers international union of north america"
+        ],
+        [
+          -114622.5,
+          "831",
+          "new york times best sellers list"
+        ],
+        [
+          -77783.0,
+          "493",
+          "american academy of child and adolescent psychiatry"
+        ],
+        [
+          -70970.0,
+          "883",
+          "george r brown convention center"
+        ]
+      ],
+      "descriptive_without_920_ratio": 1.02540516025521
+    }
+  }
+}

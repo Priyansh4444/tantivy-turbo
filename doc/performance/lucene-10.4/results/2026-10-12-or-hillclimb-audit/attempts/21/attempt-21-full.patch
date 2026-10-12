@@ -1,0 +1,22 @@
+diff --git i/src/query/boolean_query/or_maxscore.rs w/src/query/boolean_query/or_maxscore.rs
+index d5cf67739..8d3b17882 100644
+--- i/src/query/boolean_query/or_maxscore.rs
++++ w/src/query/boolean_query/or_maxscore.rs
+@@ -257,6 +257,7 @@ pub(crate) fn or_maxscore(
+             };
+         }
+         debug_assert!(hi > lo);
++        let mut local_sum = 0.0f64;
+         for (rank, clause) in clauses.iter_mut().enumerate() {
+             // A real loaded position beyond the interval cannot contribute.
+             // A stale position below lo does not justify a zero bound. Cleanup
+@@ -264,7 +265,8 @@ pub(crate) fn or_maxscore(
+             if clause.doc >= hi {
+                 clause.local_max = 0.0;
+             }
+-            prefix[rank + 1] = prefix[rank] + f64::from(clause.local_max);
++            local_sum += f64::from(clause.local_max);
++            prefix[rank + 1] = local_sum;
+         }
+         let mut first_essential = 0;
+         while first_essential < num_terms

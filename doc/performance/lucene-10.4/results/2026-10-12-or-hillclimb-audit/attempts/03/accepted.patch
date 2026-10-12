@@ -1,0 +1,594 @@
+diff --git a/src/postings/segment_postings.rs b/src/postings/segment_postings.rs
+index 4179b5312..78ac0f11e 100644
+--- a/src/postings/segment_postings.rs
++++ b/src/postings/segment_postings.rs
+@@ -23,6 +23,51 @@ pub struct SegmentPostings {
+ }
+ 
+ impl SegmentPostings {
++    /// Consume at most one decoded block suffix below `up_to`. This method owns
++    /// `cur`, including reconciliation after a shallow block selection. The
++    /// cursor is left on the first unread doc, just like repeated `advance`.
++    pub(crate) fn read_postings_batch(
++        &mut self,
++        floor: DocId,
++        up_to: DocId,
++        docs: &mut [DocId; COMPRESSION_BLOCK_SIZE],
++        freqs: &mut [u32; COMPRESSION_BLOCK_SIZE],
++    ) -> usize {
++        debug_assert!(floor <= up_to);
++        if !self.block_cursor.block_is_loaded() || self.doc() < floor {
++            // Ordinary seek may return an old decoded doc without loading a
++            // shallow-selected block. Reconcile through the block owner here.
++            self.cur = self.block_cursor.seek(floor.max(self.doc()));
++        }
++        if self.doc() >= up_to || self.doc() == TERMINATED {
++            return 0;
++        }
++        let start = self.cur;
++        let block_len = self.block_cursor.block_len();
++        let end =
++            start + self.block_cursor.docs()[start..block_len].partition_point(|&doc| doc < up_to);
++        let len = end - start;
++        docs[..len].copy_from_slice(&self.block_cursor.docs()[start..end]);
++        if matches!(
++            self.block_cursor.freq_reading_option(),
++            crate::postings::FreqReadingOption::ReadFreq
++        ) {
++            freqs[..len].copy_from_slice(&self.block_cursor.freqs()[start..end]);
++        } else {
++            // The scalar frequency decoder is prefilled with ones, but its
++            // public slice can be empty when frequencies were not decoded.
++            freqs[..len].fill(1);
++        }
++        if end == COMPRESSION_BLOCK_SIZE {
++            self.cur = 0;
++            self.block_cursor.advance();
++        } else {
++            // A partial block's first padding slot contains TERMINATED.
++            self.cur = end;
++        }
++        len
++    }
++
+     fn current_position_read_offset(&mut self) -> u64 {
+         let block_offset = self.block_cursor.position_offset();
+         let (start, prefix) = match self.position_prefix {
+@@ -497,6 +542,159 @@ mod tests {
+     use crate::schema::{IndexRecordOption, Schema, Term, TEXT};
+     use crate::{doc, DocId, Index};
+ 
++    #[test]
++    fn batch_cursor_matches_literal_postings_across_blocks_and_tails() {
++        use crate::postings::compression::COMPRESSION_BLOCK_SIZE;
++        for length in [1, 127, 128, 129, 255, 256, 257] {
++            for gap in [1, 3, 97] {
++                let literal: Vec<_> = (0..length).map(|i| (i * gap, 1 + i % 11)).collect();
++                for basic in [false, true] {
++                    let mut postings = if basic {
++                        SegmentPostings::create_from_docs(
++                            &literal.iter().map(|&(doc, _)| doc).collect::<Vec<_>>(),
++                        )
++                    } else {
++                        SegmentPostings::create_from_docs_and_tfs(&literal, None)
++                    };
++                    let mut docs = [0; COMPRESSION_BLOCK_SIZE];
++                    let mut freqs = [0; COMPRESSION_BLOCK_SIZE];
++                    let mut calls = 0;
++                    while postings.doc() != TERMINATED {
++                        let floor = postings.doc() + (calls % 3);
++                        let up_to = floor + [1, 128, 129, 513][calls as usize % 4];
++                        // Exercise the unloaded shallow state separately from
++                        // ordinary seek's next-doc shortcut.
++                        if calls % 2 == 0 {
++                            postings.block_cursor.seek_block(floor);
++                        }
++                        let before = literal.partition_point(|&(doc, _)| doc < floor);
++                        let len = postings.read_postings_batch(floor, up_to, &mut docs, &mut freqs);
++                        let available = literal[before..]
++                            .iter()
++                            .take_while(|&&(doc, _)| doc < up_to)
++                            .count();
++                        assert!(len <= available && len <= COMPRESSION_BLOCK_SIZE);
++                        assert_eq!(len == 0, available == 0);
++                        for i in 0..len {
++                            assert_eq!(docs[i], literal[before + i].0);
++                            assert_eq!(freqs[i], if basic { 1 } else { literal[before + i].1 });
++                        }
++                        let next = literal
++                            .get(before + len)
++                            .map_or(TERMINATED, |&(doc, _)| doc);
++                        assert_eq!(postings.doc(), next);
++                        if next != TERMINATED {
++                            assert_eq!(
++                                postings.term_freq(),
++                                if basic { 1 } else { literal[before + len].1 }
++                            );
++                            // Mix scalar moves with later batch calls.
++                            if calls % 3 == 1 {
++                                let after = literal
++                                    .get(before + len + 1)
++                                    .map_or(TERMINATED, |&(doc, _)| doc);
++                                assert_eq!(postings.advance(), after);
++                            }
++                        }
++                        calls += 1;
++                        assert!(calls <= length * 2 + 1);
++                    }
++                    assert_eq!(
++                        postings.read_postings_batch(TERMINATED, TERMINATED, &mut docs, &mut freqs),
++                        0
++                    );
++                }
++            }
++        }
++    }
++
++    #[test]
++    fn batch_then_scalar_reads_preserve_positions_and_skipfreq() -> crate::Result<()> {
++        use crate::postings::compression::COMPRESSION_BLOCK_SIZE;
++        let mut schema = Schema::builder();
++        let field = schema.add_text_field("text", TEXT);
++        let index = Index::create_in_ram(schema.build());
++        let mut writer = index.writer_for_tests()?;
++        let texts = ["x", "x z x", "z x z x z x", "z z x x"];
++        let expected = [&[0][..], &[0, 2], &[1, 3, 5], &[2, 3]];
++        for doc in 0..300 {
++            writer.add_document(doc!(field => texts[doc % 4]))?;
++        }
++        writer.commit()?;
++        let searcher = index.reader()?.searcher();
++        let inverted = searcher.segment_reader(0).inverted_index(field)?;
++        let term = Term::from_field_text(field, "x");
++        for option in [
++            IndexRecordOption::WithFreqsAndPositions,
++            IndexRecordOption::Basic,
++        ] {
++            let mut postings = inverted.read_postings(&term, option)?.unwrap();
++            let mut docs = [0; COMPRESSION_BLOCK_SIZE];
++            let mut freqs = [0; COMPRESSION_BLOCK_SIZE];
++            let check = |postings: &mut SegmentPostings| {
++                let doc = postings.doc();
++                if doc != TERMINATED {
++                    let mut positions = Vec::new();
++                    postings.positions(&mut positions);
++                    if option == IndexRecordOption::WithFreqsAndPositions {
++                        assert_eq!(positions, expected[doc as usize % 4]);
++                    }
++                    assert_eq!(
++                        postings.term_freq(),
++                        if option == IndexRecordOption::Basic {
++                            1
++                        } else {
++                            expected[doc as usize % 4].len() as u32
++                        }
++                    );
++                }
++            };
++            check(&mut postings);
++            assert_eq!(
++                postings.read_postings_batch(0, 127, &mut docs, &mut freqs),
++                127
++            );
++            assert_eq!(postings.doc(), 127);
++            check(&mut postings);
++            assert_eq!(postings.advance(), 128);
++            check(&mut postings);
++            // Move only the skip selection into the tail, leaving decoded doc
++            // 128 stale. Batch reconciliation must own the real load/cur move.
++            let mut deferred = postings.clone();
++            deferred.block_cursor.seek_block(260);
++            assert_eq!(deferred.doc(), 128);
++            assert!(!deferred.block_cursor.block_is_loaded());
++            assert_eq!(
++                deferred.read_postings_batch(260, 270, &mut docs, &mut freqs),
++                10
++            );
++            assert_eq!(deferred.doc(), 270);
++            check(&mut deferred);
++            assert_eq!(
++                postings.read_postings_batch(128, 256, &mut docs, &mut freqs),
++                128
++            );
++            assert_eq!(postings.doc(), 256);
++            check(&mut postings);
++            assert_eq!(postings.seek(270), 270);
++            check(&mut postings);
++            // A partial tail batch must retain the first unread positions.
++            postings.block_cursor.seek_block(280);
++            assert_eq!(
++                postings.read_postings_batch(280, 290, &mut docs, &mut freqs),
++                10
++            );
++            assert_eq!(postings.doc(), 290);
++            check(&mut postings);
++            assert_eq!(
++                postings.read_postings_batch(290, 300, &mut docs, &mut freqs),
++                10
++            );
++            assert_eq!(postings.doc(), TERMINATED);
++        }
++        Ok(())
++    }
++
+     #[test]
+     fn test_empty_segment_postings() {
+         let mut postings = SegmentPostings::empty();
+diff --git a/src/query/bm25.rs b/src/query/bm25.rs
+index 3e9f3591a..19519d32d 100644
+--- a/src/query/bm25.rs
++++ b/src/query/bm25.rs
+@@ -570,6 +570,38 @@ impl Bm25Weight {
+         self.score_with_frequency(fieldnorm_id, term_freq as Score)
+     }
+ 
++    /// Gather the cached normalization components first, then evaluate the
++    /// literal scalar scoring expression in an independent arithmetic loop.
++    pub(crate) fn score_batch(
++        &self,
++        fieldnorms: &FieldNormReader,
++        docs: &[crate::DocId],
++        freqs: &[u32],
++        norms: &mut [Score],
++        scores: &mut [Score],
++    ) {
++        debug_assert_eq!(docs.len(), freqs.len());
++        debug_assert_eq!(docs.len(), norms.len());
++        debug_assert_eq!(docs.len(), scores.len());
++        for (norm, &doc) in norms.iter_mut().zip(docs) {
++            *norm = self.cache[fieldnorms.fieldnorm_id(doc) as usize];
++        }
++        match self.scoring {
++            Bm25Scoring::LegacyClassic => {
++                for ((score, &freq), &norm) in scores.iter_mut().zip(freqs).zip(norms.iter()) {
++                    let frequency = freq as Score;
++                    *score = self.weight * (frequency / (frequency + norm));
++                }
++            }
++            Bm25Scoring::NativeLucene => {
++                for ((score, &freq), &norm) in scores.iter_mut().zip(freqs).zip(norms.iter()) {
++                    let frequency = freq as Score;
++                    *score = self.weight - self.weight / (1.0 + frequency * norm);
++                }
++            }
++        }
++    }
++
+     /// Score a fractional phrase frequency without rounding its distance weights.
+     #[inline]
+     pub(crate) fn score_with_frequency(&self, fieldnorm_id: u8, frequency: Score) -> Score {
+@@ -815,6 +847,51 @@ mod tests {
+     use super::{idf, Bm25Weight};
+     use crate::{assert_nearly_equals, Score};
+ 
++    #[test]
++    fn batch_leaves_match_literal_scalar_bits_for_all_norm_ids() {
++        use crate::fieldnorm::FieldNormReader;
++        use crate::query::{Bm25Parameters, Explanation};
++        let norms: Vec<_> = (0..=u8::MAX)
++            .map(FieldNormReader::id_to_fieldnorm)
++            .collect();
++        let reader = FieldNormReader::for_test(&norms);
++        let docs: Vec<_> = (0..256).collect();
++        for doc in 0..256 {
++            assert_eq!(reader.fieldnorm_id(doc), doc as u8);
++        }
++        for parameters in [
++            Bm25Parameters::DEFAULT,
++            Bm25Parameters::new(0.9, 0.4).unwrap(),
++            Bm25Parameters::new(2.0, 1.0).unwrap(),
++        ] {
++            for native in [false, true] {
++                for boost in [0.0, 1.0, 3.25, -2.0] {
++                    let explanation = Explanation::new("idf", 1.234567);
++                    let weight = if native {
++                        Bm25Weight::new_native_with_parameters(explanation, 100.0, parameters)
++                    } else {
++                        Bm25Weight::new_with_parameters(explanation, 100.0, parameters)
++                    }
++                    .boost_by(boost);
++                    for freq in [1, 7, 128, 16_777_217, u32::MAX] {
++                        let freqs = vec![freq; docs.len()];
++                        let mut gathered = vec![0.0; docs.len()];
++                        let mut scores = vec![0.0; docs.len()];
++                        weight.score_batch(&reader, &docs, &freqs, &mut gathered, &mut scores);
++                        for (&doc, &actual) in docs.iter().zip(&scores) {
++                            let expected = weight.score(reader.fieldnorm_id(doc), freq);
++                            assert_eq!(
++                                actual.to_bits(),
++                                expected.to_bits(),
++                                "native={native} doc={doc} freq={freq} boost={boost}"
++                            );
++                        }
++                    }
++                }
++            }
++        }
++    }
++
+     #[test]
+     fn native_policy_keeps_old_pairs_untrusted_and_global_bound_conservative() {
+         use crate::query::Explanation;
+diff --git a/src/query/boolean_query/or_maxscore.rs b/src/query/boolean_query/or_maxscore.rs
+index 0efe0d61d..36ddc829d 100644
+--- a/src/query/boolean_query/or_maxscore.rs
++++ b/src/query/boolean_query/or_maxscore.rs
+@@ -1,5 +1,5 @@
+ use crate::query::score_combiner::{ScoreSumUpperBound, SumCombiner};
+-use crate::query::term_query::TermScorer;
++use crate::query::term_query::{ScoredTermBatch, TermScorer};
+ use crate::query::weight::for_each_pruning_scorer;
+ use crate::query::{BufferedUnionScorer, Scorer};
+ use crate::{DocId, DocSet, Score, TERMINATED};
+@@ -29,6 +29,20 @@ impl ClauseState {
+         self.assert_coherent(scorers);
+     }
+ 
++    fn fill_scored_batch(
++        &mut self,
++        scorers: &mut [TermScorer],
++        floor: DocId,
++        up_to: DocId,
++        batch: &mut ScoredTermBatch,
++    ) -> usize {
++        self.assert_coherent(scorers);
++        let len = scorers[self.ordinal].fill_scored_batch(floor, up_to, batch);
++        self.doc = scorers[self.ordinal].doc();
++        self.assert_coherent(scorers);
++        len
++    }
++
+     #[inline]
+     fn advance(&mut self, scorers: &mut [TermScorer]) {
+         self.assert_coherent(scorers);
+@@ -45,6 +59,8 @@ thread_local! {
+     // Test-only region evidence; no observer or counter exists in release.
+     static GLOBAL_CHOICES: std::cell::RefCell<Option<Vec<RegionChoice>>> =
+         const { std::cell::RefCell::new(None) };
++    static BATCH_LENGTHS: std::cell::RefCell<Option<Vec<usize>>> =
++        const { std::cell::RefCell::new(None) };
+ }
+ 
+ /// Merge only clauses whose local score bounds can exceed the optional prefix.
+@@ -97,6 +113,7 @@ pub(crate) fn or_maxscore(
+     // next optional clause is included. No bound is formed by subtraction.
+     let mut prefix = vec![0.0f64; num_terms + 1];
+     let mut contributions = vec![0.0; num_terms];
++    let mut batch = ScoredTermBatch::new();
+     let mut lo = clauses
+         .iter()
+         .map(|clause| clause.doc)
+@@ -220,24 +237,57 @@ pub(crate) fn or_maxscore(
+                 clause.seek(&mut scorers, lo);
+             }
+         }
++        // The buffered phase retains the current certified partition. Cursor
++        // docs always mean first unread; batch docs own the replay candidates.
++        let single_essential = num_terms - first_essential == 1;
++        let mut batch_len = 0;
++        let mut batch_index = 0;
+         loop {
+-            let doc = clauses[first_essential..]
+-                .iter()
+-                .map(|clause| clause.doc)
+-                .min()
+-                .unwrap_or(TERMINATED);
++            let doc = if single_essential {
++                if batch_index == batch_len {
++                    batch_len = clauses[first_essential].fill_scored_batch(
++                        &mut scorers,
++                        lo,
++                        hi,
++                        &mut batch,
++                    );
++                    batch_index = 0;
++                    #[cfg(test)]
++                    BATCH_LENGTHS.with(|lengths| {
++                        if let Some(lengths) = lengths.borrow_mut().as_mut() {
++                            lengths.push(batch_len);
++                        }
++                    });
++                    if batch_len == 0 {
++                        break;
++                    }
++                }
++                batch.docs[batch_index]
++            } else {
++                clauses[first_essential..]
++                    .iter()
++                    .map(|clause| clause.doc)
++                    .min()
++                    .unwrap_or(TERMINATED)
++            };
+             if doc >= hi {
+                 break;
+             }
+             contributions.fill(0.0);
+             let mut known = 0.0f64;
+-            for clause in &clauses[first_essential..] {
+-                if clause.doc == doc {
+-                    clause.assert_coherent(&scorers);
+-                    let leaf = scorers[clause.ordinal].score();
+-                    clause.assert_coherent(&scorers);
+-                    contributions[clause.ordinal] = leaf;
+-                    known += f64::from(leaf);
++            if single_essential {
++                let leaf = batch.scores[batch_index];
++                contributions[clauses[first_essential].ordinal] = leaf;
++                known = f64::from(leaf);
++            } else {
++                for clause in &clauses[first_essential..] {
++                    if clause.doc == doc {
++                        clause.assert_coherent(&scorers);
++                        let leaf = scorers[clause.ordinal].score();
++                        clause.assert_coherent(&scorers);
++                        contributions[clause.ordinal] = leaf;
++                        known += f64::from(leaf);
++                    }
+                 }
+             }
+             let mut competitive = true;
+@@ -269,9 +319,13 @@ pub(crate) fn or_maxscore(
+                     threshold = next_threshold;
+                 }
+             }
+-            for clause in &mut clauses[first_essential..] {
+-                if clause.doc == doc {
+-                    clause.advance(&mut scorers);
++            if single_essential {
++                batch_index += 1;
++            } else {
++                for clause in &mut clauses[first_essential..] {
++                    if clause.doc == doc {
++                        clause.advance(&mut scorers);
++                    }
+                 }
+             }
+         }
+@@ -346,6 +400,77 @@ mod tests {
+         actual
+     }
+ 
++    #[test]
++    fn single_driver_batches_replay_every_dynamic_threshold_exactly() {
++        let norms = vec![1; 4096];
++        let weak: Vec<_> = (0..4096).map(|doc| (doc, 1)).collect();
++        let driver: Vec<_> = (0..257)
++            .map(|i| {
++                (
++                    i * 4,
++                    match i {
++                        33 => 10,
++                        240 => 30,
++                        _ => 1,
++                    },
++                )
++            })
++            .collect();
++        let scorers = vec![
++            fixture(&weak, &norms, 0.001),
++            fixture(&driver, &norms, 1.0),
++            fixture(&weak, &norms, 0.002),
++        ];
++        BATCH_LENGTHS.with(|lengths| *lengths.borrow_mut() = Some(Vec::new()));
++        let accepted = check(scorers.clone(), 4096, 0.1, 1);
++        let lengths = BATCH_LENGTHS.with(|lengths| lengths.borrow_mut().take().unwrap());
++        assert!(
++            lengths.contains(&128),
++            "must exercise a full buffered block"
++        );
++        assert_eq!(
++            accepted.iter().map(|&(doc, _)| doc).collect::<Vec<_>>(),
++            [0, 132, 960]
++        );
++        check(scorers.clone(), 4096, 0.1, 0);
++        check(scorers.clone(), 4096, 0.1, 10);
++        // Model collector-owned deletions: rejected early winners must leave
++        // the callback threshold unchanged for the next buffered candidate.
++        let with_deletions = |buffered: bool| {
++            let mut accepted = Vec::new();
++            let mut current = 0.1;
++            let mut callback = |doc, score: Score| {
++                accepted.push((doc, score.to_bits()));
++                if doc != 0 && doc != 132 {
++                    current = score;
++                }
++                current
++            };
++            if buffered {
++                or_maxscore(scorers.clone(), 4096, 0.1, &mut callback);
++            } else {
++                let mut union =
++                    BufferedUnionScorer::build(scorers.clone(), SumCombiner::default, 4096);
++                for_each_pruning_scorer(&mut union, 0.1, &mut callback);
++            }
++            accepted
++        };
++        let deletion_trace = with_deletions(true);
++        assert_eq!(deletion_trace, with_deletions(false));
++        assert_eq!(
++            deletion_trace
++                .iter()
++                .map(|&(doc, _)| doc)
++                .collect::<Vec<_>>(),
++            [0, 4, 132, 960]
++        );
++        eprintln!(
++            "OR_BATCH_LAYOUT batch={} max_array_payload={}",
++            std::mem::size_of::<ScoredTermBatch>(),
++            36 * 32 + 8 + std::mem::size_of::<ScoredTermBatch>()
++        );
++    }
++
+     #[test]
+     fn exact_traces_at_full_block_and_tail_boundaries() {
+         let norms: Vec<u32> = (0..1024).map(|i| 1 + (i % 13)).collect();
+diff --git a/src/query/term_query/mod.rs b/src/query/term_query/mod.rs
+index d96be1d04..4018f52c9 100644
+--- a/src/query/term_query/mod.rs
++++ b/src/query/term_query/mod.rs
+@@ -3,6 +3,7 @@ mod term_scorer;
+ mod term_weight;
+ 
+ pub use self::term_query::TermQuery;
++pub(crate) use self::term_scorer::ScoredTermBatch;
+ pub use self::term_scorer::TermScorer;
+ #[cfg(test)]
+ mod tests {
+diff --git a/src/query/term_query/term_scorer.rs b/src/query/term_query/term_scorer.rs
+index 1f57730fe..bd4377181 100644
+--- a/src/query/term_query/term_scorer.rs
++++ b/src/query/term_query/term_scorer.rs
+@@ -10,6 +10,26 @@ use crate::query::bm25::{Bm25Weight, NativeInputEnvelope, NativeSelectionContext
+ use crate::query::{Explanation, Scorer};
+ use crate::{DocId, Score};
+ 
++/// Query-owned fixed scratch. Scores belong to the emitted docs even after
++/// the term cursor has moved to its authoritative first unread document.
++pub(crate) struct ScoredTermBatch {
++    pub(crate) docs: [DocId; crate::postings::compression::COMPRESSION_BLOCK_SIZE],
++    pub(crate) scores: [Score; crate::postings::compression::COMPRESSION_BLOCK_SIZE],
++    freqs: [u32; crate::postings::compression::COMPRESSION_BLOCK_SIZE],
++    norms: [Score; crate::postings::compression::COMPRESSION_BLOCK_SIZE],
++}
++
++impl ScoredTermBatch {
++    pub(crate) fn new() -> Self {
++        Self {
++            docs: [0; crate::postings::compression::COMPRESSION_BLOCK_SIZE],
++            scores: [0.0; crate::postings::compression::COMPRESSION_BLOCK_SIZE],
++            freqs: [0; crate::postings::compression::COMPRESSION_BLOCK_SIZE],
++            norms: [0.0; crate::postings::compression::COMPRESSION_BLOCK_SIZE],
++        }
++    }
++}
++
+ #[derive(Clone)]
+ pub struct TermScorer {
+     postings: SegmentPostings,
+@@ -28,6 +48,25 @@ enum TermBlockBounds {
+ }
+ 
+ impl TermScorer {
++    pub(crate) fn fill_scored_batch(
++        &mut self,
++        floor: DocId,
++        up_to: DocId,
++        batch: &mut ScoredTermBatch,
++    ) -> usize {
++        let len =
++            self.postings
++                .read_postings_batch(floor, up_to, &mut batch.docs, &mut batch.freqs);
++        self.similarity_weight.score_batch(
++            &self.fieldnorm_reader,
++            &batch.docs[..len],
++            &batch.freqs[..len],
++            &mut batch.norms[..len],
++            &mut batch.scores[..len],
++        );
++        len
++    }
++
+     pub(crate) fn contains_doc_for_count(&mut self, target: DocId) -> bool {
+         self.postings.contains_doc_for_count(target)
+     }

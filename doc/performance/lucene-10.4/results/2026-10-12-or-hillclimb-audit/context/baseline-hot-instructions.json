@@ -1,0 +1,422 @@
+[
+  {
+    "percent": 8.89,
+    "line": 1760,
+    "instruction": "8.89 :   299b5f: vmovsd %xmm0,(%r9,%rdi,8)",
+    "context": [
+      "    0.09 :   299b50: vcvtss2sd %xmm0,%xmm0,%xmm0",
+      "    0.36 :   299b54: add    $0x18,%rax",
+      "    0.00 :   299b58: vaddsd -0x8(%r9,%rdi,8),%xmm0,%xmm0",
+      "    8.89 :   299b5f: vmovsd %xmm0,(%r9,%rdi,8)",
+      "    2.12 :   299b65: inc    %rdi",
+      "    0.00 :   299b68: cmp    %r11,%rax",
+      "    0.00 :   299b6b: jne    299b30 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x21a0>"
+    ]
+  },
+  {
+    "percent": 3.34,
+    "line": 2177,
+    "instruction": "3.34 :   29a38d: vucomiss %xmm1,%xmm11",
+    "context": [
+      "    0.00 :   29a381: dec    %rax",
+      "    0.00 :   29a384: vmovq  %rax,%xmm0",
+      "    0.48 :   29a389: vcvtsd2ss %xmm0,%xmm0,%xmm1",
+      "    3.34 :   29a38d: vucomiss %xmm1,%xmm11",
+      "    1.79 :   29a391: jae    29a80c <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x2e7c>",
+      "    1.21 :   29a397: dec    %r12",
+      "    0.39 :   29a39a: lea    (%r12,%r12,2),%rax"
+    ]
+  },
+  {
+    "percent": 2.12,
+    "line": 1761,
+    "instruction": "2.12 :   299b65: inc    %rdi",
+    "context": [
+      "    0.36 :   299b54: add    $0x18,%rax",
+      "    0.00 :   299b58: vaddsd -0x8(%r9,%rdi,8),%xmm0,%xmm0",
+      "    8.89 :   299b5f: vmovsd %xmm0,(%r9,%rdi,8)",
+      "    2.12 :   299b65: inc    %rdi",
+      "    0.00 :   299b68: cmp    %r11,%rax",
+      "    0.00 :   299b6b: jne    299b30 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x21a0>",
+      "    0.00 :   299b6d: mov    $0xffffffffffffffff,%r13"
+    ]
+  },
+  {
+    "percent": 1.99,
+    "line": 2065,
+    "instruction": "1.99 :   29a18e: add    $0x18,%rdx",
+    "context": [
+      "    0.00 :   29a181: vmovss %xmm0,(%rax,%rdi,4)",
+      "    0.83 :   29a186: vcvtss2sd %xmm0,%xmm0,%xmm0",
+      "    1.37 :   29a18a: vaddsd %xmm0,%xmm3,%xmm3",
+      "    1.99 :   29a18e: add    $0x18,%rdx",
+      "    0.14 :   29a192: cmp    %r11,%rdx",
+      "    0.00 :   29a195: je     29a243 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x28b3>",
+      "    0.23 :   29a19b: cmp    %ebx,0x10(%rdx)"
+    ]
+  },
+  {
+    "percent": 1.94,
+    "line": 2099,
+    "instruction": "1.94 :   29a23a: vsubss %xmm0,%xmm1,%xmm0",
+    "context": [
+      "    0.00 :   29a22a: vmulss %xmm0,%xmm2,%xmm0",
+      "    0.74 :   29a22e: vaddss -0x239fe6(%rip),%xmm0,%xmm0        # 60250 <serde_json::ser::Formatter::write_char_escape::HEX_DIGITS+0xc00>",
+      "    0.71 :   29a236: vdivss %xmm0,%xmm1,%xmm0",
+      "    1.94 :   29a23a: vsubss %xmm0,%xmm1,%xmm0",
+      "    0.92 :   29a23e: jmp    29a17c <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x27ec>",
+      "    0.00 :   29a243: test   %r13,%r13",
+      "    0.00 :   29a246: je     29a715 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x2d85>"
+    ]
+  },
+  {
+    "percent": 1.79,
+    "line": 2178,
+    "instruction": "1.79 :   29a391: jae    29a80c <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x2e7c>",
+    "context": [
+      "    0.00 :   29a384: vmovq  %rax,%xmm0",
+      "    0.48 :   29a389: vcvtsd2ss %xmm0,%xmm0,%xmm1",
+      "    3.34 :   29a38d: vucomiss %xmm1,%xmm11",
+      "    1.79 :   29a391: jae    29a80c <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x2e7c>",
+      "    1.21 :   29a397: dec    %r12",
+      "    0.39 :   29a39a: lea    (%r12,%r12,2),%rax",
+      "    0.20 :   29a39e: lea    (%r14,%rax,8),%rcx"
+    ]
+  },
+  {
+    "percent": 1.72,
+    "line": 2123,
+    "instruction": "1.72 :   29a2b5: test   %rax,%rax",
+    "context": [
+      "    0.21 :   29a2a2: mov    0x80(%rsp),%rax",
+      "    0.00 :   29a2aa: vaddsd (%rax,%r12,8),%xmm3,%xmm0",
+      "    1.08 :   29a2b0: vmovq  %xmm0,%rax",
+      "    1.72 :   29a2b5: test   %rax,%rax",
+      "    0.57 :   29a2b8: sets   %cl",
+      "    1.15 :   29a2bb: mov    $0x3f,%dl",
+      "    0.00 :   29a2bd: bzhi   %rdx,%rax,%rax"
+    ]
+  },
+  {
+    "percent": 1.69,
+    "line": 2090,
+    "instruction": "1.69 :   29a202: movzbl (%r9),%eax",
+    "context": [
+      "    0.00 :   29a1ee: lea    0x800(%r8),%r9",
+      "    0.11 :   29a1f5: mov    0x238(%r8,%rax,4),%eax",
+      "    0.00 :   29a1fd: vcvtsi2ss %rax,%xmm15,%xmm0",
+      "    1.69 :   29a202: movzbl (%r9),%eax",
+      "    0.44 :   29a206: mov    0x7d0(%r8),%rcx",
+      "    0.00 :   29a20d: vmovss 0x10(%rcx,%rax,4),%xmm2",
+      "    0.29 :   29a213: vmovss 0x7e0(%r8),%xmm1"
+    ]
+  },
+  {
+    "percent": 1.67,
+    "line": 1385,
+    "instruction": "1.67 :   2994ae: mov    %r13,%rdi",
+    "context": [
+      "    0.00 :   2994a0: vmovq  %rcx,%xmm1",
+      "    0.09 :   2994a5: vcvtsd2ss %xmm1,%xmm1,%xmm1",
+      "    1.49 :   2994a9: vucomiss %xmm11,%xmm1",
+      "    1.67 :   2994ae: mov    %r13,%rdi",
+      "    0.00 :   2994b1: ja     2994cb <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x1b3b>",
+      "    0.80 :   2994b3: add    $0x18,%rax",
+      "    0.00 :   2994b7: inc    %rdi"
+    ]
+  },
+  {
+    "percent": 1.49,
+    "line": 1384,
+    "instruction": "1.49 :   2994a9: vucomiss %xmm11,%xmm1",
+    "context": [
+      "    0.00 :   29949d: dec    %rcx",
+      "    0.00 :   2994a0: vmovq  %rcx,%xmm1",
+      "    0.09 :   2994a5: vcvtsd2ss %xmm1,%xmm1,%xmm1",
+      "    1.49 :   2994a9: vucomiss %xmm11,%xmm1",
+      "    1.67 :   2994ae: mov    %r13,%rdi",
+      "    0.00 :   2994b1: ja     2994cb <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x1b3b>",
+      "    0.80 :   2994b3: add    $0x18,%rax"
+    ]
+  },
+  {
+    "percent": 1.37,
+    "line": 2064,
+    "instruction": "1.37 :   29a18a: vaddsd %xmm0,%xmm3,%xmm3",
+    "context": [
+      "    0.00 :   29a17c: mov    0x60(%rsp),%rax",
+      "    0.00 :   29a181: vmovss %xmm0,(%rax,%rdi,4)",
+      "    0.83 :   29a186: vcvtss2sd %xmm0,%xmm0,%xmm0",
+      "    1.37 :   29a18a: vaddsd %xmm0,%xmm3,%xmm3",
+      "    1.99 :   29a18e: add    $0x18,%rdx",
+      "    0.14 :   29a192: cmp    %r11,%rdx",
+      "    0.00 :   29a195: je     29a243 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x28b3>"
+    ]
+  },
+  {
+    "percent": 1.21,
+    "line": 2179,
+    "instruction": "1.21 :   29a397: dec    %r12",
+    "context": [
+      "    0.48 :   29a389: vcvtsd2ss %xmm0,%xmm0,%xmm1",
+      "    3.34 :   29a38d: vucomiss %xmm1,%xmm11",
+      "    1.79 :   29a391: jae    29a80c <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x2e7c>",
+      "    1.21 :   29a397: dec    %r12",
+      "    0.39 :   29a39a: lea    (%r12,%r12,2),%rax",
+      "    0.20 :   29a39e: lea    (%r14,%rax,8),%rcx",
+      "    0.18 :   29a3a2: mov    0x10(%r14,%rax,8),%eax"
+    ]
+  },
+  {
+    "percent": 1.19,
+    "line": 2427,
+    "instruction": "1.19 :   29a80c: mov    0x50(%rsp),%r12",
+    "context": [
+      "    0.00 :   29a801: mov    0x30(%rsp),%r11",
+      "    0.00 :   29a806: vmovaps %xmm0,%xmm11",
+      "    0.00 :   29a80a: jmp    29a811 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x2e81>",
+      "    1.19 :   29a80c: mov    0x50(%rsp),%r12",
+      "    0.41 :   29a811: mov    0x70(%rsp),%r14",
+      "    0.00 :   29a816: vmovss %xmm11,0xc(%rsp)",
+      "    0.18 :   29a81c: jmp    29a82d <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x2e9d>"
+    ]
+  },
+  {
+    "percent": 1.15,
+    "line": 2125,
+    "instruction": "1.15 :   29a2bb: mov    $0x3f,%dl",
+    "context": [
+      "    1.08 :   29a2b0: vmovq  %xmm0,%rax",
+      "    1.72 :   29a2b5: test   %rax,%rax",
+      "    0.57 :   29a2b8: sets   %cl",
+      "    1.15 :   29a2bb: mov    $0x3f,%dl",
+      "    0.00 :   29a2bd: bzhi   %rdx,%rax,%rax",
+      "    0.05 :   29a2c2: movabs $0xfff0000000000000,%rdx",
+      "    0.02 :   29a2cc: add    %rax,%rdx"
+    ]
+  },
+  {
+    "percent": 1.08,
+    "line": 2122,
+    "instruction": "1.08 :   29a2b0: vmovq  %xmm0,%rax",
+    "context": [
+      "    0.00 :   29a29c: ja     29ab6d <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x31dd>",
+      "    0.21 :   29a2a2: mov    0x80(%rsp),%rax",
+      "    0.00 :   29a2aa: vaddsd (%rax,%r12,8),%xmm3,%xmm0",
+      "    1.08 :   29a2b0: vmovq  %xmm0,%rax",
+      "    1.72 :   29a2b5: test   %rax,%rax",
+      "    0.57 :   29a2b8: sets   %cl",
+      "    1.15 :   29a2bb: mov    $0x3f,%dl"
+    ]
+  },
+  {
+    "percent": 1.05,
+    "line": 1771,
+    "instruction": "1.05 :   299b8b: jb     29937a <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x19ea>",
+    "context": [
+      "    0.46 :   299b80: vcvtsd2ss %xmm0,%xmm0,%xmm1",
+      "    0.99 :   299b84: inc    %r13",
+      "    0.09 :   299b87: vucomiss %xmm1,%xmm11",
+      "    1.05 :   299b8b: jb     29937a <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x19ea>",
+      "    0.74 :   299b91: lea    (%r8,%r13,1),%rax",
+      "    0.00 :   299b95: cmp    $0xffffffffffffffff,%rax",
+      "    0.00 :   299b99: je     299377 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x19e7>"
+    ]
+  },
+  {
+    "percent": 0.99,
+    "line": 1769,
+    "instruction": "0.99 :   299b84: inc    %r13",
+    "context": [
+      "    0.00 :   299b76: mov    $0x1,%eax",
+      "    0.02 :   299b7b: vmovq  %rax,%xmm0",
+      "    0.46 :   299b80: vcvtsd2ss %xmm0,%xmm0,%xmm1",
+      "    0.99 :   299b84: inc    %r13",
+      "    0.09 :   299b87: vucomiss %xmm1,%xmm11",
+      "    1.05 :   299b8b: jb     29937a <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x19ea>",
+      "    0.74 :   299b91: lea    (%r8,%r13,1),%rax"
+    ]
+  },
+  {
+    "percent": 0.93,
+    "line": 1735,
+    "instruction": "0.93 :   299ae1: vmovss %xmm0,0x14(%r13)",
+    "context": [
+      "    0.71 :   299ad6: or     %sil,%cl",
+      "    0.92 :   299ad9: jne    299ae1 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x2151>",
+      "    0.00 :   299adb: vmovss 0x8(%r13),%xmm0",
+      "    0.93 :   299ae1: vmovss %xmm0,0x14(%r13)",
+      "    0.00 :   299ae7: mov    0x30(%rsp),%r11",
+      "    0.00 :   299aec: cmp    %r11,%rbp",
+      "    0.00 :   299aef: vmovss 0xc(%rsp),%xmm11"
+    ]
+  },
+  {
+    "percent": 0.92,
+    "line": 2100,
+    "instruction": "0.92 :   29a23e: jmp    29a17c <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x27ec>",
+    "context": [
+      "    0.74 :   29a22e: vaddss -0x239fe6(%rip),%xmm0,%xmm0        # 60250 <serde_json::ser::Formatter::write_char_escape::HEX_DIGITS+0xc00>",
+      "    0.71 :   29a236: vdivss %xmm0,%xmm1,%xmm0",
+      "    1.94 :   29a23a: vsubss %xmm0,%xmm1,%xmm0",
+      "    0.92 :   29a23e: jmp    29a17c <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x27ec>",
+      "    0.00 :   29a243: test   %r13,%r13",
+      "    0.00 :   29a246: je     29a715 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x2d85>",
+      "    0.02 :   29a24c: vmovd  %ebx,%xmm0"
+    ]
+  },
+  {
+    "percent": 0.92,
+    "line": 1733,
+    "instruction": "0.92 :   299ad9: jne    299ae1 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x2151>",
+    "context": [
+      "    0.00 :   299ad1: setb   %cl",
+      "    0.39 :   299ad4: and    %al,%cl",
+      "    0.71 :   299ad6: or     %sil,%cl",
+      "    0.92 :   299ad9: jne    299ae1 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x2151>",
+      "    0.00 :   299adb: vmovss 0x8(%r13),%xmm0",
+      "    0.93 :   299ae1: vmovss %xmm0,0x14(%r13)",
+      "    0.00 :   299ae7: mov    0x30(%rsp),%r11"
+    ]
+  },
+  {
+    "percent": 0.85,
+    "line": 2147,
+    "instruction": "0.85 :   29a31a: vmovsd 0x28(%rsp),%xmm1",
+    "context": [
+      "    0.53 :   29a30e: or     %dl,%cl",
+      "    0.67 :   29a310: vmovss -0x237428(%rip),%xmm1        # 62ef0 <serde_json::ser::Formatter::write_char_escape::HEX_DIGITS+0x38a0>",
+      "    0.09 :   29a318: jne    29a38d <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x29fd>",
+      "    0.85 :   29a31a: vmovsd 0x28(%rsp),%xmm1",
+      "    0.00 :   29a320: vucomisd -0x23d3e8(%rip),%xmm1        # 5cf40 <__abi_tag+0x5cc44>",
+      "    0.00 :   29a328: jne    29a32c <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x299c>",
+      "    0.00 :   29a32a: jnp    29a389 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x29f9>"
+    ]
+  },
+  {
+    "percent": 0.85,
+    "line": 2082,
+    "instruction": "0.85 :   29a1d9: mov    0x7f8(%r8),%rsi",
+    "context": [
+      "    0.09 :   29a1cf: test   %r9,%r9",
+      "    0.00 :   29a1d2: je     29a1ee <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x285e>",
+      "    0.00 :   29a1d4: mov    0x28(%r8,%rax,4),%ecx",
+      "    0.85 :   29a1d9: mov    0x7f8(%r8),%rsi",
+      "    0.00 :   29a1e0: cmp    %rcx,%rsi",
+      "    0.00 :   29a1e3: jbe    29ab5e <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x31ce>",
+      "    0.05 :   29a1e9: add    %rcx,%r9"
+    ]
+  },
+  {
+    "percent": 0.84,
+    "line": 1705,
+    "instruction": "0.84 :   299a6b: cmp    %r15d,%eax",
+    "context": [
+      "    0.02 :   299a59: mov    0x78(%rsp),%r14",
+      "    0.02 :   299a5e: je     29977c <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x1dec>",
+      "    0.05 :   299a64: mov    0x9c(%rsp),%eax",
+      "    0.84 :   299a6b: cmp    %r15d,%eax",
+      "    0.07 :   299a6e: cmovb  %eax,%r15d",
+      "    0.09 :   299a72: inc    %r15d",
+      "    0.14 :   299a75: mov    0x70(%rsp),%eax"
+    ]
+  },
+  {
+    "percent": 0.83,
+    "line": 2063,
+    "instruction": "0.83 :   29a186: vcvtss2sd %xmm0,%xmm0,%xmm0",
+    "context": [
+      "    0.00 :   29a178: vmulss %xmm1,%xmm0,%xmm0",
+      "    0.00 :   29a17c: mov    0x60(%rsp),%rax",
+      "    0.00 :   29a181: vmovss %xmm0,(%rax,%rdi,4)",
+      "    0.83 :   29a186: vcvtss2sd %xmm0,%xmm0,%xmm0",
+      "    1.37 :   29a18a: vaddsd %xmm0,%xmm3,%xmm3",
+      "    1.99 :   29a18e: add    $0x18,%rdx",
+      "    0.14 :   29a192: cmp    %r11,%rdx"
+    ]
+  },
+  {
+    "percent": 0.8,
+    "line": 1387,
+    "instruction": "0.80 :   2994b3: add    $0x18,%rax",
+    "context": [
+      "    1.49 :   2994a9: vucomiss %xmm11,%xmm1",
+      "    1.67 :   2994ae: mov    %r13,%rdi",
+      "    0.00 :   2994b1: ja     2994cb <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x1b3b>",
+      "    0.80 :   2994b3: add    $0x18,%rax",
+      "    0.00 :   2994b7: inc    %rdi",
+      "    0.02 :   2994ba: cmp    %r11,%rax",
+      "    0.00 :   2994bd: jne    2993c0 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x1a30>"
+    ]
+  },
+  {
+    "percent": 0.74,
+    "line": 2097,
+    "instruction": "0.74 :   29a22e: vaddss -0x239fe6(%rip),%xmm0,%xmm0        # 60250 <serde_json::ser::Formatter::write_char_escape::HEX_DIGITS+0xc00>",
+    "context": [
+      "    0.42 :   29a21c: cmpb   $0x1,0x7e8(%r8)",
+      "    0.00 :   29a224: jne    29a170 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x27e0>",
+      "    0.00 :   29a22a: vmulss %xmm0,%xmm2,%xmm0",
+      "    0.74 :   29a22e: vaddss -0x239fe6(%rip),%xmm0,%xmm0        # 60250 <serde_json::ser::Formatter::write_char_escape::HEX_DIGITS+0xc00>",
+      "    0.71 :   29a236: vdivss %xmm0,%xmm1,%xmm0",
+      "    1.94 :   29a23a: vsubss %xmm0,%xmm1,%xmm0",
+      "    0.92 :   29a23e: jmp    29a17c <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x27ec>"
+    ]
+  },
+  {
+    "percent": 0.74,
+    "line": 1772,
+    "instruction": "0.74 :   299b91: lea    (%r8,%r13,1),%rax",
+    "context": [
+      "    0.99 :   299b84: inc    %r13",
+      "    0.09 :   299b87: vucomiss %xmm1,%xmm11",
+      "    1.05 :   299b8b: jb     29937a <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x19ea>",
+      "    0.74 :   299b91: lea    (%r8,%r13,1),%rax",
+      "    0.00 :   299b95: cmp    $0xffffffffffffffff,%rax",
+      "    0.00 :   299b99: je     299377 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x19e7>",
+      "    0.05 :   299b9f: vmovq  0x10(%r9,%r13,8),%xmm0"
+    ]
+  },
+  {
+    "percent": 0.73,
+    "line": 2133,
+    "instruction": "0.73 :   29a2de: lea    -0x1(%rax),%rsi",
+    "context": [
+      "    0.18 :   29a2d3: cmp    $0x3ff,%edx",
+      "    0.40 :   29a2d9: setb   %dl",
+      "    0.64 :   29a2dc: and    %cl,%dl",
+      "    0.73 :   29a2de: lea    -0x1(%rax),%rsi",
+      "    0.09 :   29a2e2: movabs $0xfffffffffffff,%rdi",
+      "    0.16 :   29a2ec: cmp    %rdi,%rsi",
+      "    0.05 :   29a2ef: setb   %sil"
+    ]
+  },
+  {
+    "percent": 0.71,
+    "line": 2098,
+    "instruction": "0.71 :   29a236: vdivss %xmm0,%xmm1,%xmm0",
+    "context": [
+      "    0.00 :   29a224: jne    29a170 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x27e0>",
+      "    0.00 :   29a22a: vmulss %xmm0,%xmm2,%xmm0",
+      "    0.74 :   29a22e: vaddss -0x239fe6(%rip),%xmm0,%xmm0        # 60250 <serde_json::ser::Formatter::write_char_escape::HEX_DIGITS+0xc00>",
+      "    0.71 :   29a236: vdivss %xmm0,%xmm1,%xmm0",
+      "    1.94 :   29a23a: vsubss %xmm0,%xmm1,%xmm0",
+      "    0.92 :   29a23e: jmp    29a17c <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x27ec>",
+      "    0.00 :   29a243: test   %r13,%r13"
+    ]
+  },
+  {
+    "percent": 0.71,
+    "line": 1732,
+    "instruction": "0.71 :   299ad6: or     %sil,%cl",
+    "context": [
+      "    0.02 :   299acb: cmp    $0x7f000000,%edx",
+      "    0.00 :   299ad1: setb   %cl",
+      "    0.39 :   299ad4: and    %al,%cl",
+      "    0.71 :   299ad6: or     %sil,%cl",
+      "    0.92 :   299ad9: jne    299ae1 <<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning+0x2151>",
+      "    0.00 :   299adb: vmovss 0x8(%r13),%xmm0",
+      "    0.93 :   299ae1: vmovss %xmm0,0x14(%r13)"
+    ]
+  }
+]

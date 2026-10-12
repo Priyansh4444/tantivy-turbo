@@ -1,0 +1,316 @@
+diff --git i/src/query/boolean_query/or_maxscore.rs w/src/query/boolean_query/or_maxscore.rs
+index d5cf67739..25d86439d 100644
+--- i/src/query/boolean_query/or_maxscore.rs
++++ w/src/query/boolean_query/or_maxscore.rs
+@@ -1,4 +1,4 @@
+-use crate::query::score_combiner::{SmallScoreSumUpperBound, SumCombiner};
++use crate::query::score_combiner::{ScoreSumThresholdCutoff, SmallScoreSumUpperBound, SumCombiner};
+ use crate::query::term_query::{ScoredTermBatch, TermScorer};
+ use crate::query::weight::for_each_pruning_scorer;
+ use crate::query::{BufferedUnionScorer, Scorer};
+@@ -97,6 +97,7 @@ pub(crate) fn or_maxscore(
+     // prefix/probe sum contains at most the admitted number of original terms.
+     let upper_bound =
+         SmallScoreSumUpperBound::new(num_terms).expect("admitted 3..=32-term score sum");
++    let mut optional_cutoff = ScoreSumThresholdCutoff::new(threshold);
+     let mut clauses: Vec<ClauseState> = scorers
+         .iter()
+         .enumerate()
+@@ -342,7 +343,11 @@ pub(crate) fn or_maxscore(
+             }
+             let mut competitive = true;
+             for rank in (0..first_essential).rev() {
+-                if upper_bound.score(known + prefix[rank + 1]) <= threshold {
++                let optional_sum = known + prefix[rank + 1];
++                let rejected = upper_bound.score_is_at_most(optional_sum, &optional_cutoff);
++                #[cfg(test)]
++                debug_assert_eq!(rejected, upper_bound.score(optional_sum) <= threshold);
++                if rejected {
+                     competitive = false;
+                     break;
+                 }
+@@ -367,6 +372,7 @@ pub(crate) fn or_maxscore(
+                     let next_threshold = callback(doc, score);
+                     debug_assert!(next_threshold >= threshold);
+                     threshold = next_threshold;
++                    optional_cutoff = ScoreSumThresholdCutoff::new(threshold);
+                 }
+             }
+             if single_essential {
+diff --git i/src/query/score_combiner.rs w/src/query/score_combiner.rs
+index 644fa01bb..a0dc74844 100644
+--- i/src/query/score_combiner.rs
++++ w/src/query/score_combiner.rs
+@@ -130,6 +130,37 @@ pub(crate) struct SmallScoreSumUpperBound {
+     factor: f64,
+ }
+ 
++/// An exact cutoff for an admitted small bound's post-multiply product.
++/// The private field prevents confusing this with a widened f32 threshold.
++pub(crate) struct ScoreSumThresholdCutoff(f64);
++
++impl ScoreSumThresholdCutoff {
++    /// Exact post-multiply cutoff for `score(sum) <= threshold`. The midpoint
++    /// belongs to the lower f32 only when its significand is even. Account for
++    /// that tie and the f64 bit successor already used by `score`.
++    pub(crate) fn new(threshold: Score) -> Self {
++        if threshold < 0.0 {
++            return Self(f64::NEG_INFINITY);
++        }
++        if threshold == Score::INFINITY {
++            return Self(f64::INFINITY);
++        }
++        if threshold.is_nan() {
++            return Self(f64::NAN);
++        }
++        // Normalize -0; its ordered comparisons agree with +0. MAX's next
++        // finite rounding endpoint is 2^128, not f32 infinity.
++        let bits = threshold.to_bits() & 0x7fff_ffff;
++        let upper = if bits == Score::MAX.to_bits() {
++            f64::from_bits(0x47f0_0000_0000_0000)
++        } else {
++            f64::from(Score::from_bits(bits + 1))
++        };
++        let midpoint = (f64::from(Score::from_bits(bits)) + upper) * 0.5;
++        Self(f64::from_bits(midpoint.to_bits() - 1 - u64::from(bits & 1)))
++    }
++}
++
+ impl SmallScoreSumUpperBound {
+     pub(crate) fn new(num_terms: usize) -> Option<Self> {
+         if !(3..=32).contains(&num_terms) {
+@@ -151,6 +182,14 @@ impl SmallScoreSumUpperBound {
+         // signed least subnormal f64; its f32 cast preserves the zero bits.
+         f64::from_bits(inflated.to_bits() + 1) as Score
+     }
++
++    /// The same admitted domain and multiplication as `score`; only the
++    /// successor, f32 cast, and threshold comparison have moved to the cutoff.
++    #[inline]
++    pub(crate) fn score_is_at_most(&self, sum: f64, cutoff: &ScoreSumThresholdCutoff) -> bool {
++        debug_assert!(sum.is_finite() && sum >= 0.0 && sum <= 32.0 * f64::from(Score::MAX));
++        (sum * self.factor) <= cutoff.0
++    }
+ }
+ 
+ /// Take max score of different scorers
+@@ -193,7 +232,218 @@ impl ScoreCombiner for DisjunctionMaxCombiner {
+ 
+ #[cfg(test)]
+ mod tests {
+-    use super::{ScoreSumUpperBound, SmallScoreSumUpperBound};
++    use super::{ScoreSumThresholdCutoff, ScoreSumUpperBound, SmallScoreSumUpperBound};
++
++    fn cutoff_threshold_bits() -> Vec<u32> {
++        let mut bits = vec![
++            0,
++            1,
++            2,
++            3,
++            0x007f_fffe,
++            0x007f_ffff,
++            0x0080_0000,
++            0x0080_0001,
++            0x3f7f_ffff,
++            0x3f80_0000,
++            0x3f80_0001,
++            0x7f7f_fffd,
++            0x7f7f_fffe,
++            0x7f7f_ffff,
++        ];
++        for exponent in 1..255u32 {
++            let boundary = exponent << 23;
++            bits.extend([boundary - 1, boundary, boundary + 1]);
++        }
++        bits.sort_unstable();
++        bits.dedup();
++        bits
++    }
++
++    fn check_threshold_cutoff(small: &SmallScoreSumUpperBound, sum: f64, threshold: f32) {
++        let cutoff = ScoreSumThresholdCutoff::new(threshold);
++        assert_eq!(
++            small.score_is_at_most(sum, &cutoff),
++            small.score(sum) <= threshold,
++            "sum_bits={:#018x} threshold_bits={:#010x} factor_bits={:#018x}",
++            sum.to_bits(),
++            threshold.to_bits(),
++            small.factor.to_bits()
++        );
++    }
++
++    #[test]
++    fn small_bound_cutoff_preserves_all_threshold_classes_and_signed_zeros() {
++        let exceptional_bits = [
++            0x8000_0000,
++            0x8000_0001,
++            0xbf80_0000,
++            0xff7f_ffff,
++            0xff80_0000,
++            0x7f80_0000,
++            0x7f80_0001,
++            0x7fbf_ffff,
++            0x7fc0_0000,
++            0x7fff_ffff,
++            0xff80_0001,
++            0xffbf_ffff,
++            0xffc0_0000,
++            0xffff_ffff,
++        ];
++        let thresholds: Vec<_> = cutoff_threshold_bits()
++            .into_iter()
++            .chain(exceptional_bits)
++            .map(f32::from_bits)
++            .collect();
++        for count in 3..=32 {
++            let small = SmallScoreSumUpperBound::new(count).unwrap();
++            assert_eq!(
++                small.factor.to_bits(),
++                ScoreSumUpperBound::new(count).factor.to_bits()
++            );
++            for &threshold in &thresholds {
++                for sum in [
++                    0.0,
++                    -0.0,
++                    f64::from_bits(1),
++                    f64::from_bits(2),
++                    f64::MIN_POSITIVE.next_down(),
++                    f64::MIN_POSITIVE,
++                    f64::from(f32::from_bits(1)),
++                    1.0,
++                    f64::from(f32::MAX),
++                    32.0 * f64::from(f32::MAX),
++                ] {
++                    check_threshold_cutoff(&small, sum, threshold);
++                }
++                let cutoff = ScoreSumThresholdCutoff::new(threshold).0;
++                if threshold.is_nan() {
++                    assert!(cutoff.is_nan());
++                } else if threshold < 0.0 {
++                    assert_eq!(cutoff, f64::NEG_INFINITY);
++                } else if threshold == f32::INFINITY {
++                    assert_eq!(cutoff, f64::INFINITY);
++                } else {
++                    assert!(cutoff.is_finite() && cutoff > 0.0);
++                }
++            }
++        }
++        assert_eq!(
++            ScoreSumThresholdCutoff::new(-0.0).0.to_bits(),
++            ScoreSumThresholdCutoff::new(0.0).0.to_bits()
++        );
++        // The production MAX endpoint literal denotes exactly 2^128.
++        assert_eq!(f64::from_bits(0x47f0_0000_0000_0000), 2.0f64.powi(128));
++    }
++
++    #[test]
++    fn small_bound_cutoff_direct_products_witness_even_odd_midpoints_and_overflow() {
++        let mut saw_even = false;
++        let mut saw_odd = false;
++        for bits in cutoff_threshold_bits() {
++            let threshold = f32::from_bits(bits);
++            // Independently construct the midpoint from the upward spacing;
++            // the old successor-and-cast remains the decision oracle.
++            let midpoint = if threshold == f32::MAX {
++                f64::from(threshold) + 2.0f64.powi(103)
++            } else {
++                f64::from(threshold) + (f64::from(threshold.next_up()) - f64::from(threshold)) * 0.5
++            };
++            let cutoff = ScoreSumThresholdCutoff::new(threshold).0;
++            let pred1 = midpoint.next_down();
++            let pred2 = pred1.next_down();
++            let next1 = midpoint.next_up();
++            let next2 = next1.next_up();
++            for product in [0.0, -0.0, pred2, pred1, midpoint, next1, next2] {
++                let old_score = f64::from_bits(product.to_bits() + 1) as f32;
++                assert_eq!(
++                    product <= cutoff,
++                    old_score <= threshold,
++                    "threshold_bits={bits:#010x} product_bits={:#018x}",
++                    product.to_bits()
++                );
++            }
++            let even = bits & 1 == 0;
++            assert!(pred2 <= cutoff);
++            assert_eq!(pred1 <= cutoff, even);
++            assert!(midpoint > cutoff);
++            assert_eq!(
++                cutoff.to_bits(),
++                if even {
++                    pred1.to_bits()
++                } else {
++                    pred2.to_bits()
++                }
++            );
++            assert_eq!(
++                (midpoint as f32).to_bits(),
++                if even {
++                    bits
++                } else {
++                    threshold.next_up().to_bits()
++                }
++            );
++            saw_even |= even;
++            saw_odd |= !even;
++        }
++        assert!(saw_even && saw_odd);
++    }
++
++    #[test]
++    fn small_bound_cutoff_matches_rounded_products_near_every_exponent_boundary() {
++        for count in 3..=32 {
++            let small = SmallScoreSumUpperBound::new(count).unwrap();
++            for bits in cutoff_threshold_bits() {
++                let threshold = f32::from_bits(bits);
++                let cutoff = ScoreSumThresholdCutoff::new(threshold);
++                // Division only generates test inputs. Production retains the
++                // original rounded multiplication before its comparison.
++                let center = cutoff.0 / small.factor;
++                let mut below = center;
++                let mut above = center;
++                let mut saw_true = false;
++                let mut saw_false = false;
++                for _ in 0..=8 {
++                    for sum in [below, above] {
++                        check_threshold_cutoff(&small, sum, threshold);
++                        if small.score(sum) <= threshold {
++                            saw_true = true;
++                        } else {
++                            saw_false = true;
++                        }
++                    }
++                    below = below.next_down();
++                    above = above.next_up();
++                }
++                assert!(
++                    saw_true && saw_false,
++                    "count={count} threshold_bits={bits:#010x}"
++                );
++            }
++        }
++    }
++
++    #[test]
++    fn small_bound_cutoff_matches_fixed_seed_valid_raw_bit_sums() {
++        let max_sum = 32.0 * f64::from(f32::MAX);
++        for count in 3..=32 {
++            let small = SmallScoreSumUpperBound::new(count).unwrap();
++            let mut state = 0x81ef_74c9_a32d_105bu64;
++            for _ in 0..2048 {
++                state = state.wrapping_mul(6364136223846793005).wrapping_add(1);
++                let sum = f64::from_bits(state % (max_sum.to_bits() + 1));
++                assert!(sum.is_finite() && sum >= 0.0 && sum <= max_sum);
++                state = state.wrapping_mul(6364136223846793005).wrapping_add(1);
++                let threshold = f32::from_bits(u32::try_from(state >> 32).unwrap());
++                check_threshold_cutoff(&small, sum, threshold);
++                let old_score = small.score(sum);
++                for neighboring_threshold in [old_score.next_down(), old_score, old_score.next_up()]
++                {
++                    check_threshold_cutoff(&small, sum, neighboring_threshold);
++                }
++            }
++        }
++    }
+ 
+     fn check_small_bound(generic: &ScoreSumUpperBound, small: &SmallScoreSumUpperBound, sum: f64) {
+         assert_eq!(

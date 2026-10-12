@@ -1,0 +1,39 @@
+{
+  "verdict": "kept_partial_win",
+  "commit": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "parent": "a674aaf2f6187f3010a135dc25fdacf9cab27e53",
+  "source_sha256": "21153a76a7ae3091ac6400cc438f408b7ac367d9a534b1d290d30af5c3fb5901",
+  "candidate_binary_sha256": "e11c4939984690d2c2d781cb6ace40d5e818e3a18a3f9f558d6cbcfd62546e5d",
+  "correctness_tests": 1442,
+  "ignored_tests": 7,
+  "exact_profiles": 3,
+  "queries_per_profile": 1227,
+  "longer_or_primary_ratios": {
+    "AB": 0.983542001981604,
+    "BA": 0.9765352548187587
+  },
+  "all_or_primary_ratios": {
+    "AB": 0.9873402469005383,
+    "BA": 0.9826239129529808
+  },
+  "control_log_spread": 0.011551427827558738,
+  "target_met": false,
+  "efficiency": {
+    "candidate_file_bytes": 4765928,
+    "baseline_file_bytes": 4765928,
+    "candidate_sections": {
+      ".rodata": 458816,
+      ".text": 2598898
+    },
+    "baseline_sections": {
+      ".rodata": 458816,
+      ".text": 2598898
+    },
+    "candidate_binary_sha256": "e11c4939984690d2c2d781cb6ace40d5e818e3a18a3f9f558d6cbcfd62546e5d",
+    "baseline_binary_sha256": "44356c9d2f849c17686dfae3b0fd3e7ebd1b986966d9a03ca292e1b64a72424d",
+    "index_change": false,
+    "per_region_allocation": false
+  },
+  "persistent_logical_payload_bytes": 16,
+  "limitations": "One primary longer-OR round mixed; 19 full-suite per-query losses retained, none in longer-OR. No measured RSS advantage. Port collector also tracks lower-bound hits. Configured profiles are own-oracle correctness only; existing optimized monotone-threshold domain."
+}

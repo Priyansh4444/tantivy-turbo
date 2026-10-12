@@ -1,0 +1,385 @@
+{
+  "seconds": 10.199467484999332,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 247064.78150134048,
+        "baseline_mean_ns": 240556.6380697051,
+        "ratio_mean": 1.0270545160751272,
+        "median_ratio": 1.0109814984060277
+      },
+      "BA": {
+        "candidate_mean_ns": 249376.71581769438,
+        "baseline_mean_ns": 241786.60991957106,
+        "ratio_mean": 1.031391754492311,
+        "median_ratio": 1.001866022974338
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 581698.2378640777,
+        "baseline_mean_ns": 554937.208737864,
+        "ratio_mean": 1.0482235263825221,
+        "median_ratio": 1.061090228396941
+      },
+      "BA": {
+        "candidate_mean_ns": 587420.6067961165,
+        "baseline_mean_ns": 557631.0339805825,
+        "ratio_mean": 1.0534216551809978,
+        "median_ratio": 1.0716221703494777
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 80941.66584158415,
+        "baseline_mean_ns": 81402.22524752475,
+        "ratio_mean": 0.9943421767090501,
+        "median_ratio": 1.0006905897083436
+      },
+      "BA": {
+        "candidate_mean_ns": 81399.12376237624,
+        "baseline_mean_ns": 81697.43564356436,
+        "ratio_mean": 0.9963485771757927,
+        "median_ratio": 0.9914116070098773
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 713,
+      "kind": "OR",
+      "terms": [
+        "automatic",
+        "writing"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2036807535010534,
+      "BA": 1.2459478761281775
+    },
+    {
+      "id": 811,
+      "kind": "OR",
+      "terms": [
+        "corpus",
+        "christi",
+        "tx"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2062809710650138,
+      "BA": 1.1543694639758926
+    },
+    {
+      "id": 403,
+      "kind": "OR",
+      "terms": [
+        "secretary",
+        "of",
+        "state"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1633956731246515,
+      "BA": 1.146427667873744
+    },
+    {
+      "id": 505,
+      "kind": "OR",
+      "terms": [
+        "xena",
+        "warrior",
+        "princess"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1408244965650554,
+      "BA": 1.270986244106353
+    },
+    {
+      "id": 889,
+      "kind": "OR",
+      "terms": [
+        "david",
+        "lee",
+        "roth"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1314335137053135,
+      "BA": 1.1456557164630798
+    },
+    {
+      "id": 761,
+      "kind": "OR",
+      "terms": [
+        "ambassador",
+        "of",
+        "italy"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1245292717863413,
+      "BA": 1.277035047774729
+    },
+    {
+      "id": 861,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "book",
+        "of",
+        "life"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1234443923453068,
+      "BA": 1.1380159983437839
+    },
+    {
+      "id": 871,
+      "kind": "OR",
+      "terms": [
+        "blue",
+        "ridge",
+        "parkway"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1381823646541684,
+      "BA": 1.119654084515486
+    },
+    {
+      "id": 829,
+      "kind": "OR",
+      "terms": [
+        "eastern",
+        "mennonite",
+        "university"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1096006449502267,
+      "BA": 1.3131771759088162
+    },
+    {
+      "id": 409,
+      "kind": "OR",
+      "terms": [
+        "university",
+        "of",
+        "washington"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1640365608055772,
+      "BA": 1.1071449018831376
+    },
+    {
+      "id": 721,
+      "kind": "OR",
+      "terms": [
+        "immigration",
+        "to",
+        "mexico"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1068112498859701,
+      "BA": 1.105915056688442
+    },
+    {
+      "id": 569,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "breakfast",
+        "club"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1001244165559025,
+      "BA": 1.1157675250805852
+    },
+    {
+      "id": 391,
+      "kind": "OR",
+      "terms": [
+        "people",
+        "having",
+        "sex"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1434259743393798,
+      "BA": 1.0934693708119858
+    },
+    {
+      "id": 339,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "english",
+        "restoration"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2337526490246156,
+      "BA": 1.0934493312555356
+    },
+    {
+      "id": 905,
+      "kind": "OR",
+      "terms": [
+        "boulder",
+        "city",
+        "nevada"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0924854687543455,
+      "BA": 1.368572615068316
+    },
+    {
+      "id": 421,
+      "kind": "OR",
+      "terms": [
+        "jesus",
+        "as",
+        "a",
+        "child"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.091523966557712,
+      "BA": 1.1083710888167355
+    },
+    {
+      "id": 859,
+      "kind": "OR",
+      "terms": [
+        "new",
+        "england",
+        "aquarium"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0900670511236212,
+      "BA": 1.145936687652552
+    },
+    {
+      "id": 567,
+      "kind": "OR",
+      "terms": [
+        "critical",
+        "care",
+        "nurse"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1614121309759298,
+      "BA": 1.0884306106212729
+    },
+    {
+      "id": 365,
+      "kind": "OR",
+      "terms": [
+        "ford",
+        "modeling",
+        "agency"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1196912467417082,
+      "BA": 1.0881343332531648
+    },
+    {
+      "id": 907,
+      "kind": "OR",
+      "terms": [
+        "united",
+        "states",
+        "constitution"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0867692348647573,
+      "BA": 1.1004434426315846
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791735116.5845022,
+      "loadavg": [
+        3.4169921875,
+        3.16162109375,
+        2.8642578125
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 209675 python           339",
+        " 209775 ps               100",
+        " 209645 python3         95.6",
+        " 209764 ytsearch-openin 60.0",
+        "3111450 helium          19.3",
+        "3775038 vesktop         12.9",
+        " 140783 t3code          10.7",
+        "3774896 vesktop          8.9",
+        "  51398 helium           7.5",
+        " 140793 t3code           7.2",
+        "  51379 helium           7.0",
+        "   2358 helium           6.7"
+      ]
+    },
+    {
+      "at": 1791735122.9634173,
+      "loadavg": [
+        4.2822265625,
+        3.3544921875,
+        2.9306640625
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 209969 ytsearch-openin  569",
+        " 209645 python3         25.8",
+        "3111450 helium          19.3",
+        " 209675 python          16.8",
+        "3775038 vesktop         12.9",
+        " 140783 t3code          10.7",
+        "3774896 vesktop          8.9",
+        "  51398 helium           7.5",
+        " 140793 t3code           7.3",
+        "  51379 helium           6.9",
+        "   2358 helium           6.7",
+        "   1429 Hyprland         6.3"
+      ]
+    }
+  ]
+}

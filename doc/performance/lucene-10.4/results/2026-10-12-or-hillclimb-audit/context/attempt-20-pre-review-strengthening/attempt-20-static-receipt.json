@@ -1,0 +1,66 @@
+{
+  "schema": "tantivy-or-attempt-source-v1",
+  "attempt": 20,
+  "status": "source_only_ready_uncompiled",
+  "worktree": "/home/pronsh/Coding/playground/search/tantivy-or-required-gap-oct11",
+  "branch": "perf/or-required-gap-oct11",
+  "parent_commit": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "edited_tracked_files": [
+    "src/query/boolean_query/or_maxscore.rs"
+  ],
+  "source_sha256": {
+    "src/query/boolean_query/or_maxscore.rs": "20b487c5f16cee50973632930a4828805f3f3cd258009b8b6911da23f783e174"
+  },
+  "term_source_unchanged_sha256": "dd1e18b5b1d273cf2c09959ea207997a1e93f854b0fc459fb0a1e76129b87277",
+  "patch_sha256": "87692553b1dc640c814de4de6938b8dec3acccbfac1870a4bc2bc5c44f36b0e7",
+  "parent_test_count": 13,
+  "test_count": 18,
+  "parent_test_module_tail_byte_identical": true,
+  "parent_test_helpers_byte_identical": true,
+  "all_parent_tests_retained": true,
+  "test_names": [
+    "required_gap_preserves_full_owned_batches_exclusive_end_and_literal_scores",
+    "required_gap_keeps_partial_suffix_and_skips_no_real_cursor_operation",
+    "required_gap_cache_rechecks_equality_after_real_threshold_growth_and_deletions",
+    "required_gap_no_future_entry_guard_and_failed_certificate_preserve_trace",
+    "required_gap_discards_region_certificate_before_optional_becomes_essential",
+    "cached_global_prefix_preserves_equality_neighbors_and_large_threshold_jumps",
+    "cached_certificate_survives_density_rejection_widening_and_rejection_again",
+    "single_driver_batches_replay_every_dynamic_threshold_exactly",
+    "exact_traces_at_full_block_and_tail_boundaries",
+    "deferred_optional_clause_becomes_essential_after_shallow_full_blocks",
+    "globally_optional_dense_terms_cover_sparse_essential_gaps_and_tails",
+    "threshold_growth_promotes_local_optionals_to_global_certificates",
+    "similar_density_terms_keep_local_certificates_until_both_are_optional",
+    "exhausted_high_cost_remainder_changes_live_density_choice",
+    "exact_midpoint_leaves_preserve_incoming_order_and_strict_ties",
+    "duplicates_disparate_boosts_exhaustion_and_sparse_regions",
+    "exact_growing_threshold_traces_for_mixed_dense_and_sparse_terms",
+    "unsafe_domains_use_exhaustive_canonical_sum_before_any_seek"
+  ],
+  "added_test_names": [
+    "required_gap_cache_rechecks_equality_after_real_threshold_growth_and_deletions",
+    "required_gap_discards_region_certificate_before_optional_becomes_essential",
+    "required_gap_keeps_partial_suffix_and_skips_no_real_cursor_operation",
+    "required_gap_no_future_entry_guard_and_failed_certificate_preserve_trace",
+    "required_gap_preserves_full_owned_batches_exclusive_end_and_literal_scores"
+  ],
+  "static_checks": {
+    "git_diff_check": true,
+    "rustfmt_completed": true,
+    "sole_tracked_file_scope": true
+  },
+  "runtime_checks": {
+    "build": false,
+    "tests": false,
+    "configured_oracles": false,
+    "latency": false,
+    "profiling": false,
+    "codegen": false
+  },
+  "notes": [
+    "No production/root tree edited.",
+    "Root owns all heavy/runtime work.",
+    "Option<Score> logical region cache; no release allocation or arrays added; actual binary/frame size unmeasured."
+  ]
+}

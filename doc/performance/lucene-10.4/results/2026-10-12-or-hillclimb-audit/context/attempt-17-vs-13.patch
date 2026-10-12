@@ -1,0 +1,660 @@
+diff --git 1/home/pronsh/Coding/playground/search/tantivy-or-metadata-range-oct08/src/query/boolean_query/or_maxscore.rs 2/home/pronsh/Coding/playground/search/tantivy-or-preserve-partition-oct10/src/query/boolean_query/or_maxscore.rs
+index ed8952d..0aee0c3 100644
+--- 1/home/pronsh/Coding/playground/search/tantivy-or-metadata-range-oct08/src/query/boolean_query/or_maxscore.rs
++++ 2/home/pronsh/Coding/playground/search/tantivy-or-preserve-partition-oct10/src/query/boolean_query/or_maxscore.rs
+@@ -135,6 +135,26 @@ struct WidenedRegion {
+     selected_bounds: Vec<Score>,
+ }
+ 
++#[cfg(test)]
++#[derive(Debug)]
++struct ExpansionProposal {
++    lo: DocId,
++    tight_hi: DocId,
++    proposed_hi: DocId,
++    hi: DocId,
++    threshold: Score,
++    first_essential: usize,
++    admitted: bool,
++    ordinals: Vec<usize>,
++    docs: Vec<DocId>,
++    selected_ends: Vec<DocId>,
++    selected_bounds: Vec<Score>,
++    proposed_bounds: Vec<Score>,
++    tight_prefix: Vec<u64>,
++    chosen_prefix: Vec<u64>,
++    bounds: Vec<Score>,
++}
++
+ #[cfg(test)]
+ #[derive(Debug)]
+ enum CursorProgress {
+@@ -182,6 +202,8 @@ thread_local! {
+         const { std::cell::RefCell::new(None) };
+     static WIDENED_REGIONS: std::cell::RefCell<Option<Vec<WidenedRegion>>> =
+         const { std::cell::RefCell::new(None) };
++    static EXPANSION_PROPOSALS: std::cell::RefCell<Option<Vec<ExpansionProposal>>> =
++        const { std::cell::RefCell::new(None) };
+     static TIGHT_SKIPS: std::cell::RefCell<Option<Vec<(DocId, DocId)>>> =
+         const { std::cell::RefCell::new(None) };
+     static CURSOR_PROGRESS: std::cell::RefCell<Option<Vec<CursorProgress>>> =
+@@ -244,6 +266,7 @@ pub(crate) fn or_maxscore(
+     let mut batch = ScoredTermBatch::new();
+     // Cold preparation scratch; ClauseState stays compact in the replay loops.
+     let mut selected_ends = [max_doc; 32];
++    let mut proposed_bounds = [0.0; 32];
+     let mut lo = clauses
+         .iter()
+         .map(|clause| clause.doc)
+@@ -414,38 +437,72 @@ pub(crate) fn or_maxscore(
+         let tight_hi = hi;
+         #[cfg(test)]
+         let tight_first_essential = first_essential;
+-        // Propose once from the old essential suffix. Crossed old optionals
+-        // receive range certificates before the final partition is chosen.
+-        hi = selected_ends[first_essential..num_terms]
++        // Publish a wider certificate only while the tight essential suffix
++        // stays unchanged. Speculation touches cold scratch, not live bounds,
++        // prefix entries or cursors. Stop at the first optional overflow.
++        let proposed_hi = selected_ends[first_essential..num_terms]
+             .iter()
+             .copied()
+             .min()
+             .unwrap_or(max_doc);
+-        debug_assert!(tight_hi <= hi && hi <= max_doc);
+-        if hi > tight_hi {
+-            #[cfg(test)]
+-            let selected_bounds = clauses.iter().map(|clause| clause.local_max).collect();
+-            for (rank, clause) in clauses.iter_mut().enumerate() {
+-                clause.local_max = if clause.doc >= hi {
++        debug_assert!(tight_hi <= proposed_hi && proposed_hi <= max_doc);
++        #[cfg(test)]
++        let selected_bounds: Vec<_> = clauses.iter().map(|clause| clause.local_max).collect();
++        #[cfg(test)]
++        let tight_prefix: Vec<_> = prefix.iter().map(|sum| sum.to_bits()).collect();
++        #[cfg(test)]
++        let selected_cursors: Vec<_> = scorers
++            .iter()
++            .map(|scorer| (scorer.doc(), scorer.last_doc_in_block()))
++            .collect();
++        #[cfg(test)]
++        let mut computed_proposals = 0;
++        let mut admitted = proposed_hi > tight_hi;
++        if admitted {
++            let mut proposed_sum = 0.0f64;
++            for rank in 0..first_essential {
++                let clause = &clauses[rank];
++                let bound = if clause.doc >= proposed_hi {
+                     0.0
+-                } else if selected_ends[rank] < hi {
++                } else if selected_ends[rank] < proposed_hi {
+                     // Preserve the original selected certificate too. Lookahead
+                     // reads only cloned metadata and never enters the real
+                     // selected-block cache or the retained-candidate owner.
+                     clause
+                         .local_max
+-                        .max(scorers[clause.ordinal].range_max_score(lo, hi))
++                        .max(scorers[clause.ordinal].range_max_score(lo, proposed_hi))
++                } else {
++                    clause.local_max
++                };
++                proposed_bounds[rank] = bound;
++                proposed_sum += f64::from(bound);
++                #[cfg(test)]
++                {
++                    computed_proposals += 1;
++                }
++                if upper_bound.score(proposed_sum) > threshold {
++                    admitted = false;
++                    break;
++                }
++            }
++        }
++        if admitted {
++            hi = proposed_hi;
++            for (rank, clause) in clauses.iter_mut().enumerate() {
++                clause.local_max = if rank < first_essential {
++                    proposed_bounds[rank]
++                } else if clause.doc >= hi {
++                    0.0
+                 } else {
+                     clause.local_max
+                 };
+                 prefix[rank + 1] = prefix[rank] + f64::from(clause.local_max);
+             }
+-            first_essential = 0;
+-            while first_essential < num_terms
+-                && upper_bound.score(prefix[first_essential + 1]) <= threshold
+-            {
+-                first_essential += 1;
+-            }
++            // Proposed bounds cannot decrease their tight effective bounds.
++            // The optional prefix still fits; its next unchanged bound still
++            // exceeds the threshold, proving exact partition equality.
++            debug_assert!(upper_bound.score(prefix[first_essential]) <= threshold);
++            debug_assert!(upper_bound.score(prefix[first_essential + 1]) > threshold);
+             #[cfg(test)]
+             WIDENED_REGIONS.with(|regions| {
+                 if let Some(regions) = regions.borrow_mut().as_mut() {
+@@ -459,23 +516,50 @@ pub(crate) fn or_maxscore(
+                         docs: clauses.iter().map(|clause| clause.doc).collect(),
+                         bounds: clauses.iter().map(|clause| clause.local_max).collect(),
+                         selected_ends: selected_ends[..num_terms].to_vec(),
+-                        selected_bounds,
++                        selected_bounds: selected_bounds.clone(),
+                     });
+                 }
+             });
+-            if first_essential == num_terms {
+-                lo = hi;
+-                continue;
+-            }
+         } else {
+-            // The tentative prefix already used these same zeros; retain its
+-            // partition when the endpoint does not expand.
++            // Preserve the tight prefix/partition exactly. PendingNative policy
++            // initialization is allowed, but no speculative cursor/cache moved.
+             for clause in &mut clauses {
+                 if clause.doc >= hi {
+                     clause.local_max = 0.0;
+                 }
+             }
+         }
++        #[cfg(test)]
++        assert_eq!(
++            selected_cursors,
++            scorers
++                .iter()
++                .map(|scorer| (scorer.doc(), scorer.last_doc_in_block()))
++                .collect::<Vec<_>>(),
++            "tentative bounds must leave real first-unread and shallow selection unchanged"
++        );
++        #[cfg(test)]
++        EXPANSION_PROPOSALS.with(|proposals| {
++            if let Some(proposals) = proposals.borrow_mut().as_mut() {
++                proposals.push(ExpansionProposal {
++                    lo,
++                    tight_hi,
++                    proposed_hi,
++                    hi,
++                    threshold,
++                    first_essential,
++                    admitted,
++                    ordinals: clauses.iter().map(|clause| clause.ordinal).collect(),
++                    docs: clauses.iter().map(|clause| clause.doc).collect(),
++                    selected_ends: selected_ends[..num_terms].to_vec(),
++                    selected_bounds,
++                    proposed_bounds: proposed_bounds[..computed_proposals].to_vec(),
++                    tight_prefix,
++                    chosen_prefix: prefix.iter().map(|sum| sum.to_bits()).collect(),
++                    bounds: clauses.iter().map(|clause| clause.local_max).collect(),
++                });
++            }
++        });
+ 
+         for clause in &mut clauses[first_essential..] {
+             if clause.doc < lo {
+@@ -651,6 +735,7 @@ mod tests {
+ 
+     struct WideningEvidence {
+         regions: Vec<WidenedRegion>,
++        proposals: Vec<ExpansionProposal>,
+         progress: Vec<CursorProgress>,
+         skips: Vec<(DocId, DocId)>,
+     }
+@@ -672,6 +757,7 @@ mod tests {
+ 
+     fn begin_widening_evidence() {
+         WIDENED_REGIONS.with(|regions| *regions.borrow_mut() = Some(Vec::new()));
++        EXPANSION_PROPOSALS.with(|proposals| *proposals.borrow_mut() = Some(Vec::new()));
+         CURSOR_PROGRESS.with(|progress| *progress.borrow_mut() = Some(Vec::new()));
+         TIGHT_SKIPS.with(|skips| *skips.borrow_mut() = Some(Vec::new()));
+     }
+@@ -679,12 +765,106 @@ mod tests {
+     fn finish_widening_evidence(leaves: &[Vec<ScalarLeaf>]) -> WideningEvidence {
+         let evidence = WideningEvidence {
+             regions: WIDENED_REGIONS.with(|regions| regions.borrow_mut().take().unwrap()),
++            proposals: EXPANSION_PROPOSALS.with(|proposals| proposals.borrow_mut().take().unwrap()),
+             progress: CURSOR_PROGRESS.with(|progress| progress.borrow_mut().take().unwrap()),
+             skips: TIGHT_SKIPS.with(|skips| skips.borrow_mut().take().unwrap()),
+         };
++        for proposal in &evidence.proposals {
++            assert!(proposal.lo < proposal.tight_hi);
++            let count = leaves.len();
++            let generic = crate::query::score_combiner::ScoreSumUpperBound::new(count);
++            let partition = |prefix: &[f64]| {
++                (0..count)
++                    .find(|&rank| generic.score(prefix[rank + 1]) > proposal.threshold)
++                    .unwrap_or(count)
++            };
++            let mut tight = vec![0.0f64];
++            let mut chosen = vec![0.0f64];
++            for rank in 0..count {
++                let tight_bound = if proposal.docs[rank] >= proposal.tight_hi {
++                    0.0
++                } else {
++                    proposal.selected_bounds[rank]
++                };
++                tight.push(tight[rank] + f64::from(tight_bound));
++                chosen.push(chosen[rank] + f64::from(proposal.bounds[rank]));
++                let ordinal = proposal.ordinals[rank];
++                for &(doc, _, bits) in &leaves[ordinal] {
++                    if proposal.lo.max(proposal.docs[rank]) <= doc && doc < proposal.hi {
++                        assert!(
++                            Score::from_bits(bits) <= proposal.bounds[rank],
++                            "{proposal:?}"
++                        );
++                    }
++                }
++                if proposal.docs[rank] >= proposal.hi {
++                    assert_eq!(proposal.bounds[rank].to_bits(), 0.0f32.to_bits());
++                }
++                if !proposal.admitted {
++                    assert_eq!(proposal.bounds[rank].to_bits(), tight_bound.to_bits());
++                }
++            }
++            assert_eq!(
++                proposal.tight_prefix,
++                tight.iter().map(|sum| sum.to_bits()).collect::<Vec<_>>()
++            );
++            assert_eq!(
++                proposal.chosen_prefix,
++                chosen.iter().map(|sum| sum.to_bits()).collect::<Vec<_>>()
++            );
++            assert_eq!(partition(&tight), proposal.first_essential);
++            assert_eq!(partition(&chosen), proposal.first_essential);
++            assert_eq!(
++                proposal.tight_hi,
++                *proposal.selected_ends.iter().min().unwrap()
++            );
++            assert_eq!(
++                proposal.proposed_hi,
++                *proposal.selected_ends[proposal.first_essential..]
++                    .iter()
++                    .min()
++                    .unwrap()
++            );
++            let mut sum = 0.0f64;
++            for (rank, &bound) in proposal.proposed_bounds.iter().enumerate() {
++                let effective = if proposal.docs[rank] >= proposal.tight_hi {
++                    0.0
++                } else {
++                    proposal.selected_bounds[rank]
++                };
++                assert!(bound >= effective);
++                if proposal.docs[rank] >= proposal.proposed_hi {
++                    assert_eq!(bound.to_bits(), 0.0f32.to_bits());
++                }
++                for &(doc, _, bits) in &leaves[proposal.ordinals[rank]] {
++                    if proposal.lo.max(proposal.docs[rank]) <= doc && doc < proposal.proposed_hi {
++                        assert!(Score::from_bits(bits) <= bound, "{proposal:?}");
++                    }
++                }
++                sum += f64::from(bound);
++                if rank + 1 < proposal.proposed_bounds.len() || proposal.admitted {
++                    assert!(generic.score(sum) <= proposal.threshold);
++                }
++            }
++            if proposal.admitted {
++                assert_eq!(proposal.proposed_bounds.len(), proposal.first_essential);
++                assert_eq!(proposal.hi, proposal.proposed_hi);
++                assert!(proposal.hi > proposal.tight_hi);
++            } else {
++                assert_eq!(proposal.hi, proposal.tight_hi);
++                assert_eq!(proposal.chosen_prefix, proposal.tight_prefix);
++                if proposal.proposed_hi > proposal.tight_hi {
++                    assert!(!proposal.proposed_bounds.is_empty());
++                    assert!(generic.score(sum) > proposal.threshold);
++                } else {
++                    assert!(proposal.proposed_bounds.is_empty());
++                }
++            }
++        }
+         for region in &evidence.regions {
+             assert!(region.lo < region.tight_hi && region.tight_hi < region.hi);
+             assert!(region.tight_first_essential < leaves.len());
++            assert_eq!(region.tight_first_essential, region.first_essential);
+             assert_eq!(
+                 region.hi,
+                 *region.selected_ends[region.tight_first_essential..]
+@@ -793,6 +973,220 @@ mod tests {
+         (accepted, finish_widening_evidence(&leaves))
+     }
+ 
++    #[test]
++    fn partition_expansion_admits_zero_restoration_without_promoting_a_driver() {
++        let norms = vec![1; 3000];
++        let dense: Vec<_> = (0..1024).map(|doc| (doc, 1)).collect();
++        let future: Vec<_> = (300..900)
++            .map(|doc| (doc, if doc == 428 { 1000 } else { 1 }))
++            .collect();
++        let driver: Vec<_> = (0..600).map(|i| (4 * i, 1)).collect();
++        let scorers = vec![
++            fixture(&dense, &norms, 0.01),
++            fixture(&future, &norms, 0.001),
++            fixture(&driver, &norms, 0.1),
++        ];
++        let generic = crate::query::score_combiner::ScoreSumUpperBound::new(3);
++        let weak_globals = f64::from(scorers[0].max_score()) + f64::from(scorers[1].max_score());
++        assert!(generic.score(weak_globals) <= 0.025);
++        assert!(generic.score(weak_globals + f64::from(scorers[2].max_score())) > 0.025);
++        assert_eq!(
++            scorers
++                .iter()
++                .map(TermScorer::size_hint)
++                .collect::<Vec<_>>(),
++            [1024, 600, 600]
++        );
++        for reverse in [false, true] {
++            let mut ordered = scorers.clone();
++            if reverse {
++                ordered.reverse();
++            }
++            let mut ranks: Vec<_> = (0..ordered.len()).collect();
++            ranks.sort_unstable_by(|&left, &right| {
++                let priority = |ordinal: usize| {
++                    f64::from(ordered[ordinal].max_score())
++                        / f64::from(ordered[ordinal].size_hint())
++                };
++                priority(left)
++                    .total_cmp(&priority(right))
++                    .then_with(|| left.cmp(&right))
++            });
++            let driver_ordinal = if reverse { 0 } else { 2 };
++            assert_eq!(
++                ranks,
++                if reverse {
++                    vec![1, 2, 0]
++                } else {
++                    vec![1, 0, 2]
++                }
++            );
++            for limit in [0, 1, 10] {
++                GLOBAL_CHOICES.with(|choices| *choices.borrow_mut() = Some(Vec::new()));
++                let (accepted, evidence) = check_widening(ordered.clone(), 3000, 0.025, limit);
++                let choices = GLOBAL_CHOICES.with(|choices| choices.borrow_mut().take().unwrap());
++                assert_eq!(choices[0], (0, 2, 0, 600));
++                let proposal = evidence
++                    .proposals
++                    .iter()
++                    .find(|proposal| proposal.lo == 0)
++                    .unwrap();
++                assert!(proposal.admitted);
++                assert_eq!(proposal.ordinals, ranks);
++                assert_eq!(
++                    (proposal.tight_hi, proposal.proposed_hi, proposal.hi),
++                    (128, 509, 509)
++                );
++                assert_eq!(proposal.first_essential, 2);
++                let future_rank = proposal
++                    .ordinals
++                    .iter()
++                    .position(|&ordinal| ordinal == 1)
++                    .unwrap();
++                assert_eq!(proposal.docs[future_rank], 300);
++                assert!(
++                    proposal.docs[future_rank] >= proposal.tight_hi
++                        && proposal.docs[future_rank] < proposal.hi
++                );
++                assert!(proposal.bounds[future_rank] > 0.0);
++                assert_eq!(
++                    proposal.bounds[future_rank].to_bits(),
++                    proposal.proposed_bounds[future_rank].to_bits()
++                );
++                assert!(evidence.progress.iter().any(|event| matches!(event,
++                    CursorProgress::Batch { ordinal, floor: 0, up_to: 509, docs, doc: 512, .. }
++                    if *ordinal == driver_ordinal && docs.len() == 128
++                )));
++                assert!(accepted.iter().any(|&(doc, _)| doc == 428));
++            }
++        }
++    }
++
++    #[test]
++    fn partition_expansion_n3_n32_admission_and_overflow_are_both_realized() {
++        let norms = vec![1; 3000];
++        let dense: Vec<_> = (0..1024).map(|doc| (doc, 1)).collect();
++        let future: Vec<_> = (300..900)
++            .map(|doc| (doc, if doc == 428 { 1000 } else { 1 }))
++            .collect();
++        let driver: Vec<_> = (0..600).map(|i| (4 * i, 1)).collect();
++        for count in [3, 32] {
++            for reject in [false, true] {
++                let mut scorers: Vec<_> = (0..count - 2)
++                    .map(|ordinal| fixture(&dense, &norms, 0.00001 * (ordinal + 1) as Score))
++                    .collect();
++                let future_ordinal = scorers.len();
++                scorers.push(fixture(&future, &norms, if reject { 0.02 } else { 0.001 }));
++                scorers.push(fixture(&driver, &norms, 0.1));
++                for reverse in [false, true] {
++                    let mut ordered = scorers.clone();
++                    if reverse {
++                        ordered.reverse();
++                    }
++                    let future_ordinal = if reverse {
++                        count - future_ordinal - 1
++                    } else {
++                        future_ordinal
++                    };
++                    for limit in [0, 1, 10] {
++                        let (accepted, evidence) =
++                            check_widening(ordered.clone(), 3000, 0.025, limit);
++                        let proposal = evidence
++                            .proposals
++                            .iter()
++                            .find(|proposal| proposal.lo == 0)
++                            .unwrap();
++                        assert_eq!(
++                            proposal.admitted, !reject,
++                            "count={count} reverse={reverse} limit={limit}"
++                        );
++                        assert_eq!(proposal.first_essential, count - 1);
++                        assert_eq!(proposal.tight_hi, 128);
++                        assert_eq!(proposal.proposed_hi, 509);
++                        assert_eq!(proposal.hi, if reject { 128 } else { 509 });
++                        let rank = proposal
++                            .ordinals
++                            .iter()
++                            .position(|&ordinal| ordinal == future_ordinal)
++                            .unwrap();
++                        assert!(rank < proposal.first_essential);
++                        assert_eq!(proposal.docs[rank], 300);
++                        assert!(proposal.proposed_bounds[rank] > 0.0);
++                        if reject {
++                            assert_eq!(proposal.bounds[rank].to_bits(), 0.0f32.to_bits());
++                            assert_eq!(
++                                proposal.proposed_bounds.len(),
++                                rank + 1,
++                                "stop at first overflow"
++                            );
++                        } else {
++                            assert!(proposal.bounds[rank] > 0.0);
++                        }
++                        assert!(accepted.iter().any(|&(doc, _)| doc == 428));
++                    }
++                }
++            }
++        }
++    }
++
++    #[test]
++    fn partition_expansion_stops_at_first_overflow_before_later_optional_bounds() {
++        let norms = vec![1; 1200];
++        let dense: Vec<_> = (0..1024).map(|doc| (doc, 1)).collect();
++        let future: Vec<_> = (300..900)
++            .map(|doc| (doc, if doc == 428 { 1000 } else { 1 }))
++            .collect();
++        let later_optional: Vec<_> = (301..901).map(|doc| (doc, 1)).collect();
++        let driver: Vec<_> = (0..130).map(|i| (4 * i, 1)).collect();
++        let scorers = vec![
++            fixture(&dense, &norms, 0.001),
++            fixture(&future, &norms, 0.02),
++            fixture(&later_optional, &norms, 0.03),
++            fixture(&driver, &norms, 0.1),
++        ];
++        let generic = crate::query::score_combiner::ScoreSumUpperBound::new(4);
++        assert!(generic.score(f64::from(scorers[0].max_score())) <= 0.015);
++        assert!(
++            generic.score(f64::from(scorers[0].max_score()) + f64::from(scorers[1].max_score()))
++                > 0.015
++        );
++        for reverse in [false, true] {
++            let mut ordered = scorers.clone();
++            if reverse {
++                ordered.reverse();
++            }
++            for limit in [0, 1, 10] {
++                let (accepted, evidence) = check_widening(ordered.clone(), 1200, 0.015, limit);
++                let proposal = evidence
++                    .proposals
++                    .iter()
++                    .find(|proposal| proposal.lo == 0)
++                    .unwrap();
++                assert_eq!(
++                    proposal.ordinals,
++                    if reverse {
++                        vec![3, 2, 1, 0]
++                    } else {
++                        vec![0, 1, 2, 3]
++                    }
++                );
++                assert_eq!(proposal.first_essential, 3);
++                assert_eq!(
++                    (proposal.tight_hi, proposal.proposed_hi, proposal.hi),
++                    (128, 509, 128)
++                );
++                assert!(!proposal.admitted);
++                assert_eq!(proposal.proposed_bounds.len(), 2);
++                assert_eq!(proposal.docs[1], 300);
++                assert_eq!(proposal.docs[2], 301);
++                assert!(proposal.selected_ends[2] < proposal.proposed_hi);
++                assert!(proposal.bounds[1] == 0.0 && proposal.bounds[2] == 0.0);
++                assert_eq!(proposal.tight_prefix, proposal.chosen_prefix);
++                assert!(accepted.iter().any(|&(doc, _)| doc == 428));
++            }
++        }
++    }
++
+     #[test]
+     fn wider_region_restores_old_zero_and_promotes_future_high_tf_block() {
+         let norms = vec![1; 1200];
+@@ -814,41 +1208,41 @@ mod tests {
+             let future_ordinal = 1;
+             let (accepted, evidence) = check_widening(ordered, 1200, 0.015, 1);
+             assert!(accepted.iter().any(|&(doc, _)| doc == 428));
+-            let region = evidence
+-                .regions
++            let proposal = evidence
++                .proposals
+                 .iter()
+-                .find(|region| region.lo == 0)
++                .find(|proposal| proposal.lo == 0)
+                 .unwrap();
+-            let rank = region
++            let rank = proposal
+                 .ordinals
+                 .iter()
+                 .position(|&ordinal| ordinal == future_ordinal)
+                 .unwrap();
+-            assert!(region.tight_hi <= 300 && 300 < region.hi);
+-            assert_eq!(region.docs[rank], 300, "old cleanup must have been zero");
+-            assert!(region.bounds[rank] > 0.0);
+-            assert!(
+-                rank >= region.first_essential,
+-                "crossed optional must be promoted"
+-            );
+-            assert!(region.selected_ends[rank] < region.hi);
++            assert!(proposal.tight_hi <= 300 && 300 < proposal.proposed_hi);
++            assert_eq!(proposal.docs[rank], 300, "old cleanup must have been zero");
++            assert!(!proposal.admitted, "promotion must reject expansion");
++            assert_eq!(proposal.hi, proposal.tight_hi);
++            assert_eq!(proposal.bounds[rank].to_bits(), 0.0f32.to_bits());
++            assert!(proposal.proposed_bounds[rank] > 0.0);
++            assert!(proposal.selected_ends[rank] < proposal.proposed_hi);
+             let future_leaf = scalar_leaves(&scorers)[1]
+                 .iter()
+                 .find(|&&(doc, _, _)| doc == 428)
+                 .unwrap()
+                 .2;
+-            assert!(Score::from_bits(future_leaf) > region.selected_bounds[rank]);
++            assert!(Score::from_bits(future_leaf) > proposal.selected_bounds[rank]);
+             assert_eq!(
+-                region.bounds[rank].to_bits(),
++                proposal.proposed_bounds[rank].to_bits(),
+                 scorers[1].max_score().to_bits()
+             );
+-            assert!(rank < region.tight_first_essential);
++            assert!(rank < proposal.first_essential);
+             assert!(
+                 evidence.progress.iter().any(|event| matches!(event,
+-                    CursorProgress::Advance { ordinal, before: 427, doc: 428, tf: 1000, .. }
++                    CursorProgress::Advance { ordinal, doc: 428, tf: 1000, .. }
++                    | CursorProgress::Seek { ordinal, doc: 428, tf: 1000, .. }
+                     if *ordinal == future_ordinal
+                 )),
+-                "promoted scalar driver must cross its full-block boundary"
++                "stronger later literal leaf must remain reachable"
+             );
+         }
+     }
+@@ -1169,24 +1563,30 @@ mod tests {
+         let later_sum = f64::from(selected_alpha) + f64::from(Score::from_bits(later_leaf));
+         assert!(selected_sum < later_sum);
+         let threshold = ((selected_sum + later_sum) * 0.5) as Score;
+-        let (_, evidence) = check_widening(scorers.clone(), 1536, threshold, 0);
+-        let region = evidence
+-            .regions
++        let (accepted, evidence) = check_widening(scorers.clone(), 1536, threshold, 0);
++        assert!(accepted.iter().any(|&(doc, _)| doc == 150));
++        let proposal = evidence
++            .proposals
+             .iter()
+-            .find(|region| region.lo == 0)
++            .find(|proposal| proposal.lo == 0)
+             .unwrap();
+-        let rank = region
++        let rank = proposal
+             .ordinals
+             .iter()
+             .position(|&ordinal| ordinal == 1)
+             .unwrap();
+-        assert!(region.tight_hi <= 150 && 150 < region.hi);
+-        assert!(rank < region.tight_first_essential && rank >= region.first_essential);
+-        assert!(region.selected_ends[rank] < region.hi);
+-        assert!(Score::from_bits(later_leaf) > region.selected_bounds[rank]);
+-        assert!(region.bounds[rank] >= Score::from_bits(later_leaf));
++        assert!(proposal.tight_hi <= 150 && 150 < proposal.proposed_hi);
++        assert!(rank < proposal.first_essential);
++        assert!(proposal.selected_ends[rank] < proposal.proposed_hi);
++        assert!(!proposal.admitted);
++        assert_eq!(
++            proposal.bounds[rank].to_bits(),
++            proposal.selected_bounds[rank].to_bits()
++        );
++        assert!(Score::from_bits(later_leaf) > proposal.selected_bounds[rank]);
++        assert!(proposal.proposed_bounds[rank] >= Score::from_bits(later_leaf));
+         assert!(
+-            region.bounds[rank] < scorers[1].max_score(),
++            proposal.proposed_bounds[rank] < scorers[1].max_score(),
+             "unsaturated native range must be tighter than query-global"
+         );
+         assert!(
+@@ -1194,12 +1594,15 @@ mod tests {
+                 event,
+                 CursorProgress::Advance {
+                     ordinal: 1,
+-                    before: 127,
+-                    doc: 128,
++                    doc: 150,
++                    ..
++                } | CursorProgress::Seek {
++                    ordinal: 1,
++                    doc: 150,
+                     ..
+                 }
+             )),
+-            "promoted scalar beta must cross its full-block boundary"
++            "rejected expansion must still reach the later stronger beta leaf"
+         );
+         Ok(())
+     }

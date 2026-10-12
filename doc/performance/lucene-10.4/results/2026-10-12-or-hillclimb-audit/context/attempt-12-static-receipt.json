@@ -1,0 +1,10 @@
+{
+  "base": "a674aaf2f6187f3010a135dc25fdacf9cab27e53",
+  "source_sha256": "00fad7ecc30941fa72e6fbd002db5aff85b5b4e7a76b89403a9624ba65d56559",
+  "unchanged_replay_sha256": "63086168e3a7fbc768ca8d6529189aacc2d736d1c414c9d00b5796741462093e",
+  "unchanged_global_density_policy_sha256": "bd950e3f104916faf5a8581bbcbdf826a68e6f66a3a47c0c863776a4b9870391",
+  "unchanged_existing_tests_except_density_geometry_sha256": "bfe3a5216534ee4986f70f1b5baa708f741ffb570df0b2f46f833326d664db52",
+  "diff_stat": "src/query/boolean_query/or_maxscore.rs | 938 ++++++++++++++++++++++++++++++++-\n 1 file changed, 923 insertions(+), 15 deletions(-)",
+  "status": "M src/query/boolean_query/or_maxscore.rs",
+  "diff_lines": 1055
+}

@@ -1,0 +1,651 @@
+{
+  "schema": "tantivy-or-publication-verification-v1",
+  "packet": "doc/performance/lucene-10.4/results/2026-10-12-or-hillclimb-audit",
+  "source_commit": "3dff75c5cfddee6dab50c144839b4cec645d9dca",
+  "packet_manifest_sha256": "401544853764de7a73b57cd8a8cbd3594ae715ad7858b72bb5483d43cc525955",
+  "assembly": {
+    "destination": "/home/pronsh/Coding/playground/search/tantivy-pr2937/doc/performance/lucene-10.4/results/2026-10-12-or-hillclimb-audit",
+    "files": 2747,
+    "stored_bytes": 207309572,
+    "raw_bytes": 875566263,
+    "manifest_sha256": "401544853764de7a73b57cd8a8cbd3594ae715ad7858b72bb5483d43cc525955",
+    "audit_executed": false
+  },
+  "standalone_audit": {
+    "integrity_pass": true,
+    "completed_attempts": 23,
+    "accepted_attempts": 5,
+    "rejected_attempts": 18,
+    "latest_accepted_attempt": "22",
+    "actual_port_target_met": false,
+    "limitations": [
+      "Hashes bind retained bytes; they are not signatures or source-to-binary authenticity proof.",
+      "The baseline600-source match is a retained provenance receipt, not a fresh compiler/source authenticity audit.",
+      "Engine binaries, corpus and index payload remain external; index hash maps cannot re-audit absent bytes.",
+      "Timed checksums can collide; full exact gates independently compare ordered documents and raw score bits.",
+      "Self-control spread is an observed threshold, not a confidence interval or guarantee for unseen workloads.",
+      "Configured profiles have own-oracle correctness gates, not measured configured Java/port performance.",
+      "Tantivy omits top10 totals; actual port tracks lower-bound hit totals with threshold1000.",
+      "Mixed rounds and all individual losses remain in the output; no universal performance/API parity claim.",
+      "Latency was recorded under user background load; retained telemetry does not remove contention.",
+      "Profiles are diagnostic and cannot recover overwritten original attempt01 raw evidence."
+    ]
+  },
+  "audit_stdout_sha256": "1872937ee9e0e8dfd730ae2581d878e73fecee2552dfa83e2ac67dc811e4ac44",
+  "negative_probes": {
+    "negative_probes_pass": true,
+    "count": 83,
+    "passed": 83,
+    "probes": [
+      {
+        "name": "source/authentic-binding-good",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "source/wrong-source-sha",
+        "pass": true,
+        "expected": "compiled changed source binding",
+        "observed": "AuditError",
+        "invariant": "compiled changed source binding: src/query/boolean_query/or_maxscore.rs"
+      },
+      {
+        "name": "parent/wrong-binary",
+        "pass": true,
+        "expected": "parent chain binary",
+        "observed": "AuditError",
+        "invariant": "parent chain binary: mismatch"
+      },
+      {
+        "name": "parent/wrong-commit",
+        "pass": true,
+        "expected": "parent chain commit",
+        "observed": "AuditError",
+        "invariant": "parent chain commit: mismatch"
+      },
+      {
+        "name": "parent/authentic-proof-good",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "exact/wrong-raw-score-bit",
+        "pass": true,
+        "expected": "optimized/exhaustive raw bits",
+        "observed": "AuditError",
+        "invariant": "optimized/exhaustive raw bits/hits/9/1: integer mismatch"
+      },
+      {
+        "name": "timing/authentic-first-cell-good",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "timing/boolean-ns",
+        "pass": true,
+        "expected": "positive integer ns",
+        "observed": "AuditError",
+        "invariant": "positive integer ns"
+      },
+      {
+        "name": "timing/zero-ns",
+        "pass": true,
+        "expected": "positive integer ns",
+        "observed": "AuditError",
+        "invariant": "positive integer ns"
+      },
+      {
+        "name": "timing/wrong-checksum",
+        "pass": true,
+        "expected": "timed checksum",
+        "observed": "AuditError",
+        "invariant": "timed checksum"
+      },
+      {
+        "name": "timing/reordered-cell",
+        "pass": true,
+        "expected": "raw complete schedule/seed/row order",
+        "observed": "AuditError",
+        "invariant": "raw complete schedule/seed/row order/5: mismatch"
+      },
+      {
+        "name": "timing/duplicate-cell",
+        "pass": true,
+        "expected": "raw complete schedule/seed/row order",
+        "observed": "AuditError",
+        "invariant": "raw complete schedule/seed/row order/5: mismatch"
+      },
+      {
+        "name": "timing/missing-cell",
+        "pass": true,
+        "expected": "raw complete schedule/seed/row order",
+        "observed": "AuditError",
+        "invariant": "raw complete schedule/seed/row order/5: mismatch"
+      },
+      {
+        "name": "timing/extra-inserted-cell",
+        "pass": true,
+        "expected": "raw complete schedule/seed/row order",
+        "observed": "AuditError",
+        "invariant": "raw complete schedule/seed/row order/3: integer mismatch"
+      },
+      {
+        "name": "timing/omitted-schedule-query",
+        "pass": true,
+        "expected": "frozen schedule/queries",
+        "observed": "AuditError",
+        "invariant": "frozen schedule/queries: length"
+      },
+      {
+        "name": "timing/wrong-compiled-source-guards",
+        "pass": true,
+        "expected": "guard full compiled source snapshot",
+        "observed": "AuditError",
+        "invariant": "guard full compiled source snapshot/tantivy-or-hillclimb-oct07/files/src/query/boolean_query/or_maxscore.rs: mismatch"
+      },
+      {
+        "name": "timing/wrong-parent-binary-guards",
+        "pass": true,
+        "expected": "guard binaries",
+        "observed": "AuditError",
+        "invariant": "guard binaries/port: mismatch"
+      },
+      {
+        "name": "protocol/wrong-ready",
+        "pass": true,
+        "expected": "READY/max_doc",
+        "observed": "AuditError",
+        "invariant": "READY/max_doc: integer mismatch"
+      },
+      {
+        "name": "protocol/wrong-request-order",
+        "pass": true,
+        "expected": "protocol request order",
+        "observed": "AuditError",
+        "invariant": "protocol request order/id: integer mismatch"
+      },
+      {
+        "name": "protocol/wrong-warmup-checksum",
+        "pass": true,
+        "expected": "timed checksum",
+        "observed": "AuditError",
+        "invariant": "timed checksum"
+      },
+      {
+        "name": "protocol/authentic-prefix-good",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "protocol/extra-trailing-record",
+        "pass": true,
+        "expected": "extra protocol records",
+        "observed": "AuditError",
+        "invariant": "extra protocol records"
+      },
+      {
+        "name": "failure/08/authentic-history-good",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "failure/08/authentic-stage-good/pre-fixture-fix/duplicate-unfixed-tests",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "failure/08/authentic-stage-good/pre-fixture-fix/tests-targeted",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "failure/08/omitted-history",
+        "pass": true,
+        "expected": "historic expected failure may not be omitted",
+        "observed": "AuditError",
+        "invariant": "historic expected failure may not be omitted"
+      },
+      {
+        "name": "failure/08/relabelled-success",
+        "pass": true,
+        "expected": "stage expected status",
+        "observed": "AuditError",
+        "invariant": "stage expected status: integer mismatch"
+      },
+      {
+        "name": "failure/08/wrong-signature",
+        "pass": true,
+        "expected": "required retained failure/log signature",
+        "observed": "AuditError",
+        "invariant": "required retained failure/log signature"
+      },
+      {
+        "name": "failure/09/authentic-history-good",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "failure/09/authentic-stage-good/pre-oracle-fix/tests-targeted",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "failure/09/omitted-history",
+        "pass": true,
+        "expected": "historic expected failure may not be omitted",
+        "observed": "AuditError",
+        "invariant": "historic expected failure may not be omitted"
+      },
+      {
+        "name": "failure/09/relabelled-success",
+        "pass": true,
+        "expected": "stage expected status",
+        "observed": "AuditError",
+        "invariant": "stage expected status: integer mismatch"
+      },
+      {
+        "name": "failure/09/wrong-signature",
+        "pass": true,
+        "expected": "required retained failure/log signature",
+        "observed": "AuditError",
+        "invariant": "required retained failure/log signature"
+      },
+      {
+        "name": "failure/09/erased-test-failures",
+        "pass": true,
+        "expected": "retained test totals",
+        "observed": "AuditError",
+        "invariant": "retained test totals/failed: integer mismatch"
+      },
+      {
+        "name": "failure/10/authentic-history-good",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "failure/10/authentic-stage-good/pre-fixture-fix/tests-targeted",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "failure/10/omitted-history",
+        "pass": true,
+        "expected": "historic expected failure may not be omitted",
+        "observed": "AuditError",
+        "invariant": "historic expected failure may not be omitted"
+      },
+      {
+        "name": "failure/10/relabelled-success",
+        "pass": true,
+        "expected": "stage expected status",
+        "observed": "AuditError",
+        "invariant": "stage expected status: integer mismatch"
+      },
+      {
+        "name": "failure/10/wrong-signature",
+        "pass": true,
+        "expected": "required retained failure/log signature",
+        "observed": "AuditError",
+        "invariant": "required retained failure/log signature"
+      },
+      {
+        "name": "failure/12/authentic-history-good",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "failure/12/authentic-stage-good/pre-witness-fix/tests-targeted",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "failure/12/omitted-history",
+        "pass": true,
+        "expected": "historic expected failure may not be omitted",
+        "observed": "AuditError",
+        "invariant": "historic expected failure may not be omitted"
+      },
+      {
+        "name": "failure/12/relabelled-success",
+        "pass": true,
+        "expected": "stage expected status",
+        "observed": "AuditError",
+        "invariant": "stage expected status: integer mismatch"
+      },
+      {
+        "name": "failure/12/wrong-signature",
+        "pass": true,
+        "expected": "required retained failure/log signature",
+        "observed": "AuditError",
+        "invariant": "required retained failure/log signature"
+      },
+      {
+        "name": "failure/12/erased-test-failures",
+        "pass": true,
+        "expected": "retained test totals",
+        "observed": "AuditError",
+        "invariant": "retained test totals/failed: integer mismatch"
+      },
+      {
+        "name": "failure/16/authentic-history-good",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "failure/16/authentic-stage-good/pre-capfixture-fix/tests-targeted",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "failure/16/omitted-history",
+        "pass": true,
+        "expected": "historic expected failure may not be omitted",
+        "observed": "AuditError",
+        "invariant": "historic expected failure may not be omitted"
+      },
+      {
+        "name": "failure/16/relabelled-success",
+        "pass": true,
+        "expected": "stage expected status",
+        "observed": "AuditError",
+        "invariant": "stage expected status: integer mismatch"
+      },
+      {
+        "name": "failure/16/wrong-signature",
+        "pass": true,
+        "expected": "required retained failure/log signature",
+        "observed": "AuditError",
+        "invariant": "required retained failure/log signature"
+      },
+      {
+        "name": "failure/16/erased-test-failures",
+        "pass": true,
+        "expected": "retained test totals",
+        "observed": "AuditError",
+        "invariant": "retained test totals/failed: integer mismatch"
+      },
+      {
+        "name": "failure/19/authentic-history-good",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "failure/19/authentic-stage-good/pre-initial-seek-fix/tests-targeted",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "failure/19/omitted-history",
+        "pass": true,
+        "expected": "historic expected failure may not be omitted",
+        "observed": "AuditError",
+        "invariant": "historic expected failure may not be omitted"
+      },
+      {
+        "name": "failure/19/relabelled-success",
+        "pass": true,
+        "expected": "stage expected status",
+        "observed": "AuditError",
+        "invariant": "stage expected status: integer mismatch"
+      },
+      {
+        "name": "failure/19/wrong-signature",
+        "pass": true,
+        "expected": "required retained failure/log signature",
+        "observed": "AuditError",
+        "invariant": "required retained failure/log signature"
+      },
+      {
+        "name": "failure/19/erased-test-failures",
+        "pass": true,
+        "expected": "retained test totals",
+        "observed": "AuditError",
+        "invariant": "retained test totals/failed: integer mismatch"
+      },
+      {
+        "name": "decision/authentic17-identity-good",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "decision/unknown-verdict",
+        "pass": true,
+        "expected": "recorded decision verdict",
+        "observed": "AuditError",
+        "invariant": "recorded decision verdict"
+      },
+      {
+        "name": "decision/rejected-wrong-candidate-binary",
+        "pass": true,
+        "expected": "decision candidate binary",
+        "observed": "AuditError",
+        "invariant": "decision candidate binary: mismatch"
+      },
+      {
+        "name": "decision/rejected-wrong-source-map",
+        "pass": true,
+        "expected": "decision compiled source SHA",
+        "observed": "AuditError",
+        "invariant": "decision compiled source SHA: mismatch"
+      },
+      {
+        "name": "decision/authentic02-identity-good",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "decision/rejected-wrong-legacy-binary",
+        "pass": true,
+        "expected": "decision legacy candidate binary",
+        "observed": "AuditError",
+        "invariant": "decision legacy candidate binary: mismatch"
+      },
+      {
+        "name": "decision/rejected-wrong-scalar-source",
+        "pass": true,
+        "expected": "decision compiled source SHA",
+        "observed": "AuditError",
+        "invariant": "decision compiled source SHA: mismatch"
+      },
+      {
+        "name": "decision/accepted-wrong-candidate-binary",
+        "pass": true,
+        "expected": "decision candidate binary",
+        "observed": "AuditError",
+        "invariant": "decision candidate binary: mismatch"
+      },
+      {
+        "name": "inventory/minimal-good",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "inventory/extra-file",
+        "pass": true,
+        "expected": "exact packet inventory",
+        "observed": "AuditError",
+        "invariant": "exact packet inventory"
+      },
+      {
+        "name": "inventory/missing-file",
+        "pass": true,
+        "expected": "exact packet inventory",
+        "observed": "AuditError",
+        "invariant": "exact packet inventory"
+      },
+      {
+        "name": "inventory/symlink",
+        "pass": true,
+        "expected": "packet contains symlink",
+        "observed": "AuditError",
+        "invariant": "packet contains symlink: /tmp/portable-audit-probe-_56e3vid/payload.json"
+      },
+      {
+        "name": "inventory/stored-hash",
+        "pass": true,
+        "expected": "stored bytes/hash",
+        "observed": "AuditError",
+        "invariant": "stored bytes/hash: payload.json"
+      },
+      {
+        "name": "inventory/raw-hash",
+        "pass": true,
+        "expected": "raw bytes/hash",
+        "observed": "AuditError",
+        "invariant": "raw bytes/hash: payload.json"
+      },
+      {
+        "name": "inventory/gzip-zero-mtime-good",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      },
+      {
+        "name": "inventory/gzip-nonzero-mtime",
+        "pass": true,
+        "expected": "gzip mtime must be zero",
+        "observed": "AuditError",
+        "invariant": "gzip mtime must be zero: payload.json"
+      },
+      {
+        "name": "inventory/duplicate-json-key",
+        "pass": true,
+        "expected": "duplicate JSON key",
+        "observed": "AuditError",
+        "invariant": "duplicate JSON key: x"
+      },
+      {
+        "name": "inventory/nonfinite-json",
+        "pass": true,
+        "expected": "nonfinite JSON",
+        "observed": "AuditError",
+        "invariant": "attempts.json: nonfinite JSON NaN"
+      },
+      {
+        "name": "inventory/traversal-entry",
+        "pass": true,
+        "expected": "exact packet inventory",
+        "observed": "AuditError",
+        "invariant": "exact packet inventory"
+      },
+      {
+        "name": "path/../outside",
+        "pass": true,
+        "expected": "relative path",
+        "observed": "AuditError",
+        "invariant": "unsafe relative path: ../outside"
+      },
+      {
+        "name": "path//absolute",
+        "pass": true,
+        "expected": "relative path",
+        "observed": "AuditError",
+        "invariant": "unsafe relative path: /absolute"
+      },
+      {
+        "name": "path/a/../payload.json",
+        "pass": true,
+        "expected": "relative path",
+        "observed": "AuditError",
+        "invariant": "unsafe relative path: a/../payload.json"
+      },
+      {
+        "name": "path/a//payload.json",
+        "pass": true,
+        "expected": "relative path",
+        "observed": "AuditError",
+        "invariant": "unsafe relative path: a//payload.json"
+      },
+      {
+        "name": "path/a\\payload.json",
+        "pass": true,
+        "expected": "relative path",
+        "observed": "AuditError",
+        "invariant": "invalid relative path"
+      },
+      {
+        "name": "path/a:payload.json",
+        "pass": true,
+        "expected": "relative path",
+        "observed": "AuditError",
+        "invariant": "noncanonical relative path: a:payload.json"
+      },
+      {
+        "name": "path/canonical-good",
+        "pass": true,
+        "expected": null,
+        "observed": "accepted"
+      }
+    ],
+    "auditor_sha256": "368c3ea1c6023f9eeaf6dd3774ab2a778eecd4b462812cd841f011efa39acc36",
+    "packet_manifest_sha256": "401544853764de7a73b57cd8a8cbd3594ae715ad7858b72bb5483d43cc525955",
+    "full_successful_audit": "separate Root run required",
+    "packet_mutations": 0,
+    "engine_or_benchmark_executions": 0
+  },
+  "stage_receipts": {
+    "assemble": {
+      "phase": "assemble",
+      "returncode": 0,
+      "seconds": 40.56794396200007,
+      "inputs_unchanged": true,
+      "stdout_sha256": "a6c4874b21655c660d9aa36ddb092f8a795f17b08d1aa5cc04327ef3f8985f3b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command": [
+        "/home/pronsh/.local/share/mise/installs/python/latest/bin/python3",
+        "-B",
+        "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/portable-pack.py",
+        "/home/pronsh/Coding/playground/search/tantivy-pr2937/doc/performance/lucene-10.4/results/2026-10-12-or-hillclimb-audit"
+      ]
+    },
+    "audit": {
+      "phase": "audit",
+      "returncode": 0,
+      "seconds": 77.42660315399985,
+      "inputs_unchanged": true,
+      "stdout_sha256": "1872937ee9e0e8dfd730ae2581d878e73fecee2552dfa83e2ac67dc811e4ac44",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command": [
+        "/home/pronsh/.local/share/mise/installs/python/latest/bin/python3",
+        "-B",
+        "/home/pronsh/Coding/playground/search/tantivy-pr2937/doc/performance/lucene-10.4/results/2026-10-12-or-hillclimb-audit/recompute.py"
+      ]
+    },
+    "negative": {
+      "phase": "negative",
+      "returncode": 0,
+      "seconds": 5.385342000000037,
+      "inputs_unchanged": true,
+      "stdout_sha256": "77ddbae09b53a078d94b499ff0d5e7a6db646e9398f94549c0d741e4c03fcdd9",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command": [
+        "/home/pronsh/.local/share/mise/installs/python/latest/bin/python3",
+        "-B",
+        "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/newportable-negative-probes.py",
+        "/home/pronsh/Coding/playground/search/tantivy-pr2937/doc/performance/lucene-10.4/results/2026-10-12-or-hillclimb-audit"
+      ]
+    }
+  },
+  "clean_archive_check": "Separate root verification runs after this documentation commit and before pushing. This record does not claim a result for an unexecuted future check.",
+  "limits": "Retained-byte consistency and rejection behavior. No engine rebuild, source-to-binary authenticity, universal speed win or full Lucene API parity."
+}

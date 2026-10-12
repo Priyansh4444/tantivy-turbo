@@ -1,0 +1,631 @@
+{
+  "parent": {
+    "binary": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-06/tantivy_worker",
+    "binary_sha256": "44356c9d2f849c17686dfae3b0fd3e7ebd1b986966d9a03ca292e1b64a72424d",
+    "source_commit": "a674aaf2f6187f3010a135dc25fdacf9cab27e53",
+    "compiled_sources": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-06/build-final/after.json",
+    "compiled_sources_sha256": "67e96e8cce1c65c7ba0017d65debf38a420af9800dfee1d51a396d61bc3ba425",
+    "exact_gate": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-06/verify/receipt.json",
+    "exact_gate_sha256": "66323dbe88ea6f392d58581d745599e3c9605e0546cc74ceeb3cbebf671a4458"
+  },
+  "groups": {
+    "ALL": {
+      "queries": 1201,
+      "primary": {
+        "AB": 0.9967465114490862,
+        "BA": 0.9909165785999658
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0012967649128315,
+          "BA": 0.9990317498643475
+        },
+        "PP": {
+          "AB": 1.0096599911185233,
+          "BA": 1.003769039411643
+        }
+      },
+      "control_log_spread": 0.009613631719468366,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9969113890425936,
+          "TT": 0.9964622857236464,
+          "PP": 1.0094657211473441
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 1.0038131231545515,
+          "TT": 0.9973463673003289,
+          "PP": 1.0030075202567412
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 1.0006060640949799,
+          "TT": 1.0047576606222914,
+          "PP": 1.0118306651400828
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9927632159944829,
+          "TT": 1.0027122849702232,
+          "PP": 1.0029568719456845
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9937224914799025,
+          "TT": 1.0037925407310762,
+          "PP": 1.007759959301161
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9881134712335776,
+          "TT": 1.0000082655983766,
+          "PP": 1.0057665949607453
+        }
+      ]
+    },
+    "OR": {
+      "queries": 301,
+      "primary": {
+        "AB": 0.9873402469005383,
+        "BA": 0.9826239129529808
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0013821713387068,
+          "BA": 0.9898741786261271
+        },
+        "PP": {
+          "AB": 1.000228194248111,
+          "BA": 0.9966751579840577
+        }
+      },
+      "control_log_spread": 0.010177436227253018,
+      "candidate_win_both_beyond_group_controls": true,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9887989344050668,
+          "TT": 1.0007275843810068,
+          "PP": 1.002282099661572
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 1.0049315706873634,
+          "TT": 0.9870789198863176,
+          "PP": 0.9997382163046059
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.98691626092616,
+          "TT": 1.0022746888515177,
+          "PP": 1.004310190774522
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9815156602057746,
+          "TT": 0.9983588214863952,
+          "PP": 0.9900782140071638
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9811275426186836,
+          "TT": 1.0048555407398883,
+          "PP": 0.9942228552746698
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9871588137867665,
+          "TT": 0.9930876084267954,
+          "PP": 0.9996554690596793
+        }
+      ]
+    },
+    "OR_2": {
+      "queries": 198,
+      "primary": {
+        "AB": 1.0029383042133553,
+        "BA": 1.0071191327584987
+      },
+      "controls": {
+        "TT": {
+          "AB": 0.9967409260219021,
+          "BA": 0.9952222938856132
+        },
+        "PP": {
+          "AB": 0.9962440531605299,
+          "BA": 0.9948987003604655
+        }
+      },
+      "control_log_spread": 0.005114355689349307,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 1.007766963418288,
+          "TT": 0.9951107971685799,
+          "PP": 1.0106916514079018
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 1.0043892715984595,
+          "TT": 1.0023104101725204,
+          "PP": 0.9986084383551684
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 1.0059693332477915,
+          "TT": 0.9980178992296073,
+          "PP": 0.9968492771193297
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 1.0061463953688898,
+          "TT": 1.0013733427507674,
+          "PP": 0.9845987389461285
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9988717930988712,
+          "TT": 0.9988340763188353,
+          "PP": 0.9792980752534269
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 1.0162539537589708,
+          "TT": 0.9983833147665685,
+          "PP": 1.0063094934567334
+        }
+      ]
+    },
+    "OR_3PLUS": {
+      "queries": 103,
+      "primary": {
+        "AB": 0.983542001981604,
+        "BA": 0.9765352548187587
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.002566650741959,
+          "BA": 0.9885150337599723
+        },
+        "PP": {
+          "AB": 1.001219252873061,
+          "BA": 0.9971188244594934
+        }
+      },
+      "control_log_spread": 0.011551427827558738,
+      "candidate_win_both_beyond_group_controls": true,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9842709156822348,
+          "TT": 1.0021418109981062,
+          "PP": 1.0002627069780798
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 1.005062082737487,
+          "TT": 0.9832865774359641,
+          "PP": 1.0000144069631813
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9823454441333683,
+          "TT": 1.0033502314468479,
+          "PP": 1.0061627084643991
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9754815778206011,
+          "TT": 0.9975976712781289,
+          "PP": 0.9914519187119145
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9767215488227879,
+          "TT": 1.006384211087352,
+          "PP": 0.9979587314855591
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.98000236189282,
+          "TT": 0.9917485616047259,
+          "PP": 0.9980153779386813
+        }
+      ]
+    },
+    "AND": {
+      "queries": 300,
+      "primary": {
+        "AB": 1.0107348879928375,
+        "BA": 1.0037684491688352
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0063787215956705,
+          "BA": 0.9970245357320809
+        },
+        "PP": {
+          "AB": 1.0124002424605625,
+          "BA": 1.0007335054192767
+        }
+      },
+      "control_log_spread": 0.012323989179678883,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 1.010273904931243,
+          "TT": 0.9960966224455229,
+          "PP": 0.9994604667576998
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 1.0123398333879012,
+          "TT": 0.9949041216108002,
+          "PP": 0.994245037137717
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 1.0145936681764343,
+          "TT": 1.0085148135566198,
+          "PP": 1.020812750707136
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9988485913276504,
+          "TT": 1.0020927602137841,
+          "PP": 1.0047289072328276
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 1.0103632959574573,
+          "TT": 1.0086772589086581,
+          "PP": 1.0117821180610103
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 1.0026019454547832,
+          "TT": 0.994827475700277,
+          "PP": 1.0027959745866468
+        }
+      ]
+    },
+    "TERM": {
+      "queries": 300,
+      "primary": {
+        "AB": 0.9960053961961284,
+        "BA": 1.0100678023091338
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.003086156075844,
+          "BA": 1.0083632517440866
+        },
+        "PP": {
+          "AB": 0.9858513492368064,
+          "BA": 1.0122102975986393
+        }
+      },
+      "control_log_spread": 0.01424969716826458,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9937467715643147,
+          "TT": 0.9922439743506014,
+          "PP": 0.9879043288054882
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 1.003713755646023,
+          "TT": 1.0048729026533263,
+          "PP": 1.0132340055085731
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 1.0028882217565616,
+          "TT": 1.0036138091332223,
+          "PP": 0.9896123205109617
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 1.0094495538604111,
+          "TT": 1.0062226182132765,
+          "PP": 1.0165493458240864
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9824505487486378,
+          "TT": 1.0062908679083071,
+          "PP": 0.9854506065565619
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 1.0143824334445308,
+          "TT": 1.0018216876327906,
+          "PP": 1.0036537348634331
+        }
+      ]
+    },
+    "PHRASE": {
+      "queries": 300,
+      "primary": {
+        "AB": 0.9966230453420397,
+        "BA": 0.9894951467873033
+      },
+      "controls": {
+        "TT": {
+          "AB": 0.9985148973639988,
+          "BA": 1.0064379742634504
+        },
+        "PP": {
+          "AB": 1.0164388728780258,
+          "BA": 1.0103255487545435
+        }
+      },
+      "control_log_spread": 0.016305217381901813,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9962566619427639,
+          "TT": 0.993814678373099,
+          "PP": 1.0210942970281904
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9985075991223027,
+          "TT": 1.0059455896065912,
+          "PP": 1.0096019209230225
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 1.0035659681295148,
+          "TT": 1.004652147877837,
+          "PP": 1.013850060125685
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9971181058463654,
+          "TT": 1.0060596919712868,
+          "PP": 1.0110930077540612
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9949657613414087,
+          "TT": 1.0003651237985118,
+          "PP": 1.0169463824870877
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9800757327321126,
+          "TT": 1.0077614303776854,
+          "PP": 1.012038904539731
+        }
+      ]
+    }
+  },
+  "regressions_beyond_per_query_controls": [
+    {
+      "id": "145",
+      "kind": "TERM",
+      "terms": "soup",
+      "T_over_P_AB": "1.139121517689284",
+      "T_over_P_BA": "1.2107521453811207",
+      "control_log_spread": "0.05260711508682657"
+    },
+    {
+      "id": "156",
+      "kind": "TERM",
+      "terms": "louisiana",
+      "T_over_P_AB": "1.164900233865751",
+      "T_over_P_BA": "1.1861693941414866",
+      "control_log_spread": "0.09568380888612645"
+    },
+    {
+      "id": "158",
+      "kind": "TERM",
+      "terms": "thornton",
+      "T_over_P_AB": "1.1871076548299446",
+      "T_over_P_BA": "1.1318322135463954",
+      "control_log_spread": "0.10123003195131165"
+    },
+    {
+      "id": "278",
+      "kind": "TERM",
+      "terms": "wilkes",
+      "T_over_P_AB": "1.2089716631621108",
+      "T_over_P_BA": "1.2314023086789225",
+      "control_log_spread": "0.16651423929987053"
+    },
+    {
+      "id": "306",
+      "kind": "TERM",
+      "terms": "camp",
+      "T_over_P_AB": "1.038285419177139",
+      "T_over_P_BA": "1.0681458003169573",
+      "control_log_spread": "0.035919645204541516"
+    },
+    {
+      "id": "345",
+      "kind": "OR",
+      "terms": "color combinations",
+      "T_over_P_AB": "1.1145470492419496",
+      "T_over_P_BA": "1.1281236090799263",
+      "control_log_spread": "0.10645689676194421"
+    },
+    {
+      "id": "368",
+      "kind": "AND",
+      "terms": "personal loan",
+      "T_over_P_AB": "1.0242561223779516",
+      "T_over_P_BA": "1.029800756113593",
+      "control_log_spread": "0.020553394591927805"
+    },
+    {
+      "id": "388",
+      "kind": "AND",
+      "terms": "chicken coop",
+      "T_over_P_AB": "1.2125230900393122",
+      "T_over_P_BA": "1.1836649117085216",
+      "control_log_spread": "0.03422615903300529"
+    },
+    {
+      "id": "536",
+      "kind": "AND",
+      "terms": "calvin klein",
+      "T_over_P_AB": "1.0415191053122088",
+      "T_over_P_BA": "1.0681029323758229",
+      "control_log_spread": "0.039069542052200784"
+    },
+    {
+      "id": "543",
+      "kind": "OR",
+      "terms": "adobe buildings",
+      "T_over_P_AB": "1.0489438541972873",
+      "T_over_P_BA": "1.029823151125402",
+      "control_log_spread": "0.024087211206910465"
+    },
+    {
+      "id": "574",
+      "kind": "AND",
+      "terms": "critical care medicine",
+      "T_over_P_AB": "1.0564928163859146",
+      "T_over_P_BA": "1.0591465144611893",
+      "control_log_spread": "0.027058871142864833"
+    },
+    {
+      "id": "705",
+      "kind": "OR",
+      "terms": "robert fuller",
+      "T_over_P_AB": "1.0717105520305394",
+      "T_over_P_BA": "1.0457487515403074",
+      "control_log_spread": "0.036137535457299336"
+    },
+    {
+      "id": "729",
+      "kind": "OR",
+      "terms": "tennis elbow",
+      "T_over_P_AB": "1.0495325852147814",
+      "T_over_P_BA": "1.0579415453612557",
+      "control_log_spread": "0.03464955662601862"
+    },
+    {
+      "id": "784",
+      "kind": "AND",
+      "terms": "internet fraud",
+      "T_over_P_AB": "1.025327066431159",
+      "T_over_P_BA": "1.0136535697657942",
+      "control_log_spread": "0.010017744971496228"
+    },
+    {
+      "id": "796",
+      "kind": "AND",
+      "terms": "robert reed",
+      "T_over_P_AB": "1.0341004283298298",
+      "T_over_P_BA": "1.0249651049884694",
+      "control_log_spread": "0.01428455060095263"
+    },
+    {
+      "id": "912",
+      "kind": "AND",
+      "terms": "true religion",
+      "T_over_P_AB": "1.0551142948049939",
+      "T_over_P_BA": "1.0856240745328731",
+      "control_log_spread": "0.044595692785874476"
+    },
+    {
+      "id": "997",
+      "kind": "PHRASE",
+      "terms": "georgian architecture",
+      "T_over_P_AB": "1.4043101918077119",
+      "T_over_P_BA": "1.262280866712635",
+      "control_log_spread": "0.18872999824277634"
+    },
+    {
+      "id": "1004",
+      "kind": "PHRASE",
+      "terms": "the globe newspaper",
+      "T_over_P_AB": "1.0406285312738375",
+      "T_over_P_BA": "1.039428171916397",
+      "control_log_spread": "0.0255410604342823"
+    },
+    {
+      "id": "1060",
+      "kind": "PHRASE",
+      "terms": "aishwarya rai",
+      "T_over_P_AB": "1.1788798577597155",
+      "T_over_P_BA": "1.038094016545886",
+      "control_log_spread": "0.017249101471327837"
+    }
+  ],
+  "efficiency": {
+    "candidate_file_bytes": 4765928,
+    "baseline_file_bytes": 4765928,
+    "candidate_sections": {
+      ".rodata": 458816,
+      ".text": 2598898
+    },
+    "baseline_sections": {
+      ".rodata": 458816,
+      ".text": 2598898
+    },
+    "candidate_binary_sha256": "e11c4939984690d2c2d781cb6ace40d5e818e3a18a3f9f558d6cbcfd62546e5d",
+    "baseline_binary_sha256": "44356c9d2f849c17686dfae3b0fd3e7ebd1b986966d9a03ca292e1b64a72424d",
+    "index_change": false,
+    "per_region_allocation": false
+  }
+}

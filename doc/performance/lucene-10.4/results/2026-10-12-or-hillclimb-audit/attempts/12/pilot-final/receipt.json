@@ -1,0 +1,389 @@
+{
+  "seconds": 8.395954558000085,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 227272.57908847186,
+        "baseline_mean_ns": 210300.68766756033,
+        "ratio_mean": 1.0807029763390046,
+        "median_ratio": 1.0184248321714433
+      },
+      "BA": {
+        "candidate_mean_ns": 222352.6836461126,
+        "baseline_mean_ns": 219977.0361930295,
+        "ratio_mean": 1.0107995247785704,
+        "median_ratio": 1.0113830999073945
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 533038.2766990291,
+        "baseline_mean_ns": 478966.1990291262,
+        "ratio_mean": 1.1128933059984358,
+        "median_ratio": 1.1208271686290112
+      },
+      "BA": {
+        "candidate_mean_ns": 520233.8446601942,
+        "baseline_mean_ns": 507541.91747572814,
+        "ratio_mean": 1.0250066580659773,
+        "median_ratio": 1.1051848675026883
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 74982.86138613861,
+        "baseline_mean_ns": 75570.91089108911,
+        "ratio_mean": 0.9922185732841308,
+        "median_ratio": 1.0052707417395284
+      },
+      "BA": {
+        "candidate_mean_ns": 76893.25495049504,
+        "baseline_mean_ns": 76306.86386138614,
+        "ratio_mean": 1.0076846440730955,
+        "median_ratio": 1.0031498108438832
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 817,
+      "kind": "OR",
+      "terms": [
+        "centerville",
+        "high",
+        "school"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 13.97572012204582,
+      "BA": 14.67567755240919
+    },
+    {
+      "id": 909,
+      "kind": "OR",
+      "terms": [
+        "niceville",
+        "high",
+        "school"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 9.309642768697374,
+      "BA": 8.970217687881844
+    },
+    {
+      "id": 435,
+      "kind": "OR",
+      "terms": [
+        "helen",
+        "of",
+        "troy"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 4.677697443275882,
+      "BA": 4.81826535700878
+    },
+    {
+      "id": 461,
+      "kind": "OR",
+      "terms": [
+        "binghamton",
+        "new",
+        "york"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 4.612230742553273,
+      "BA": 4.638270964689612
+    },
+    {
+      "id": 791,
+      "kind": "OR",
+      "terms": [
+        "university",
+        "of",
+        "akron"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 3.742082465363886,
+      "BA": 3.574183120463981
+    },
+    {
+      "id": 431,
+      "kind": "OR",
+      "terms": [
+        "cured",
+        "of",
+        "cancer"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 3.100245237203571,
+      "BA": 3.0931414549418013
+    },
+    {
+      "id": 691,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "oregonian",
+        "newspaper"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 3.0145619026004526,
+      "BA": 3.0509696746728334
+    },
+    {
+      "id": 829,
+      "kind": "OR",
+      "terms": [
+        "eastern",
+        "mennonite",
+        "university"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 2.6312443984832816,
+      "BA": 2.9302056353504433
+    },
+    {
+      "id": 689,
+      "kind": "OR",
+      "terms": [
+        "bismarck",
+        "state",
+        "college"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 2.578961939458004,
+      "BA": 2.49052613244753
+    },
+    {
+      "id": 609,
+      "kind": "OR",
+      "terms": [
+        "pump",
+        "it",
+        "up"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 2.0998142205708494,
+      "BA": 2.022310694540344
+    },
+    {
+      "id": 583,
+      "kind": "OR",
+      "terms": [
+        "ellen",
+        "degeneres",
+        "show"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.9320534149968345,
+      "BA": 2.1417823133673504
+    },
+    {
+      "id": 401,
+      "kind": "OR",
+      "terms": [
+        "battle",
+        "of",
+        "the",
+        "bulge"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.8487241645416723,
+      "BA": 1.8550359063036443
+    },
+    {
+      "id": 343,
+      "kind": "OR",
+      "terms": [
+        "french",
+        "culinary",
+        "institute"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.7574239616635103,
+      "BA": 1.8029908032158206
+    },
+    {
+      "id": 567,
+      "kind": "OR",
+      "terms": [
+        "critical",
+        "care",
+        "nurse"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.7261027576429242,
+      "BA": 1.705714171598224
+    },
+    {
+      "id": 919,
+      "kind": "OR",
+      "terms": [
+        "to",
+        "be",
+        "or",
+        "not",
+        "to",
+        "be"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 2.219571838910202,
+      "BA": 1.6878566989966202
+    },
+    {
+      "id": 905,
+      "kind": "OR",
+      "terms": [
+        "boulder",
+        "city",
+        "nevada"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.6769629949959843,
+      "BA": 1.971482728378646
+    },
+    {
+      "id": 667,
+      "kind": "OR",
+      "terms": [
+        "zion",
+        "national",
+        "park"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.6360954888117745,
+      "BA": 1.6178508466237547
+    },
+    {
+      "id": 585,
+      "kind": "OR",
+      "terms": [
+        "jaguar",
+        "x",
+        "type"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.7793581490532673,
+      "BA": 1.616099442530776
+    },
+    {
+      "id": 825,
+      "kind": "OR",
+      "terms": [
+        "civil",
+        "war",
+        "battlefields"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.57902111935341,
+      "BA": 1.6148744686957592
+    },
+    {
+      "id": 433,
+      "kind": "OR",
+      "terms": [
+        "lord",
+        "of",
+        "the",
+        "rings"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.576586834311369,
+      "BA": 1.66875139329569
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791491685.5604656,
+      "loadavg": [
+        4.0810546875,
+        4.82861328125,
+        3.7529296875
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 120484 python          95.6",
+        " 120128 chrome          84.7",
+        " 119986 chrome          49.0",
+        " 119940 chrome          49.0",
+        "  50675 helium          32.3",
+        "   6068 t3code          19.9",
+        "   2339 vesktop         19.5",
+        " 120352 chrome          17.5",
+        " 119987 chrome          16.3",
+        "   6078 t3code          10.2",
+        "   2423 helium          10.0",
+        "   2156 vesktop          9.2"
+      ]
+    },
+    {
+      "at": 1791491691.4430435,
+      "loadavg": [
+        4.07421875,
+        4.814453125,
+        3.75439453125
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 120619 ps               100",
+        " 120128 chrome          46.6",
+        "  50675 helium          32.0",
+        " 119940 chrome          27.8",
+        " 119986 chrome          25.8",
+        " 120535 helium          24.9",
+        " 120484 python          24.7",
+        "   6068 t3code          19.9",
+        "   2339 vesktop         19.5",
+        "   6078 t3code          10.2",
+        "   2423 helium          10.0",
+        "   2156 vesktop          9.2"
+      ]
+    }
+  ]
+}

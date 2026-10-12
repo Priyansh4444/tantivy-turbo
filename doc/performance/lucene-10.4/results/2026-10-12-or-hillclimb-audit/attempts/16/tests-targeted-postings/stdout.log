@@ -1,0 +1,20 @@
+
+running 15 tests
+test postings::segment_postings::tests::batch_cursor_matches_literal_postings_across_blocks_and_tails ... ok
+test postings::segment_postings::tests::batch_then_scalar_reads_preserve_positions_and_skipfreq ... ok
+test postings::segment_postings::tests::fill_bitset_window_burst ... ok
+test postings::segment_postings::tests::fill_bitset_window_dense_gapped ... ok
+test postings::segment_postings::tests::fill_bitset_window_leaves_terminated ... ok
+test postings::segment_postings::tests::count_probe_matches_bit_walk_across_block_boundaries ... ok
+test postings::segment_postings::tests::fill_bitset_window_sparse_for ... ok
+test postings::segment_postings::tests::fill_bitset_window_sparse_near_terminated_preserves_masks ... ok
+test postings::segment_postings::tests::fill_bitset_window_two_lanes_matches_bit_walk ... ok
+test postings::segment_postings::tests::position_prefix_tracks_repeated_reads_seeks_blocks_and_clones ... ok
+test postings::segment_postings::tests::test_doc_freq ... ok
+test postings::segment_postings::tests::test_empty_postings_doc_returns_terminated ... ok
+test postings::segment_postings::tests::test_empty_postings_doc_term_freq_returns_0 ... ok
+test postings::segment_postings::tests::test_empty_segment_postings ... ok
+test postings::segment_postings::tests::fill_bitset_window_randomized_matches_bit_walk ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 1419 filtered out; finished in 0.12s
+

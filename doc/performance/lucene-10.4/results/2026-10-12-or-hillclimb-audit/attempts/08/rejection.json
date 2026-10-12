@@ -1,0 +1,62 @@
+{
+  "verdict": "reverted",
+  "parent": "a674aaf2f6187f3010a135dc25fdacf9cab27e53",
+  "reason": "Complete longer-OR pilot is 12.79%/13.55% slower in AB/BA, with sparse query losses around 2x. Full controlled sampler and broad tests not run.",
+  "pilot": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 128694.7493297587,
+        "baseline_mean_ns": 118975.63136729223,
+        "ratio_mean": 1.0816899885360758,
+        "median_ratio": 1.0080148997614364
+      },
+      "BA": {
+        "candidate_mean_ns": 133037.34048257372,
+        "baseline_mean_ns": 121806.6166219839,
+        "ratio_mean": 1.0922012627232178,
+        "median_ratio": 1.0284262347149435
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 311077.4514563107,
+        "baseline_mean_ns": 275792.3883495146,
+        "ratio_mean": 1.127940670581811,
+        "median_ratio": 1.1125096842463293
+      },
+      "BA": {
+        "candidate_mean_ns": 322197.5048543689,
+        "baseline_mean_ns": 283747.96116504853,
+        "ratio_mean": 1.135505973440124,
+        "median_ratio": 1.1239982794560435
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 40966.5198019802,
+        "baseline_mean_ns": 40922.262376237624,
+        "ratio_mean": 1.00108149997514,
+        "median_ratio": 0.9936010657331449
+      },
+      "BA": {
+        "candidate_mean_ns": 42863.47277227723,
+        "baseline_mean_ns": 41515.64356435643,
+        "ratio_mean": 1.0324655742318296,
+        "median_ratio": 1.0258959804398464
+      }
+    }
+  ],
+  "targeted_tests": 19,
+  "exact_profiles": 3,
+  "queries_per_profile": 1227,
+  "candidate_binary_sha256": "84d1b697d823e770e95febb7132d59c9928b716e96615d430c4e0c1eac21a100",
+  "candidate_file_delta_bytes": 1384,
+  "diagnostics": "All 103 longer ORs, sequential diagnostic-only profiles, zero lost samples, exact checksums. Query loop/batch boundary dominate; no cache-miss causal proof.",
+  "fixture_correction": "Explicit Score annotation after E0689; first failed compilation and duplicate unfixed rerun retained. Production mechanism unchanged."
+}

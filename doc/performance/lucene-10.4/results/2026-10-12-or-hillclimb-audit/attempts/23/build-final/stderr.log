@@ -1,0 +1,24 @@
+   Compiling tantivy v0.27.0 (/home/pronsh/Coding/playground/search/tantivy-or-hillclimb-oct07)
+warning: method `phrase_count` is never used
+   --> /home/pronsh/Coding/playground/search/tantivy-or-hillclimb-oct07/src/query/phrase_query/phrase_scorer.rs:294:12
+    |
+153 | impl<TPostings: Postings> PhraseScorer<TPostings> {
+    | ------------------------------------------------- method in this implementation
+...
+294 |     pub fn phrase_count(&self) -> u32 {
+    |            ^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `score` is never used
+   --> /home/pronsh/Coding/playground/search/tantivy-or-hillclimb-oct07/src/query/score_combiner.rs:177:19
+    |
+164 | impl SmallScoreSumUpperBound {
+    | ---------------------------- method in this implementation
+...
+177 |     pub(crate) fn score(&self, sum: f64) -> Score {
+    |                   ^^^^^
+
+   Compiling balanced-search v0.0.0 (/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/harness)
+warning: `tantivy` (lib) generated 2 warnings
+    Finished `release` profile [optimized] target(s) in 1m 29s

@@ -1,0 +1,59 @@
+{
+  "verdict": "reverted",
+  "parent": "parent-03.json",
+  "reason": "No reliable pilot gain: longer OR weighted group<0.5% lower; two-term orders mixed (-2.44%,+0.13%). Full controlled sampler/broad tests not run. Symbol proof confirms caller footprint shrank, not speed/cache-stall benefit.",
+  "pilot": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 129797.0308310992,
+        "baseline_mean_ns": 130577.7198391421,
+        "ratio_mean": 0.994021269409478,
+        "median_ratio": 0.9942786764337321
+      },
+      "BA": {
+        "candidate_mean_ns": 131344.52144772117,
+        "baseline_mean_ns": 131698.34852546916,
+        "ratio_mean": 0.9973133522044161,
+        "median_ratio": 0.9964928917872257
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 319120.22330097086,
+        "baseline_mean_ns": 319644.47572815535,
+        "ratio_mean": 0.9983598889798104,
+        "median_ratio": 0.9975561874638604
+      },
+      "BA": {
+        "candidate_mean_ns": 321544.6504854369,
+        "baseline_mean_ns": 322952.3883495146,
+        "ratio_mean": 0.9956410359085063,
+        "median_ratio": 0.9972476298584761
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 39064.30198019802,
+        "baseline_mean_ns": 40043.00247524752,
+        "ratio_mean": 0.9755587634654898,
+        "median_ratio": 0.9901772235372022
+      },
+      "BA": {
+        "candidate_mean_ns": 40336.85643564357,
+        "baseline_mean_ns": 40285.63366336634,
+        "ratio_mean": 1.0012714897996953,
+        "median_ratio": 0.9965925861193682
+      }
+    }
+  ],
+  "exact_profiles": 3,
+  "queries_per_profile": 1227,
+  "candidate_binary_sha256": "a96cda9f3fb9ed5065e9792649df1c58f0658b3aa0f0e027060eee8db62b377c",
+  "new_tests": 0
+}

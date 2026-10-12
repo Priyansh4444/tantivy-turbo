@@ -1,0 +1,10 @@
+[
+  "rustfmt",
+  "--edition",
+  "2021",
+  "--check",
+  "--config",
+  "skip_children=true",
+  "../../../tantivy-or-hillclimb-oct07/src/query/boolean_query/block_wand_union.rs",
+  "../../../tantivy-or-hillclimb-oct07/src/query/boolean_query/boolean_weight.rs"
+]

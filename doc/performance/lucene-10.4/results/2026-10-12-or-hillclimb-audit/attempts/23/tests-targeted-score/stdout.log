@@ -1,0 +1,13 @@
+
+running 8 tests
+test query::score_combiner::tests::score_sum_bound_covers_double_order_error_at_float_midpoint ... ok
+test query::score_combiner::tests::score_sum_bound_handles_signed_pointwise_replacements_and_extremes ... ok
+test query::score_combiner::tests::small_bound_cutoff_direct_products_witness_even_odd_midpoints_and_overflow ... ok
+test query::score_combiner::tests::small_bound_cutoff_matches_fixed_seed_valid_raw_bit_sums ... ok
+test query::score_combiner::tests::small_bound_cutoff_matches_rounded_products_near_every_exponent_boundary ... ok
+test query::score_combiner::tests::small_score_sum_bound_matches_generic_at_cast_boundaries ... ok
+test query::score_combiner::tests::small_bound_cutoff_preserves_all_threshold_classes_and_signed_zeros ... ok
+test query::score_combiner::tests::small_score_sum_bound_matches_generic_for_disjoint_leaf_sums ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 1409 filtered out; finished in 0.10s
+

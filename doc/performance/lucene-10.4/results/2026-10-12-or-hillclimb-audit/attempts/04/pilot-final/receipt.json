@@ -1,0 +1,367 @@
+{
+  "seconds": 4.520647039000323,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 131926.1487935657,
+        "baseline_mean_ns": 132354.591152815,
+        "ratio_mean": 0.9967629203073534,
+        "median_ratio": 0.9981715129973805
+      },
+      "BA": {
+        "candidate_mean_ns": 132096.6487935657,
+        "baseline_mean_ns": 132215.5013404826,
+        "ratio_mean": 0.9991010694985695,
+        "median_ratio": 0.999524632968426
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 322952.0485436893,
+        "baseline_mean_ns": 323577.4417475728,
+        "ratio_mean": 0.998067253389155,
+        "median_ratio": 0.996679826698622
+      },
+      "BA": {
+        "candidate_mean_ns": 323146.4077669903,
+        "baseline_mean_ns": 323621.53398058255,
+        "ratio_mean": 0.9985318461112642,
+        "median_ratio": 0.9999845177272023
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 40640.33415841584,
+        "baseline_mean_ns": 40854.46534653466,
+        "ratio_mean": 0.9947586833825259,
+        "median_ratio": 1.001486727962982
+      },
+      "BA": {
+        "candidate_mean_ns": 40971.96782178218,
+        "baseline_mean_ns": 40561.794554455446,
+        "ratio_mean": 1.010112305725923,
+        "median_ratio": 1.0043570400258128
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 887,
+      "kind": "OR",
+      "terms": [
+        "animal",
+        "rights"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1119459551647686,
+      "BA": 1.1376414971592141
+    },
+    {
+      "id": 479,
+      "kind": "OR",
+      "terms": [
+        "fluid",
+        "power"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1048431343209137,
+      "BA": 1.1358098986711773
+    },
+    {
+      "id": 457,
+      "kind": "OR",
+      "terms": [
+        "montgomery",
+        "college"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0942195179031127,
+      "BA": 1.1774382654809792
+    },
+    {
+      "id": 321,
+      "kind": "OR",
+      "terms": [
+        "griffith",
+        "observatory"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1218337667340845,
+      "BA": 1.0883541686248708
+    },
+    {
+      "id": 475,
+      "kind": "OR",
+      "terms": [
+        "prayer",
+        "times"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0711652395142577,
+      "BA": 1.067404944746207
+    },
+    {
+      "id": 411,
+      "kind": "OR",
+      "terms": [
+        "japan",
+        "airlines"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0668608742154297,
+      "BA": 1.079756066716315
+    },
+    {
+      "id": 617,
+      "kind": "OR",
+      "terms": [
+        "gun",
+        "magazines"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0567006688571674,
+      "BA": 1.1332381323293954
+    },
+    {
+      "id": 553,
+      "kind": "OR",
+      "terms": [
+        "elise",
+        "neal"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0525101614852246,
+      "BA": 1.0945959750740628
+    },
+    {
+      "id": 845,
+      "kind": "OR",
+      "terms": [
+        "perfume",
+        "bottles"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0466836525026713,
+      "BA": 1.2277956741831568
+    },
+    {
+      "id": 565,
+      "kind": "OR",
+      "terms": [
+        "toxic",
+        "encephalopathy"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1160787158792056,
+      "BA": 1.046443216259583
+    },
+    {
+      "id": 741,
+      "kind": "OR",
+      "terms": [
+        "premier",
+        "wine"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1004487856388596,
+      "BA": 1.0453569805881524
+    },
+    {
+      "id": 675,
+      "kind": "OR",
+      "terms": [
+        "milan",
+        "tennessee"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0446319581886487,
+      "BA": 1.1670975292922277
+    },
+    {
+      "id": 407,
+      "kind": "OR",
+      "terms": [
+        "hempstead",
+        "new",
+        "york"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.040784743449257,
+      "BA": 1.0682205693956737
+    },
+    {
+      "id": 523,
+      "kind": "OR",
+      "terms": [
+        "anderson",
+        "hospital"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0405652354846298,
+      "BA": 1.1060309370110462
+    },
+    {
+      "id": 9,
+      "kind": "AND",
+      "terms": [
+        "united",
+        "states"
+      ],
+      "tags": [
+        "wiki20",
+        "intersection",
+        "andHighHigh"
+      ],
+      "AB": 1.0399875245728112,
+      "BA": 1.0412936163823039
+    },
+    {
+      "id": 757,
+      "kind": "OR",
+      "terms": [
+        "business",
+        "consultants"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0970627597379727,
+      "BA": 1.0370856580242862
+    },
+    {
+      "id": 363,
+      "kind": "OR",
+      "terms": [
+        "san",
+        "francisco"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0360418721750269,
+      "BA": 1.0454908942770493
+    },
+    {
+      "id": 389,
+      "kind": "OR",
+      "terms": [
+        "chicken",
+        "coop"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0341371439912672,
+      "BA": 1.0407580230454243
+    },
+    {
+      "id": 795,
+      "kind": "OR",
+      "terms": [
+        "cartoon",
+        "network"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1179939600028534,
+      "BA": 1.0304058831848395
+    },
+    {
+      "id": 399,
+      "kind": "OR",
+      "terms": [
+        "mercury",
+        "insurance"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.02816331485453,
+      "BA": 1.0729672076292454
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791418105.163561,
+      "loadavg": [
+        4.12744140625,
+        3.65771484375,
+        3.18408203125
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 236922 ps               100",
+        " 236886 python          90.6",
+        " 193666 helium          45.1",
+        "   2192 helium          12.7",
+        "  44668 vesktop         11.2",
+        "  44549 vesktop          7.6",
+        "   2142 helium           5.3",
+        "   1439 Hyprland         4.7",
+        " 205348 opencode         4.4",
+        "  15472 t3code           4.1",
+        " 235585 helium           3.6",
+        " 223802 helium           3.3"
+      ]
+    },
+    {
+      "at": 1791418108.4322152,
+      "loadavg": [
+        4.19775390625,
+        3.68017578125,
+        3.19384765625
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 236927 ps               200",
+        " 193666 helium          45.1",
+        " 236886 python          22.8",
+        "   2192 helium          12.7",
+        "  44668 vesktop         11.2",
+        "  44549 vesktop          7.6",
+        "   2142 helium           5.3",
+        "   1439 Hyprland         4.7",
+        " 205348 opencode         4.4",
+        "  15472 t3code           4.1",
+        " 235585 helium           3.5",
+        " 223802 helium           3.3"
+      ]
+    }
+  ]
+}

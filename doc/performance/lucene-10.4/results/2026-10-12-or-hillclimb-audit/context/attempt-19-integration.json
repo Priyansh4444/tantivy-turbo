@@ -1,0 +1,9 @@
+{
+  "parent": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "source_sha256": {
+    "src/query/boolean_query/or_maxscore.rs": "4c56911f9cabe4fd06f8d1fe2f999564267c8fa3196600f29fe1b42ba1e848f7",
+    "src/query/term_query/term_scorer.rs": "21b05a2b6513223a81613ee0f40c4a31f6990a427bb0d4b60324154a55753cdb"
+  },
+  "patch_sha256": "770473eb3c55982717b7e813bc84e867004df986fb120595d020c5ff926f2ea0",
+  "review": "Root read full13 inherited mechanism, full19-vs17 patch and final fixture adaptation matrix; capped endpoint precedes exact original-n admission; chosen cursor/score certificates reviewed. Root owns runtime."
+}

@@ -1,0 +1,21 @@
+{
+  "label": "attempt-08-bitmap-or3-clean",
+  "returncode": 1,
+  "all_six_files_unchanged": true,
+  "before": {
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-08-bitmap-or3-clean-perf.data": "70a07f09a38e1f422962ccd15696d6e46f5b9ab0793fbac79349d6ce9831ebf5",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-08-bitmap-or3-clean-perf-report.txt": "a175507685b7a62cd2b7dc0ba02ed9371ca54772fff6d174d06ca4f243c4583d",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-08-bitmap-or3-clean-perf.stderr": "3e6d503f74e638a174576cc5c4b52e9011a10d4cd2483b66da94d453e832b700",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-08-bitmap-or3-clean-profile-receipt.json": "632bfd562e61026a03c3c0b6e3290a987fffec729de226aea0a0f10d6f7c6535",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-08-bitmap-or3-clean-profile-replies.json": "7ad4d24c8d40dd51f6262b19b773358fd1b4d60f698cafa5f3a5e3d4d72e3ea2",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-08-bitmap-or3-clean-controller.py": "fea7f158b7d6a1647a6a5670f085d83e913c1501c64ab691e0dbbc4dd729e812"
+  },
+  "after": {
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-08-bitmap-or3-clean-perf.data": "70a07f09a38e1f422962ccd15696d6e46f5b9ab0793fbac79349d6ce9831ebf5",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-08-bitmap-or3-clean-perf-report.txt": "a175507685b7a62cd2b7dc0ba02ed9371ca54772fff6d174d06ca4f243c4583d",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-08-bitmap-or3-clean-perf.stderr": "3e6d503f74e638a174576cc5c4b52e9011a10d4cd2483b66da94d453e832b700",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-08-bitmap-or3-clean-profile-receipt.json": "632bfd562e61026a03c3c0b6e3290a987fffec729de226aea0a0f10d6f7c6535",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-08-bitmap-or3-clean-profile-replies.json": "7ad4d24c8d40dd51f6262b19b773358fd1b4d60f698cafa5f3a5e3d4d72e3ea2",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-08-bitmap-or3-clean-controller.py": "fea7f158b7d6a1647a6a5670f085d83e913c1501c64ab691e0dbbc4dd729e812"
+  }
+}

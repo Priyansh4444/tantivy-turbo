@@ -1,0 +1,40 @@
+{
+  "parent": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "worktree": "/home/pronsh/Coding/playground/search/tantivy-or-metadata-range-oct08",
+  "branch": "perf/or-metadata-range-oct08",
+  "changed_paths": [
+    "src/query/boolean_query/or_maxscore.rs",
+    "src/query/term_query/term_scorer.rs"
+  ],
+  "source_sha256": {
+    "src/query/boolean_query/or_maxscore.rs": "1a1ce59b330b4a207d353385bf90cac96333cd4c6da49ed52a7c40cd5bb30804",
+    "src/query/term_query/term_scorer.rs": "21b05a2b6513223a81613ee0f40c4a31f6990a427bb0d4b60324154a55753cdb"
+  },
+  "full_diff_sha256": "589305ea0face0e33545393ef474edf177c0af9803b8a9526113f37c6f6bfb4a",
+  "full_diff_lines": 1699,
+  "helper_bytes": 3199,
+  "helper_sha256": "0864cacd5badd301c4d1ea9c6c110fc796c888fe3b92d71be735c678cbd5f6ed",
+  "scorer_fixtures_bytes": 17620,
+  "scorer_fixtures_sha256": "55e63a73c5eb217f5f5fef6a32892a01263a13d93324fb24f43692e8118d3f72",
+  "unchanged": {
+    "reverse_or_reconstructs_corrected12": "a53374a75b5dbedb3e8f148b94f8da92a6d4383142e69cc8b50a92330c2f96d1",
+    "reverse_term_reconstructs_parent11": "dd1e18b5b1d273cf2c09959ea207997a1e93f854b0fc459fb0a1e76129b87277",
+    "parent11_replay": {
+      "bytes": 4233,
+      "sha256": "63086168e3a7fbc768ca8d6529189aacc2d736d1c414c9d00b5796741462093e"
+    },
+    "parent11_global_cache_density": {
+      "bytes": 3656,
+      "sha256": "07136e553670fe6e6181cb9c52709a5856c83af4edcc00a8ae18073abc83302e"
+    },
+    "parent11_clause_state": {
+      "bytes": 120,
+      "sha256": "a1354020cc12ecfa925e121390ad0a1fc2448bd4e51e035435dca3ece0798d10"
+    }
+  },
+  "static_checks": [
+    "rustfmt --edition 2021 --check",
+    "git diff --check"
+  ],
+  "runtime_checks": []
+}

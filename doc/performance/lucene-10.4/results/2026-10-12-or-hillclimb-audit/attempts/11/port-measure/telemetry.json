@@ -1,0 +1,324 @@
+[
+  {
+    "at": 1791438122.6233194,
+    "loadavg": [
+      4.4091796875,
+      4.240234375,
+      4.92626953125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 621259 ps               200",
+      " 467738 helium          44.3",
+      " 619897 tantivy_worker  42.0",
+      " 619986 chrome          40.4",
+      " 619898 port_worker     38.7",
+      " 193666 helium          37.2",
+      " 619949 chrome          32.8",
+      " 619884 python          28.0",
+      "   2192 helium          20.5",
+      "  44668 vesktop          9.8",
+      " 619919 bun.native       9.3",
+      " 620205 chrome           8.6"
+    ]
+  },
+  {
+    "at": 1791438131.4915075,
+    "loadavg": [
+      4.43896484375,
+      4.24951171875,
+      4.92138671875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 621317 ps               200",
+      " 621301 flyctl          62.5",
+      " 467738 helium          44.3",
+      " 619897 tantivy_worker  42.9",
+      " 619898 port_worker     39.6",
+      " 193666 helium          37.1",
+      "   2192 helium          20.5",
+      " 619884 python          17.0",
+      " 619949 chrome          16.2",
+      " 619986 chrome          15.7",
+      "  44668 vesktop          9.8",
+      " 620205 chrome           8.3"
+    ]
+  },
+  {
+    "at": 1791438140.3595507,
+    "loadavg": [
+      4.52587890625,
+      4.27490234375,
+      4.92236328125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 622947 ps               300",
+      " 467738 helium          44.2",
+      " 619897 tantivy_worker  43.2",
+      " 619898 port_worker     39.9",
+      " 193666 helium          37.1",
+      " 621551 chrome          31.1",
+      "   2192 helium          20.5",
+      " 619884 python          13.6",
+      " 621991 chrome          11.9",
+      " 621521 bun.native      10.5",
+      "  44668 vesktop          9.9",
+      " 621804 chrome           9.7"
+    ]
+  },
+  {
+    "at": 1791438149.223523,
+    "loadavg": [
+      4.4833984375,
+      4.27001953125,
+      4.9169921875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 622996 ps               200",
+      " 467738 helium          44.2",
+      " 619897 tantivy_worker  43.3",
+      " 619898 port_worker     39.9",
+      " 193666 helium          37.1",
+      "   2192 helium          20.5",
+      " 621551 chrome          13.4",
+      " 619884 python          12.0",
+      "  44668 vesktop          9.9",
+      "  44549 vesktop          7.2",
+      "   2142 helium           7.1",
+      "   1439 Hyprland         7.0"
+    ]
+  },
+  {
+    "at": 1791438158.2195601,
+    "loadavg": [
+      4.41552734375,
+      4.26123046875,
+      4.9072265625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 623057 ps               200",
+      " 467738 helium          44.2",
+      " 619897 tantivy_worker  43.3",
+      " 619898 port_worker     39.9",
+      " 193666 helium          37.1",
+      "   2192 helium          20.5",
+      " 621551 chrome          11.8",
+      " 619884 python          11.1",
+      "  44668 vesktop          9.9",
+      "  44549 vesktop          7.2",
+      "   2142 helium           7.1",
+      "   1439 Hyprland         7.0"
+    ]
+  },
+  {
+    "at": 1791438167.1523848,
+    "loadavg": [
+      4.88671875,
+      4.3681640625,
+      4.935546875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 623140 ps               300",
+      " 467738 helium          44.1",
+      " 619897 tantivy_worker  43.3",
+      " 619898 port_worker     39.9",
+      " 193666 helium          37.1",
+      "   2192 helium          20.5",
+      " 619884 python          10.5",
+      "  44668 vesktop          9.9",
+      " 621551 chrome           9.5",
+      "  44549 vesktop          7.2",
+      "   2142 helium           7.1",
+      "   1439 Hyprland         7.0"
+    ]
+  },
+  {
+    "at": 1791438176.388142,
+    "loadavg": [
+      5.34619140625,
+      4.4873046875,
+      4.96875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 467738 helium          44.1",
+      " 619897 tantivy_worker  43.2",
+      " 619898 port_worker     39.8",
+      " 193666 helium          37.1",
+      "   2192 helium          20.5",
+      " 619884 python          10.0",
+      "  44668 vesktop          9.9",
+      " 621551 chrome           7.9",
+      "  44549 vesktop          7.2",
+      "   2142 helium           7.1",
+      "   1439 Hyprland         7.0",
+      " 477405 t3code           6.2"
+    ]
+  },
+  {
+    "at": 1791438182.3206055,
+    "loadavg": [
+      5.95947265625,
+      4.62890625,
+      5.01220703125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 624790 ps               300",
+      " 623520 chrome          45.7",
+      " 467738 helium          44.1",
+      " 623480 chrome          43.7",
+      " 623428 port_worker     39.2",
+      " 623429 port_worker     39.1",
+      " 193666 helium          37.1",
+      " 623729 chrome          36.4",
+      "   2192 helium          20.5",
+      " 623451 bun.native      11.1",
+      " 623527 chrome          10.6",
+      " 619884 python          10.0"
+    ]
+  },
+  {
+    "at": 1791438190.9776747,
+    "loadavg": [
+      6.52685546875,
+      4.79052734375,
+      5.060546875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 625287 chrome           107",
+      " 624865 chrome          88.1",
+      " 467738 helium          44.0",
+      " 623428 port_worker     40.4",
+      " 623429 port_worker     39.8",
+      " 193666 helium          37.1",
+      " 624835 bun.native      26.3",
+      " 624902 chrome          26.1",
+      " 624907 chrome          24.3",
+      "   2192 helium          20.5",
+      " 624916 xdg-settings    16.0",
+      " 625052 chrome          14.1"
+    ]
+  },
+  {
+    "at": 1791438199.6812227,
+    "loadavg": [
+      6.64501953125,
+      4.84423828125,
+      5.07666015625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 626362 ps               200",
+      " 625287 chrome           104",
+      " 467738 helium          44.0",
+      " 623429 port_worker     40.3",
+      " 623428 port_worker     40.3",
+      " 193666 helium          37.0",
+      " 624865 chrome          36.1",
+      "   2192 helium          20.5",
+      " 624902 chrome          18.0",
+      " 624907 chrome          11.1",
+      " 624835 bun.native      11.0",
+      "  44668 vesktop          9.9"
+    ]
+  },
+  {
+    "at": 1791438208.5270188,
+    "loadavg": [
+      6.533203125,
+      4.8818359375,
+      5.08642578125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 625287 chrome          97.1",
+      " 467738 helium          44.0",
+      " 623428 port_worker     40.3",
+      " 623429 port_worker     40.0",
+      " 193666 helium          37.0",
+      " 624865 chrome          23.0",
+      " 624902 chrome          22.9",
+      "   2192 helium          20.5",
+      "  44668 vesktop         10.0",
+      " 619884 python           9.4",
+      " 624835 bun.native       7.3",
+      " 624907 chrome           7.3"
+    ]
+  },
+  {
+    "at": 1791438217.1228316,
+    "loadavg": [
+      6.30322265625,
+      4.88623046875,
+      5.0859375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 626542 ps               300",
+      " 625287 chrome          85.9",
+      " 467738 helium          44.0",
+      " 623428 port_worker     40.4",
+      " 623429 port_worker     40.3",
+      " 193666 helium          37.0",
+      " 624902 chrome          23.9",
+      "   2192 helium          20.5",
+      " 624865 chrome          19.7",
+      "  44668 vesktop         10.0",
+      " 619884 python           9.2",
+      "  44549 vesktop          7.2"
+    ]
+  },
+  {
+    "at": 1791438225.905239,
+    "loadavg": [
+      8.1982421875,
+      5.3486328125,
+      5.2353515625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 626956 chrome           101",
+      " 626629 chrome          45.3",
+      " 467738 helium          43.9",
+      " 623428 port_worker     40.4",
+      " 623429 port_worker     40.2",
+      " 626592 chrome          39.6",
+      " 193666 helium          37.0",
+      "   2192 helium          20.5",
+      " 626562 bun.native      11.6",
+      " 626636 chrome          11.4",
+      "  44668 vesktop         10.0",
+      " 619884 python           9.1"
+    ]
+  },
+  {
+    "at": 1791438234.725218,
+    "loadavg": [
+      8.5029296875,
+      5.45947265625,
+      5.27197265625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 626956 chrome           123",
+      " 467738 helium          43.9",
+      " 626629 chrome          40.8",
+      " 623428 port_worker     40.3",
+      " 623429 port_worker     40.3",
+      " 193666 helium          37.0",
+      " 626592 chrome          31.4",
+      "   2192 helium          20.5",
+      "  44668 vesktop         10.0",
+      " 626636 chrome           9.2",
+      " 619884 python           9.0",
+      " 626562 bun.native       8.7"
+    ]
+  }
+]

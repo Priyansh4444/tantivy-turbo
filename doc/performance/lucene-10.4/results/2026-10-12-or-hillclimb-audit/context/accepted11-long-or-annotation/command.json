@@ -1,0 +1,13 @@
+[
+  "perf",
+  "annotate",
+  "--stdio",
+  "--no-source",
+  "--percent-type",
+  "global-period",
+  "--show-total-period",
+  "--symbol",
+  "<tantivy::query::boolean_query::boolean_weight::BooleanWeight<tantivy::query::score_combiner::SumCombiner> as tantivy::query::weight::Weight>::for_each_pruning",
+  "-i",
+  "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/accepted11-long-or-oct11-perf.data"
+]

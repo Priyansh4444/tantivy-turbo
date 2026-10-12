@@ -1,0 +1,26 @@
+   Compiling tantivy v0.27.0 (/home/pronsh/Coding/playground/search/tantivy-or-hillclimb-oct07)
+warning: unused import: `doc`
+   --> src/postings/segment_postings.rs:543:17
+    |
+543 |     use crate::{doc, DocId, Index};
+    |                 ^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `tantivy` (lib test) generated 1 warning (run `cargo fix --lib -p tantivy --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 46.80s
+     Running unittests src/lib.rs (/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/test-target/debug/deps/tantivy-95c542b621ca5120)
+ClauseState bytes=24; max-32 array payload bytes=1160
+OR_BATCH_LAYOUT batch=2048 max_array_payload=3208
+OR_WIDEN_LAYOUT cap_scratch=128 ClauseState=24
+
+thread 'query::boolean_query::or_maxscore::tests::wider_midpoint_publication_keeps_literal_incoming_order_and_strict_neighbors' (44304) panicked at src/query/boolean_query/or_maxscore.rs:998:21:
+assertion failed: !evidence.regions.is_empty()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'query::boolean_query::or_maxscore::tests::wider_single_driver_retains_full_partial_batches_and_exact_end_heads' (44428) panicked at src/query/boolean_query/or_maxscore.rs:885:13:
+assertion failed: evidence.progress.iter().any(|event|
+                    matches!(event, CursorProgress::Batch { docs, .. } if
+                        !docs.is_empty() && docs.len() < 128)) || length == 128 ||
+        length == 256 || length == 768
+error: test failed, to rerun pass `--lib`

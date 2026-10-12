@@ -1,0 +1,32 @@
+{
+  "verdict": "kept_partial_win",
+  "commit": "a674aaf2f6187f3010a135dc25fdacf9cab27e53",
+  "candidate_binary_sha256": "44356c9d2f849c17686dfae3b0fd3e7ebd1b986966d9a03ca292e1b64a72424d",
+  "correctness_tests": 1440,
+  "ignored_tests": 7,
+  "exact_profiles": 3,
+  "queries_per_profile": 1227,
+  "longer_or_primary_ratios": {
+    "AB": 0.8513179235869295,
+    "BA": 0.8502144699829397
+  },
+  "control_log_spread": 0.031216018446563944,
+  "target_met": false,
+  "efficiency": {
+    "candidate_file_bytes": 4765928,
+    "baseline_file_bytes": 4766824,
+    "candidate_sections": {
+      ".rodata": 458816,
+      ".text": 2598898
+    },
+    "baseline_sections": {
+      ".rodata": 458816,
+      ".text": 2599794
+    },
+    "candidate_binary_sha256": "44356c9d2f849c17686dfae3b0fd3e7ebd1b986966d9a03ca292e1b64a72424d",
+    "baseline_binary_sha256": "c4ab444bb759f0bc096d59eb0cfa693552840ef0a040581a1b36d9e92447b5e6",
+    "index_change": false,
+    "per_region_allocation": false
+  },
+  "limitations": "Per-query losses retained; no new allocation or index format; fixed-port gap reported separately."
+}

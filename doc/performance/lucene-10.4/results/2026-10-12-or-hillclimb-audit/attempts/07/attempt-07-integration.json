@@ -1,0 +1,5 @@
+{
+  "parent": "a674aaf2f6187f3010a135dc25fdacf9cab27e53",
+  "source_sha256": "7d0077d946369751bfd24c15503a9c2b00ff7dc73364e9cab7cf39ee31ab0381",
+  "adaptation": "Only generic fixture helper qualification; accepted bound import/constructor retained."
+}

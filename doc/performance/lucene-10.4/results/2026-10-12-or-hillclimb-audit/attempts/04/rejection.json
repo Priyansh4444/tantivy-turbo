@@ -1,0 +1,25 @@
+{
+  "verdict": "reverted",
+  "reason": "No demonstrated two-term pilot win: mixed execution orders within ordinary drift; full controlled sampler and broad tests not run. This is not evidence of a large performance loss.",
+  "parent": "parent-03.json",
+  "pilot": {
+    "set": "or2",
+    "queries": 202,
+    "AB": {
+      "candidate_mean_ns": 40640.33415841584,
+      "baseline_mean_ns": 40854.46534653466,
+      "ratio_mean": 0.9947586833825259,
+      "median_ratio": 1.001486727962982
+    },
+    "BA": {
+      "candidate_mean_ns": 40971.96782178218,
+      "baseline_mean_ns": 40561.794554455446,
+      "ratio_mean": 1.010112305725923,
+      "median_ratio": 1.0043570400258128
+    }
+  },
+  "targeted_tests": 10,
+  "exact_profiles": 3,
+  "queries_per_profile": 1227,
+  "binary_sha256": "99cbf834ac85138238a854c2944920b7580fc92d8e194739ecef6925aeb072dc"
+}

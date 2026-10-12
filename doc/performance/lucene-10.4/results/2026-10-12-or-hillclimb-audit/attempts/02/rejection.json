@@ -1,0 +1,25 @@
+{
+  "verdict": "reverted",
+  "mechanism": "region-local clause ordering only",
+  "parent": "parent-01.json",
+  "pilot": {
+    "set": "or3plus",
+    "queries": 103,
+    "AB": {
+      "candidate_mean_ns": 807348.5970873786,
+      "baseline_mean_ns": 593144.6504854369,
+      "ratio_mean": 1.361132729472709,
+      "median_ratio": 1.0610702092053963
+    },
+    "BA": {
+      "candidate_mean_ns": 795601.5436893204,
+      "baseline_mean_ns": 611889.0825242718,
+      "ratio_mean": 1.3002381745514493,
+      "median_ratio": 1.060279748954231
+    }
+  },
+  "reason": "30-36% slower weighted OR3+ mean in both orders; no full timing necessary to reject this clearly losing candidate",
+  "gates": "11 targeted fixtures plus 3x1227 exact default/configured gates passed; full broad tests and full controlled sampler not run",
+  "binary_sha256": "c16cde6386dca0fad52a4909fa905b9f4204e0c8f54bcb31c922d595face0571",
+  "source_sha256": "e1ab97b65eaf969e7bc7308964412bec1323ac9ec96ba44cb6395dee5d282b3a"
+}

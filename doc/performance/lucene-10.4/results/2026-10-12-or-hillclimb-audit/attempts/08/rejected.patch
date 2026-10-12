@@ -1,0 +1,789 @@
+diff --git i/src/query/boolean_query/or_maxscore.rs w/src/query/boolean_query/or_maxscore.rs
+index 49ad5a202..01d701be8 100644
+--- i/src/query/boolean_query/or_maxscore.rs
++++ w/src/query/boolean_query/or_maxscore.rs
+@@ -42,13 +42,139 @@ impl ClauseState {
+         self.assert_coherent(scorers);
+         len
+     }
++}
+ 
+-    #[inline]
+-    fn advance(&mut self, scorers: &mut [TermScorer]) {
+-        self.assert_coherent(scorers);
+-        self.doc = scorers[self.ordinal].advance();
+-        self.assert_coherent(scorers);
++const OR_WINDOW_DOCS: usize = 128;
++
++/// Retained replay candidates are separate from ClauseState's first-unread
++/// cursors. Only an empty window may gather under a new region certificate.
++struct ExactLeafWindow {
++    incoming_leaves: Vec<Score>,
++    essential_known: [f64; OR_WINDOW_DOCS],
++    matches: [u64; 2],
++    base_doc: DocId,
++    num_terms: usize,
++}
++
++impl ExactLeafWindow {
++    fn new(num_terms: usize) -> Self {
++        Self {
++            incoming_leaves: vec![0.0; OR_WINDOW_DOCS * num_terms],
++            essential_known: [0.0; OR_WINDOW_DOCS],
++            matches: [0; 2],
++            base_doc: 0,
++            num_terms,
++        }
+     }
++
++    fn is_empty(&self) -> bool {
++        self.matches == [0; 2]
++    }
++
++    /// Own the complete min/end/fill/scatter phase. Numerical region bounds
++    /// stay fixed even when these fills load later decoder blocks.
++    fn gather_window(
++        &mut self,
++        essentials: &mut [ClauseState],
++        scorers: &mut [TermScorer],
++        hi: DocId,
++        batch: &mut ScoredTermBatch,
++    ) -> bool {
++        debug_assert!(self.is_empty(), "pending rows must drain before gathering");
++        debug_assert!(essentials.len() >= 2);
++        loop {
++            self.base_doc = essentials.iter().map(|clause| clause.doc).min().unwrap();
++            if self.base_doc >= hi {
++                return false;
++            }
++            let end = hi.min(self.base_doc.saturating_add(OR_WINDOW_DOCS as DocId));
++            debug_assert!(end > self.base_doc);
++            #[cfg(test)]
++            let mut filled = 0;
++            // Preference order preserves the scalar pruning-known additions.
++            for clause in essentials.iter_mut() {
++                while clause.doc < end {
++                    let previous_doc = clause.doc;
++                    let len = clause.fill_scored_batch(scorers, self.base_doc, end, batch);
++                    debug_assert!(clause.doc > previous_doc, "batch cursor must progress");
++                    debug_assert!(len > 0 || clause.doc >= end);
++                    #[cfg(test)]
++                    if len > 0 {
++                        filled += 1;
++                    }
++                    for index in 0..len {
++                        let doc = batch.docs[index];
++                        debug_assert!(self.base_doc <= doc && doc < end);
++                        let offset = (doc - self.base_doc) as usize;
++                        let word = offset / 64;
++                        let bit = 1u64 << (offset % 64);
++                        let row_start = offset * self.num_terms;
++                        if self.matches[word] & bit == 0 {
++                            // Dirty storage becomes visible only on first touch.
++                            self.incoming_leaves[row_start..row_start + self.num_terms].fill(0.0);
++                            self.essential_known[offset] = 0.0;
++                            self.matches[word] |= bit;
++                        }
++                        let leaf = batch.scores[index];
++                        self.incoming_leaves[row_start + clause.ordinal] = leaf;
++                        self.essential_known[offset] += f64::from(leaf);
++                    }
++                }
++            }
++            debug_assert!(essentials.iter().all(|clause| clause.doc >= end));
++            #[cfg(test)]
++            MULTI_WINDOWS.with(|windows| {
++                if let Some(windows) = windows.borrow_mut().as_mut() {
++                    windows.push(WindowEvidence {
++                        base: self.base_doc,
++                        end,
++                        hi,
++                        matches: self.matches,
++                        essentials: essentials.iter().map(|clause| clause.ordinal).collect(),
++                        filled,
++                        unread: essentials.iter().map(|clause| clause.doc).collect(),
++                        matrix_len: self.incoming_leaves.len(),
++                        matrix_capacity: self.incoming_leaves.capacity(),
++                    });
++                }
++            });
++            if !self.is_empty() {
++                return true;
++            }
++            // A reconciled shallow cursor may emit nothing. Jump directly to
++            // the new minimum, rather than walking empty physical addresses.
++        }
++    }
++
++    fn pop_candidate(&mut self) -> Option<(DocId, f64, &mut [Score])> {
++        let word = if self.matches[0] != 0 { 0 } else { 1 };
++        if self.matches[word] == 0 {
++            return None;
++        }
++        let bit = self.matches[word].trailing_zeros() as usize;
++        self.matches[word] &= self.matches[word] - 1;
++        let offset = word * 64 + bit;
++        let row_start = offset * self.num_terms;
++        Some((
++            self.base_doc + offset as DocId,
++            self.essential_known[offset],
++            &mut self.incoming_leaves[row_start..row_start + self.num_terms],
++        ))
++    }
++}
++
++#[cfg(test)]
++#[derive(Debug)]
++struct WindowEvidence {
++    base: DocId,
++    end: DocId,
++    hi: DocId,
++    matches: [u64; 2],
++    essentials: Vec<usize>,
++    filled: usize,
++    unread: Vec<DocId>,
++    matrix_len: usize,
++    matrix_capacity: usize,
+ }
+ 
+ #[cfg(test)]
+@@ -61,6 +187,8 @@ thread_local! {
+         const { std::cell::RefCell::new(None) };
+     static BATCH_LENGTHS: std::cell::RefCell<Option<Vec<usize>>> =
+         const { std::cell::RefCell::new(None) };
++    static MULTI_WINDOWS: std::cell::RefCell<Option<Vec<WindowEvidence>>> =
++        const { std::cell::RefCell::new(None) };
+ }
+ 
+ /// Merge only clauses whose local score bounds can exceed the optional prefix.
+@@ -117,6 +245,7 @@ pub(crate) fn or_maxscore(
+     let mut prefix = vec![0.0f64; num_terms + 1];
+     let mut contributions = vec![0.0; num_terms];
+     let mut batch = ScoredTermBatch::new();
++    let mut multi_window: Option<ExactLeafWindow> = None;
+     let mut lo = clauses
+         .iter()
+         .map(|clause| clause.doc)
+@@ -246,7 +375,7 @@ pub(crate) fn or_maxscore(
+         let mut batch_len = 0;
+         let mut batch_index = 0;
+         loop {
+-            let doc = if single_essential {
++            let (doc, mut known, contributions) = if single_essential {
+                 if batch_index == batch_len {
+                     batch_len = clauses[first_essential].fill_scored_batch(
+                         &mut scorers,
+@@ -265,34 +394,30 @@ pub(crate) fn or_maxscore(
+                         break;
+                     }
+                 }
+-                batch.docs[batch_index]
+-            } else {
+-                clauses[first_essential..]
+-                    .iter()
+-                    .map(|clause| clause.doc)
+-                    .min()
+-                    .unwrap_or(TERMINATED)
+-            };
+-            if doc >= hi {
+-                break;
+-            }
+-            contributions.fill(0.0);
+-            let mut known = 0.0f64;
+-            if single_essential {
++                let doc = batch.docs[batch_index];
++                if doc >= hi {
++                    break;
++                }
++                contributions.fill(0.0);
+                 let leaf = batch.scores[batch_index];
+                 contributions[clauses[first_essential].ordinal] = leaf;
+-                known = f64::from(leaf);
++                (doc, f64::from(leaf), contributions.as_mut_slice())
+             } else {
+-                for clause in &clauses[first_essential..] {
+-                    if clause.doc == doc {
+-                        clause.assert_coherent(&scorers);
+-                        let leaf = scorers[clause.ordinal].score();
+-                        clause.assert_coherent(&scorers);
+-                        contributions[clause.ordinal] = leaf;
+-                        known += f64::from(leaf);
+-                    }
++                let window = multi_window.get_or_insert_with(|| ExactLeafWindow::new(num_terms));
++                if window.is_empty()
++                    && !window.gather_window(
++                        &mut clauses[first_essential..],
++                        &mut scorers,
++                        hi,
++                        &mut batch,
++                    )
++                {
++                    break;
+                 }
+-            }
++                // Pending rows govern completion, even if every real cursor
++                // is already beyond hi or TERMINATED after the gather.
++                window.pop_candidate().unwrap()
++            };
+             let mut competitive = true;
+             for rank in (0..first_essential).rev() {
+                 if upper_bound.score(known + prefix[rank + 1]) <= threshold {
+@@ -324,17 +449,12 @@ pub(crate) fn or_maxscore(
+             }
+             if single_essential {
+                 batch_index += 1;
+-            } else {
+-                for clause in &mut clauses[first_essential..] {
+-                    if clause.doc == doc {
+-                        clause.advance(&mut scorers);
+-                    }
+-                }
+             }
+         }
+         debug_assert!(clauses
+             .iter()
+             .all(|clause| clause.doc == scorers[clause.ordinal].doc()));
++        debug_assert!(multi_window.as_ref().is_none_or(ExactLeafWindow::is_empty));
+         // Discard every local certificate before entering another region.
+         // Optional clauses remain alive and may become essential there.
+         lo = hi;
+@@ -403,6 +523,522 @@ mod tests {
+         actual
+     }
+ 
++    fn observed_check(
++        scorers: Vec<TermScorer>,
++        max_doc: DocId,
++        threshold: Score,
++        limit: usize,
++    ) -> (Vec<(DocId, u32)>, Vec<WindowEvidence>) {
++        MULTI_WINDOWS.with(|windows| *windows.borrow_mut() = Some(Vec::new()));
++        let accepted = check(scorers, max_doc, threshold, limit);
++        let windows = MULTI_WINDOWS.with(|windows| windows.borrow_mut().take().unwrap());
++        for window in &windows {
++            assert!(window.essentials.len() >= 2);
++            assert!(window.base < window.end && window.end <= window.hi);
++            assert!(window.end - window.base <= 128);
++            assert!(window.unread.iter().all(|&doc| doc >= window.end));
++            assert_eq!(window.matrix_len % 128, 0);
++            assert!(window.matrix_len <= 128 * 32);
++            assert!(window.matrix_capacity >= window.matrix_len);
++        }
++        (accepted, windows)
++    }
++
++    #[test]
++    fn multi_bitmap_replays_pending_rows_after_every_actual_cursor_exhausts() {
++        let norms = vec![1; 128];
++        let postings = [(0, 1), (7, 2), (63, 3), (64, 4), (127, 5)];
++        let scorers = vec![
++            fixture(&postings, &norms, 0.3),
++            fixture(&postings, &norms, 0.7),
++            fixture(&postings, &norms, 0.5),
++        ];
++        let (accepted, windows) = observed_check(scorers, 128, 0.0, 0);
++        assert_eq!(
++            accepted.iter().map(|&(doc, _)| doc).collect::<Vec<_>>(),
++            [0, 7, 63, 64, 127]
++        );
++        assert_eq!(windows.len(), 1);
++        let window = &windows[0];
++        assert_eq!(window.filled, 3);
++        assert_eq!(
++            window.matches,
++            [(1 << 0) | (1 << 7) | (1 << 63), (1 << 0) | (1 << 63)]
++        );
++        assert!(window.unread.iter().all(|&doc| doc == TERMINATED));
++        let scratch = ExactLeafWindow::new(32);
++        let foundation = 32 * std::mem::size_of::<ClauseState>()
++            + 33 * std::mem::size_of::<f64>()
++            + 32 * std::mem::size_of::<Score>()
++            + std::mem::size_of::<ScoredTermBatch>();
++        let payload = foundation
++            + scratch.incoming_leaves.len() * std::mem::size_of::<Score>()
++            + std::mem::size_of_val(&scratch.essential_known)
++            + std::mem::size_of_val(&scratch.matches);
++        eprintln!(
++            "OR_MULTI_LAYOUT window={} matrix_len={} matrix_capacity={} foundation={} payload={}",
++            std::mem::size_of::<ExactLeafWindow>(),
++            scratch.incoming_leaves.len(),
++            scratch.incoming_leaves.capacity(),
++            foundation,
++            payload
++        );
++        assert_eq!(scratch.incoming_leaves.len(), 128 * 32);
++        // Report the host layout without fixing a target ABI in this oracle.
++        assert_eq!(std::mem::size_of_val(&scratch.essential_known), 1024);
++        assert_eq!(std::mem::size_of_val(&scratch.matches), 16);
++    }
++
++    #[test]
++    fn multi_bitmap_full_callback_oracle_covers_n3_n32_disjoint_overlap_and_tails() {
++        let norms: Vec<u32> = (0..1024).map(|doc| 1 + doc % 11).collect();
++        for count in [3, 32] {
++            for length in [127, 128, 129, 255, 256, 257] {
++                for disjoint in [false, true] {
++                    let scorers: Vec<_> = (0..count)
++                        .map(|ordinal| {
++                            let postings: Vec<_> = (0..length)
++                                .filter(|&doc| !disjoint || doc as usize % count == ordinal)
++                                .map(|doc| (doc, 1 + (doc + ordinal as u32) % 17))
++                                .collect();
++                            fixture(&postings, &norms, 0.5 + ordinal as Score / 16.0)
++                        })
++                        .collect();
++                    let (accepted, windows) = observed_check(scorers.clone(), 1024, 0.0, 0);
++                    assert_eq!(accepted.len(), length as usize);
++                    assert!(windows.iter().any(|window| window.filled >= 2));
++                    for limit in [1, 10] {
++                        observed_check(scorers.clone(), 1024, 0.0, limit);
++                    }
++                }
++            }
++        }
++    }
++
++    #[test]
++    fn multi_bitmap_first_touch_clears_old_essential_and_optional_leaves() {
++        let norms = vec![1; 384];
++        let weak: Vec<_> = (0..384).map(|doc| (doc, 1)).collect();
++        let first = [
++            (0, 1),
++            (7, 1),
++            (63, 1),
++            (64, 1),
++            (127, 1),
++            (128, 1),
++            (256, 1),
++        ];
++        let second = [
++            (0, 1),
++            (7, 1),
++            (63, 1),
++            (64, 1),
++            (127, 1),
++            (128, 1),
++            (135, 1),
++            (191, 1),
++            (192, 1),
++            (255, 1),
++            (256, 1),
++        ];
++        let scorers = vec![
++            fixture(&first, &norms, 1.0),
++            fixture(&weak, &norms, 2.0f32.powi(-10)),
++            fixture(&second, &norms, 2.0),
++        ];
++        let (accepted, windows) = observed_check(scorers, 384, 0.1, 0);
++        assert!(windows
++            .iter()
++            .any(|window| window.base == 0 && window.filled == 2));
++        assert!(windows
++            .iter()
++            .any(|window| window.base == 128 && window.filled == 2));
++        assert_eq!(
++            accepted.iter().find(|&&(doc, _)| doc == 7).unwrap().1,
++            ((f64::from(1.0f32) + f64::from(2.0f32.powi(-10)) + f64::from(2.0f32)) as Score)
++                .to_bits()
++        );
++        let expected = (f64::from(2.0f32.powi(-10)) + f64::from(2.0f32)) as Score;
++        for doc in [135, 191, 192, 255] {
++            assert_eq!(
++                accepted
++                    .iter()
++                    .find(|&&(actual_doc, _)| actual_doc == doc)
++                    .unwrap()
++                    .1,
++                expected.to_bits()
++            );
++        }
++        assert!(windows.iter().all(|window| window.essentials == [0, 2]));
++
++        // Both essential columns overwrite offset 7 in the next window. Only
++        // first-touch clearing can remove the old optional contribution there.
++        // The hits at 0/128 pin the actual window bases, so 7/135 reuse one row.
++        let norms = vec![1; 256];
++        let essentials = [(0, 1), (7, 1), (128, 1), (135, 1)];
++        let optional = [(7, 1)];
++        let (accepted, windows) = observed_check(
++            vec![
++                fixture(&essentials, &norms, 1.0),
++                fixture(&optional, &norms, 2.0f32.powi(-10)),
++                fixture(&essentials, &norms, 2.0),
++            ],
++            256,
++            0.1,
++            0,
++        );
++        assert_eq!(windows.len(), 2, "{windows:?}");
++        for (window, base) in windows.iter().zip([0, 128]) {
++            assert_eq!(window.base, base);
++            assert_eq!(window.end, base + 128);
++            assert_eq!(window.hi, 256);
++            assert_eq!(window.essentials, [0, 2]);
++            assert_eq!(window.filled, 2);
++            assert_eq!(window.matches, [(1 << 0) | (1 << 7), 0]);
++        }
++        // Literal legacy leaves are 1, 2^-10, 2. Doc 135 must sum 1 + 2;
++        // retaining the optional leaf from doc 7 would instead publish 3.0009766.
++        assert_eq!(
++            accepted,
++            [
++                (0, 0x4040_0000),
++                (7, 0x4040_1000),
++                (128, 0x4040_0000),
++                (135, 0x4040_0000)
++            ]
++        );
++    }
++
++    #[test]
++    fn multi_bitmap_reuses_dirty_rows_when_fixed_suffix_grows_then_shrinks() {
++        let norms = vec![1; 800];
++        let a: Vec<_> = (0..384)
++            .map(|doc| (doc, if (128..256).contains(&doc) { 1000 } else { 1 }))
++            .collect();
++        let b: Vec<_> = (0..384)
++            .map(|doc| (doc, if (128..256).contains(&doc) { 1 } else { 1000 }))
++            .collect();
++        let rare = [(0, 1), (128, 1), (256, 1), (700, 1)];
++        let scorers = vec![
++            fixture(&a, &norms, 0.1),
++            fixture(&b, &norms, 0.1),
++            fixture(&rare, &norms, 1.0),
++        ];
++        let (_, windows) = observed_check(scorers.clone(), 800, 0.15, 0);
++        let masks: Vec<_> = windows
++            .iter()
++            .map(|window| (window.base, window.essentials.as_slice()))
++            .collect();
++        assert!(masks.contains(&(0, &[1, 2][..])), "{windows:?}");
++        assert!(masks.contains(&(128, &[0, 1, 2][..])), "{windows:?}");
++        assert!(masks.contains(&(256, &[1, 2][..])), "{windows:?}");
++        for limit in [1, 10] {
++            check(scorers.clone(), 800, 0.15, limit);
++        }
++    }
++
++    #[test]
++    fn multi_bitmap_jumps_huge_physical_gaps_and_clips_region_ends() {
++        let norms = vec![1; 1_000_001];
++        let a = [
++            (0, 1),
++            (63, 1),
++            (64, 1),
++            (127, 1),
++            (500_000, 1),
++            (1_000_000, 1),
++        ];
++        let b = [(0, 1), (7, 1), (128, 1), (500_001, 1), (999_999, 1)];
++        let c = [(7, 1), (129, 1), (500_064, 1), (1_000_000, 1)];
++        let (accepted, windows) = observed_check(
++            vec![
++                fixture(&a, &norms, 1.0),
++                fixture(&b, &norms, 2.0),
++                fixture(&c, &norms, 0.5),
++            ],
++            1_000_001,
++            0.0,
++            0,
++        );
++        assert_eq!(accepted.len(), 12);
++        assert!(windows.iter().any(|window| window.base == 500_000));
++        assert!(windows.iter().any(|window| window.end == 1_000_001));
++        assert!(
++            windows.len() <= 6,
++            "must jump directly over empty addresses: {windows:?}"
++        );
++    }
++
++    #[test]
++    fn multi_bitmap_midpoints_replay_incoming_order_in_legacy_and_native_profiles() {
++        let norms = vec![1; 257];
++        let postings: Vec<_> = (0..257).map(|doc| (doc, 1)).collect();
++        for native in [false, true] {
++            let leaves = [1.0, 2.0f32.powi(-24), 2.0f32.powi(-53), 2.0f32.powi(-53)];
++            let scorers: Vec<_> = leaves
++                .iter()
++                .map(|&boost| {
++                    if native {
++                        TermScorer::create_for_test(
++                            &postings,
++                            &norms,
++                            Bm25Weight::for_native_block_bounds(1.0).boost_by(boost),
++                        )
++                    } else {
++                        fixture(&postings, &norms, boost)
++                    }
++                })
++                .collect();
++            for order in [[0, 1, 2, 3], [2, 3, 1, 0], [1, 0, 3, 2]] {
++                let ordered: Vec<_> = order.iter().map(|&i| scorers[i].clone()).collect();
++                let expected = ordered
++                    .iter()
++                    .map(|scorer| f64::from(scorer.clone().score()))
++                    .sum::<f64>() as Score;
++                let (accepted, windows) = observed_check(ordered.clone(), 257, 0.0, 0);
++                assert_eq!(accepted.len(), 257);
++                assert!(accepted.iter().all(|&(_, bits)| bits == expected.to_bits()));
++                assert!(windows.iter().any(|window| window.filled == 4));
++                for threshold in [expected.next_down(), expected, expected.next_up()] {
++                    for limit in [0, 1, 10] {
++                        check(ordered.clone(), 257, threshold, limit);
++                    }
++                }
++            }
++        }
++
++        // Near the low-TF sum, two substantial terms must remain essential.
++        // Each full block and the tail contain a high-TF hit whose individual
++        // strong leaf exceeds that threshold, keeping both local bounds live.
++        // TF is strictly positive throughout; native uses DEFAULT parameters.
++        let boosts = [
++            0.5,
++            0.5,
++            2.0f32.powi(-24),
++            2.0f32.powi(-53),
++            2.0f32.powi(-53),
++        ];
++        let postings: Vec<_> = (0..257)
++            .map(|doc| {
++                (
++                    doc,
++                    if [127, 255, 256].contains(&doc) {
++                        1000
++                    } else {
++                        1
++                    },
++                )
++            })
++            .collect();
++        for native in [false, true] {
++            let scorers: Vec<_> = boosts
++                .iter()
++                .map(|&boost| {
++                    if native {
++                        TermScorer::create_for_test(
++                            &postings,
++                            &norms,
++                            Bm25Weight::for_native_block_bounds(1.0).boost_by(boost),
++                        )
++                    } else {
++                        fixture(&postings, &norms, boost)
++                    }
++                })
++                .collect();
++            if !native {
++                for (scorer, &leaf) in scorers.iter().zip(&boosts) {
++                    assert_eq!(scorer.clone().score().to_bits(), leaf.to_bits());
++                }
++            }
++            for order in [[0, 1, 2, 3, 4], [3, 4, 2, 0, 1], [2, 0, 1, 4, 3]] {
++                let ordered: Vec<_> = order.iter().map(|&i| scorers[i].clone()).collect();
++                // Derive native expectations from its actual scalar leaves;
++                // both profiles publish one f32 cast after the incoming fold.
++                let expected = ordered
++                    .iter()
++                    .map(|scorer| f64::from(scorer.clone().score()))
++                    .sum::<f64>() as Score;
++                let strong_ordinals: Vec<_> = order
++                    .iter()
++                    .enumerate()
++                    .filter_map(|(ordinal, &original)| (original < 2).then_some(ordinal))
++                    .collect();
++                for &ordinal in &strong_ordinals {
++                    for doc in [127, 255, 256] {
++                        let mut scorer = ordered[ordinal].clone();
++                        assert_eq!(scorer.seek(doc), doc);
++                        assert!(scorer.score() > expected.next_up());
++                    }
++                }
++                for threshold in [expected.next_down(), expected, expected.next_up()] {
++                    for limit in [0, 1, 10] {
++                        let (accepted, windows) =
++                            observed_check(ordered.clone(), 257, threshold, limit);
++                        assert!(
++                            windows.iter().any(|window| window.base == 0
++                                && window.filled >= 2
++                                && strong_ordinals
++                                    .iter()
++                                    .all(|ordinal| window.essentials.contains(ordinal))),
++                            "native={native} order={order:?} threshold={threshold:?} \
++                             limit={limit} windows={windows:?}"
++                        );
++                        assert!(accepted.iter().any(|&(doc, _)| doc == 127));
++                        let first_low = accepted.iter().find(|&&(doc, _)| doc == 0);
++                        if threshold < expected {
++                            assert_eq!(first_low.unwrap().1, expected.to_bits());
++                        } else {
++                            assert!(first_low.is_none());
++                        }
++                    }
++                }
++            }
++        }
++    }
++
++    #[test]
++    fn multi_bitmap_current_threshold_and_simulated_collector_deletion_rejection() {
++        let norms = vec![1; 128];
++        let postings = [(0, 1), (7, 3), (63, 5), (64, 8), (127, 20)];
++        let scorers = vec![
++            fixture(&postings, &norms, 0.3),
++            fixture(&postings, &norms, 0.5),
++            fixture(&postings, &norms, 0.001),
++        ];
++        for limit in [0, 1, 10] {
++            let (_, windows) = observed_check(scorers.clone(), 128, 0.1, limit);
++            assert!(windows.iter().any(|window| window.filled >= 2));
++        }
++        let run = |bitmap: bool| {
++            let mut accepted = Vec::new();
++            let mut current: Score = 0.1;
++            let mut callback = |doc, score: Score| {
++                accepted.push((doc, score.to_bits()));
++                if doc != 0 && doc != 63 {
++                    current = current.max(score);
++                }
++                current
++            };
++            if bitmap {
++                or_maxscore(scorers.clone(), 128, 0.1, &mut callback);
++            } else {
++                let mut union =
++                    BufferedUnionScorer::build(scorers.clone(), SumCombiner::default, 128);
++                for_each_pruning_scorer(&mut union, 0.1, &mut callback);
++            }
++            accepted
++        };
++        assert_eq!(run(true), run(false));
++        assert_eq!(
++            run(true).iter().map(|&(doc, _)| doc).collect::<Vec<_>>(),
++            [0, 7, 63, 64, 127]
++        );
++    }
++
++    #[test]
++    fn multi_bitmap_actual_indexed_deletes_keep_physical_pending_candidates() -> crate::Result<()> {
++        use crate::collector::TopDocs;
++        use crate::indexer::NoMergePolicy;
++        use crate::query::{BooleanQuery, EnableScoring, Query, TermQuery};
++        use crate::schema::{IndexRecordOption, Schema, TEXT};
++        use crate::{DocAddress, Index, Term};
++
++        let mut schema = Schema::builder();
++        let text = schema.add_text_field("text", TEXT);
++        let marker = schema.add_text_field("marker", TEXT);
++        let index = Index::create_in_ram(schema.build());
++        let mut writer = index.writer_for_tests()?;
++        writer.set_merge_policy(Box::new(NoMergePolicy));
++        for doc in 0..160 {
++            let frequency = if [0, 63, 127].contains(&doc) { 30 } else { 1 };
++            let content = std::iter::repeat_n("alpha beta gamma", frequency)
++                .chain(std::iter::repeat_n("filler", 90 - frequency * 3))
++                .collect::<Vec<_>>()
++                .join(" ");
++            writer.add_document(doc!(text => content, marker => if [0, 63].contains(&doc) { "delete" } else { "keep" }))?;
++        }
++        writer.commit()?;
++        writer.delete_term(Term::from_field_text(marker, "delete"));
++        writer.commit()?;
++        let reader = index.reader()?;
++        let searcher = reader.searcher();
++        assert_eq!(searcher.segment_readers().len(), 1);
++        let segment = searcher.segment_reader(0);
++        assert_eq!(segment.max_doc(), 160);
++        assert_eq!(segment.num_docs(), 158);
++        let queries: Vec<_> = ["alpha", "beta", "gamma"]
++            .iter()
++            .map(|term| {
++                TermQuery::new(
++                    Term::from_field_text(text, term),
++                    IndexRecordOption::WithFreqs,
++                )
++            })
++            .collect();
++        let scorers: Vec<_> = queries
++            .iter()
++            .map(|query| {
++                query
++                    .specialized_weight(EnableScoring::enabled_from_searcher(&searcher))?
++                    .term_scorer_for_test(segment, 1.0)?
++                    .ok_or_else(|| crate::TantivyError::InvalidArgument("missing test term".into()))
++            })
++            .collect::<crate::Result<_>>()?;
++        let run = |bitmap: bool| {
++            let mut accepted = Vec::new();
++            let mut current = -Score::INFINITY;
++            let mut callback = |doc, score: Score| {
++                accepted.push((doc, score.to_bits()));
++                // This is the real index's deletion bitset, with the same
++                // threshold rejection ownership as the TopDocs collector.
++                if segment.alive_bitset().unwrap().is_alive(doc) {
++                    current = current.max(score);
++                }
++                current
++            };
++            if bitmap {
++                or_maxscore(
++                    scorers.clone(),
++                    segment.max_doc(),
++                    -Score::INFINITY,
++                    &mut callback,
++                );
++            } else {
++                let mut union = BufferedUnionScorer::build(
++                    scorers.clone(),
++                    SumCombiner::default,
++                    segment.max_doc(),
++                );
++                for_each_pruning_scorer(&mut union, -Score::INFINITY, &mut callback);
++            }
++            accepted
++        };
++        MULTI_WINDOWS.with(|windows| *windows.borrow_mut() = Some(Vec::new()));
++        let actual = run(true);
++        let windows = MULTI_WINDOWS.with(|windows| windows.borrow_mut().take().unwrap());
++        assert_eq!(actual, run(false));
++        assert!(actual.iter().any(|&(doc, _)| doc == 0));
++        assert!(actual.iter().any(|&(doc, _)| doc == 63));
++        assert!(actual.iter().any(|&(doc, _)| doc == 127));
++        assert!(windows.iter().any(|window| window.filled == 3
++            && window.unread.iter().all(|&doc| doc >= window.hi)
++            && window.matches.iter().any(|&word| word != 0)));
++        let query = BooleanQuery::union(
++            queries
++                .into_iter()
++                .map(|query| Box::new(query) as Box<dyn Query>)
++                .collect(),
++        );
++        MULTI_WINDOWS.with(|windows| *windows.borrow_mut() = Some(Vec::new()));
++        let top = searcher.search(&query, &TopDocs::with_limit(1).order_by_score())?;
++        let windows = MULTI_WINDOWS.with(|windows| windows.borrow_mut().take().unwrap());
++        assert!(windows.iter().any(|window| window.filled == 3));
++        assert_eq!(top[0].1, DocAddress::new(0, 127));
++        let expected_bits = actual.iter().find(|&&(doc, _)| doc == 127).unwrap().1;
++        assert_eq!(top[0].0.to_bits(), expected_bits);
++        Ok(())
++    }
++
+     #[test]
+     fn single_driver_batches_replay_every_dynamic_threshold_exactly() {
+         let norms = vec![1; 4096];
+@@ -723,6 +1359,7 @@ mod tests {
+ 
+     #[test]
+     fn unsafe_domains_use_exhaustive_canonical_sum_before_any_seek() {
++        MULTI_WINDOWS.with(|windows| *windows.borrow_mut() = Some(Vec::new()));
+         let norms = vec![1; 300];
+         let postings: Vec<_> = (0..300).map(|doc| (doc, 1 + doc % 7)).collect();
+         let positive = fixture(&postings, &norms, 1.0);
+@@ -747,5 +1384,8 @@ mod tests {
+             );
+         }
+         assert!(check(vec![positive; 3], 300, Score::NAN, 0).is_empty());
++        assert!(MULTI_WINDOWS
++            .with(|windows| windows.borrow_mut().take().unwrap())
++            .is_empty());
+     }
+ }

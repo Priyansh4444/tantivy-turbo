@@ -1,0 +1,136 @@
+
+/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-11/tantivy_worker:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000255a00 <core::slice::sort::unstable::heapsort::heapsort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>>:
+  255a00:	55                   	push   %rbp
+  255a01:	41 57                	push   %r15
+  255a03:	41 56                	push   %r14
+  255a05:	53                   	push   %rbx
+  255a06:	48 89 f0             	mov    %rsi,%rax
+  255a09:	48 d1 e8             	shr    $1,%rax
+  255a0c:	48 01 f0             	add    %rsi,%rax
+  255a0f:	c4 e2 79 58 05 b8 da 	vpbroadcastd -0x1f2548(%rip),%xmm0        # 634d0 <serde_json::ser::Formatter::write_char_escape::HEX_DIGITS+0x3d80>
+  255a16:	e0 ff 
+  255a18:	c4 e2 79 59 0d 87 72 	vpbroadcastq -0x1f8d79(%rip),%xmm1        # 5cca8 <__abi_tag+0x5c9ac>
+  255a1f:	e0 ff 
+  255a21:	c5 e9 ef d2          	vpxor  %xmm2,%xmm2,%xmm2
+  255a25:	eb 12                	jmp    255a39 <core::slice::sort::unstable::heapsort::heapsort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x39>
+  255a27:	66 0f 1f 84 00 00 00 	nopw   0x0(%rax,%rax,1)
+  255a2e:	00 00 
+  255a30:	48 85 c0             	test   %rax,%rax
+  255a33:	0f 84 bb 01 00 00    	je     255bf4 <core::slice::sort::unstable::heapsort::heapsort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x1f4>
+  255a39:	48 ff c8             	dec    %rax
+  255a3c:	48 89 c2             	mov    %rax,%rdx
+  255a3f:	48 29 f2             	sub    %rsi,%rdx
+  255a42:	73 40                	jae    255a84 <core::slice::sort::unstable::heapsort::heapsort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x84>
+  255a44:	48 8d 0c 40          	lea    (%rax,%rax,2),%rcx
+  255a48:	48 8b 57 10          	mov    0x10(%rdi),%rdx
+  255a4c:	48 89 54 24 f8       	mov    %rdx,-0x8(%rsp)
+  255a51:	c5 f8 10 1f          	vmovups (%rdi),%xmm3
+  255a55:	c5 f8 29 5c 24 e8    	vmovaps %xmm3,-0x18(%rsp)
+  255a5b:	48 8b 54 cf 10       	mov    0x10(%rdi,%rcx,8),%rdx
+  255a60:	c5 f8 10 1c cf       	vmovups (%rdi,%rcx,8),%xmm3
+  255a65:	c5 f8 11 1f          	vmovups %xmm3,(%rdi)
+  255a69:	48 89 57 10          	mov    %rdx,0x10(%rdi)
+  255a6d:	48 8b 54 24 f8       	mov    -0x8(%rsp),%rdx
+  255a72:	48 89 54 cf 10       	mov    %rdx,0x10(%rdi,%rcx,8)
+  255a77:	c5 f9 6f 5c 24 e8    	vmovdqa -0x18(%rsp),%xmm3
+  255a7d:	c5 fa 7f 1c cf       	vmovdqu %xmm3,(%rdi,%rcx,8)
+  255a82:	31 d2                	xor    %edx,%edx
+  255a84:	48 39 c6             	cmp    %rax,%rsi
+  255a87:	48 89 c1             	mov    %rax,%rcx
+  255a8a:	48 0f 42 ce          	cmovb  %rsi,%rcx
+  255a8e:	4c 8d 04 55 01 00 00 	lea    0x1(,%rdx,2),%r8
+  255a95:	00 
+  255a96:	49 39 c8             	cmp    %rcx,%r8
+  255a99:	73 95                	jae    255a30 <core::slice::sort::unstable::heapsort::heapsort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x30>
+  255a9b:	4c 8d 14 12          	lea    (%rdx,%rdx,1),%r10
+  255a9f:	90                   	nop
+  255aa0:	49 83 c2 02          	add    $0x2,%r10
+  255aa4:	49 39 ca             	cmp    %rcx,%r10
+  255aa7:	0f 83 83 00 00 00    	jae    255b30 <core::slice::sort::unstable::heapsort::heapsort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x130>
+  255aad:	4f 8d 0c 40          	lea    (%r8,%r8,2),%r9
+  255ab1:	4f 8d 14 52          	lea    (%r10,%r10,2),%r10
+  255ab5:	c4 a1 7a 10 5c cf 08 	vmovss 0x8(%rdi,%r9,8),%xmm3
+  255abc:	c4 a3 61 21 5c d7 08 	vinsertps $0x10,0x8(%rdi,%r10,8),%xmm3,%xmm3
+  255ac3:	10 
+  255ac4:	c5 f8 5a db          	vcvtps2pd %xmm3,%xmm3
+  255ac8:	c4 a1 79 6e 64 cf 0c 	vmovd  0xc(%rdi,%r9,8),%xmm4
+  255acf:	c4 a3 59 22 64 d7 0c 	vpinsrd $0x1,0xc(%rdi,%r10,8),%xmm4,%xmm4
+  255ad6:	01 
+  255ad7:	c4 e2 59 3f e0       	vpmaxud %xmm0,%xmm4,%xmm4
+  255adc:	c4 e2 79 35 e4       	vpmovzxdq %xmm4,%xmm4
+  255ae1:	c5 d9 eb e1          	vpor   %xmm1,%xmm4,%xmm4
+  255ae5:	c5 d9 5c e1          	vsubpd %xmm1,%xmm4,%xmm4
+  255ae9:	c5 e1 5e dc          	vdivpd %xmm4,%xmm3,%xmm3
+  255aed:	c4 e2 69 37 e3       	vpcmpgtq %xmm3,%xmm2,%xmm4
+  255af2:	c5 d9 73 d4 01       	vpsrlq $0x1,%xmm4,%xmm4
+  255af7:	c5 d9 ef db          	vpxor  %xmm3,%xmm4,%xmm3
+  255afb:	c4 c1 f9 7e db       	vmovq  %xmm3,%r11
+  255b00:	c4 e3 f9 16 db 01    	vpextrq $0x1,%xmm3,%rbx
+  255b06:	4e 8b 0c cf          	mov    (%rdi,%r9,8),%r9
+  255b0a:	31 ed                	xor    %ebp,%ebp
+  255b0c:	4e 3b 0c d7          	cmp    (%rdi,%r10,8),%r9
+  255b10:	40 0f 92 c5          	setb   %bpl
+  255b14:	45 31 c9             	xor    %r9d,%r9d
+  255b17:	49 39 db             	cmp    %rbx,%r11
+  255b1a:	41 0f 9c c1          	setl   %r9b
+  255b1e:	41 0f 45 e9          	cmovne %r9d,%ebp
+  255b22:	44 0f b6 cd          	movzbl %bpl,%r9d
+  255b26:	4d 01 c1             	add    %r8,%r9
+  255b29:	eb 08                	jmp    255b33 <core::slice::sort::unstable::heapsort::heapsort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x133>
+  255b2b:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+  255b30:	4d 89 c1             	mov    %r8,%r9
+  255b33:	48 8d 14 52          	lea    (%rdx,%rdx,2),%rdx
+  255b37:	4f 8d 04 49          	lea    (%r9,%r9,2),%r8
+  255b3b:	c5 fa 10 5c d7 08    	vmovss 0x8(%rdi,%rdx,8),%xmm3
+  255b41:	c4 a3 61 21 5c c7 08 	vinsertps $0x10,0x8(%rdi,%r8,8),%xmm3,%xmm3
+  255b48:	10 
+  255b49:	c5 f8 5a db          	vcvtps2pd %xmm3,%xmm3
+  255b4d:	c5 f9 6e 64 d7 0c    	vmovd  0xc(%rdi,%rdx,8),%xmm4
+  255b53:	c4 a3 59 22 64 c7 0c 	vpinsrd $0x1,0xc(%rdi,%r8,8),%xmm4,%xmm4
+  255b5a:	01 
+  255b5b:	c4 e2 59 3f e0       	vpmaxud %xmm0,%xmm4,%xmm4
+  255b60:	c4 e2 79 35 e4       	vpmovzxdq %xmm4,%xmm4
+  255b65:	c5 d9 eb e1          	vpor   %xmm1,%xmm4,%xmm4
+  255b69:	c5 d9 5c e1          	vsubpd %xmm1,%xmm4,%xmm4
+  255b6d:	c5 e1 5e dc          	vdivpd %xmm4,%xmm3,%xmm3
+  255b71:	c4 e2 69 37 e3       	vpcmpgtq %xmm3,%xmm2,%xmm4
+  255b76:	c5 d9 73 d4 01       	vpsrlq $0x1,%xmm4,%xmm4
+  255b7b:	c5 d9 ef db          	vpxor  %xmm3,%xmm4,%xmm3
+  255b7f:	c4 e1 f9 7e db       	vmovq  %xmm3,%rbx
+  255b84:	c4 c3 f9 16 de 01    	vpextrq $0x1,%xmm3,%r14
+  255b8a:	4c 8b 14 d7          	mov    (%rdi,%rdx,8),%r10
+  255b8e:	4e 8b 1c c7          	mov    (%rdi,%r8,8),%r11
+  255b92:	31 ed                	xor    %ebp,%ebp
+  255b94:	4d 39 da             	cmp    %r11,%r10
+  255b97:	40 0f 92 c5          	setb   %bpl
+  255b9b:	45 31 ff             	xor    %r15d,%r15d
+  255b9e:	4c 39 f3             	cmp    %r14,%rbx
+  255ba1:	41 0f 9c c7          	setl   %r15b
+  255ba5:	41 0f 45 ef          	cmovne %r15d,%ebp
+  255ba9:	40 80 fd 01          	cmp    $0x1,%bpl
+  255bad:	0f 85 7d fe ff ff    	jne    255a30 <core::slice::sort::unstable::heapsort::heapsort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x30>
+  255bb3:	48 8d 14 d7          	lea    (%rdi,%rdx,8),%rdx
+  255bb7:	4e 8d 04 c7          	lea    (%rdi,%r8,8),%r8
+  255bbb:	4c 89 1a             	mov    %r11,(%rdx)
+  255bbe:	4d 89 10             	mov    %r10,(%r8)
+  255bc1:	c5 fa 6f 5a 08       	vmovdqu 0x8(%rdx),%xmm3
+  255bc6:	c4 c1 7a 6f 60 08    	vmovdqu 0x8(%r8),%xmm4
+  255bcc:	c5 fa 7f 62 08       	vmovdqu %xmm4,0x8(%rdx)
+  255bd1:	c4 c1 7a 7f 58 08    	vmovdqu %xmm3,0x8(%r8)
+  255bd7:	4f 8d 14 09          	lea    (%r9,%r9,1),%r10
+  255bdb:	4e 8d 04 4d 01 00 00 	lea    0x1(,%r9,2),%r8
+  255be2:	00 
+  255be3:	4c 89 ca             	mov    %r9,%rdx
+  255be6:	49 39 c8             	cmp    %rcx,%r8
+  255be9:	0f 82 b1 fe ff ff    	jb     255aa0 <core::slice::sort::unstable::heapsort::heapsort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0xa0>
+  255bef:	e9 3c fe ff ff       	jmp    255a30 <core::slice::sort::unstable::heapsort::heapsort::<tantivy::query::boolean_query::or_maxscore::ClauseState, <[tantivy::query::boolean_query::or_maxscore::ClauseState]>::sort_unstable_by<tantivy::query::boolean_query::or_maxscore::or_maxscore::{closure#2}>::{closure#0}>+0x30>
+  255bf4:	5b                   	pop    %rbx
+  255bf5:	41 5e                	pop    %r14
+  255bf7:	41 5f                	pop    %r15
+  255bf9:	5d                   	pop    %rbp
+  255bfa:	c3                   	ret

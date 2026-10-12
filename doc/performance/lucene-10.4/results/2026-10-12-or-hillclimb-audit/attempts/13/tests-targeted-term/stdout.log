@@ -1,0 +1,27 @@
+
+running 22 tests
+test query::term_query::term_scorer::tests::block_bound_layout_receipt ... ok
+test query::term_query::term_scorer::tests::range_max_score_later_shallow_start_falls_back_and_valid_shallow_state_stays_unloaded ... ok
+test query::term_query::term_scorer::tests::range_max_score_missing_saturation_tail_and_legacy_custom_use_global ... ok
+test query::term_query::term_scorer::tests::range_max_score_encloses_real_legacy_native_and_partial_endpoints ... ok
+test query::term_query::term_scorer::tests::range_max_score_native_custom_and_untrusted_provenance_fallbacks ... ok
+test query::term_query::term_scorer::tests::test_block_wand ... ok
+test query::term_query::term_scorer::tests::test_block_wand_long_test ... ignored
+test query::term_query::term_scorer::tests::range_max_score_preserves_actual_positions_and_current_block_cache ... ok
+test query::term_query::term_scorer::tests::test_missing_stored_block_max_remains_conservative ... ok
+test query::term_query::term_scorer::tests::test_native_absent_metadata_does_not_activate_envelope ... ok
+test query::term_query::term_scorer::tests::test_native_bound_policy_is_lazy_and_fixed_to_actual_query ... ok
+test query::term_query::term_scorer::tests::test_negative_boost_tail_block_max_includes_absent_contribution ... ok
+test query::term_query::term_scorer::tests::test_public_block_max_does_not_reuse_another_weights_cache ... ok
+test query::term_query::term_scorer::tests::test_public_block_max_keeps_full_global_and_tail_semantics ... ok
+test query::term_query::term_scorer::tests::test_public_scorer_uses_conservative_block_max ... ok
+test query::term_query::term_scorer::tests::test_tail_cache_public_reader_does_not_poison_fixed_scorer ... ok
+test query::term_query::term_scorer::tests::test_tail_cache_public_weight_does_not_poison_fixed_scorer ... ok
+test query::term_query::term_scorer::tests::test_term_scorer_block_max_score ... ok
+test query::term_query::term_scorer::tests::test_term_scorer_mask_lanes_follow_density ... ok
+test query::term_query::term_scorer::tests::test_term_scorer_max_score ... ok
+test query::term_query::term_scorer::tests::test_term_scorer_shallow_advance ... ok
+test query::term_query::term_scorer::tests::test_multisegment_block_max_matches_exhaustive_top_docs ... ok
+
+test result: ok. 21 passed; 0 failed; 1 ignored; 0 measured; 1406 filtered out; finished in 0.99s
+

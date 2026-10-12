@@ -1,0 +1,33 @@
+{
+  "status": "incomplete_no_controller_receipt",
+  "observed_at_utc": "2026-10-11 15:50:51 UTC",
+  "original_run": "required-reach-run",
+  "original_metadata_files_sha256": {
+    "controller-source.py": "f2f3339e1c5fb177c99e59173c38bbbeb446f491643f4a23f0ee6bc912c71983",
+    "Cargo.toml": "01a3085658f857752c48424c4393021e4baa9fd95c4e9c7459344e9862f5411b",
+    "Cargo.lock": "21dfbb56abf6714579bdde51f28e1d708a0c82a3f61b3acd3853ec4835116e0c",
+    "harness-dependency.patch": "e9016a7fa4d8228d1a736bfbedd8d8a2654b52b73bab8167550aff6003418f8a",
+    "harness-copy.json": "5d8beb6025171b7663346c78a78217084e90d20c57ed40e4a02281a16dc4a7e7",
+    "cases.json": "b27fe4740a1b2e155f248bf8bcb98dc8ac9a1b8d2712cf843db3b63e69369d90",
+    "source-evidence/required-reach-source-or_maxscore.rs": "1991289b0e36bea08849549cc8ff6ab9e6b156063dc5d1ff0260be2482d9b6cf",
+    "source-evidence/required-reach-source.patch": "6b669b8be6f6a87d51b1df34b20632ea382aa09920c4442f83857400a2b881f8",
+    "source-evidence/required-reach-static-receipt.json": "95a055a81f14477bd0a8710cefd55be53dbe578a62c69e9d769e8b3bdcd0ea18",
+    "source-evidence/required-reach-report.md": "5409c5abce07f332ea4185ee54f975d8d90c34d22bc5809aee82f11e1ebb946f",
+    "original-harness/Cargo.toml": "f91587119b02f3f3b5105c8130b1c196b068adf4d704157fe6c857971bf7df7d",
+    "original-harness/Cargo.lock": "21dfbb56abf6714579bdde51f28e1d708a0c82a3f61b3acd3853ec4835116e0c",
+    "src/lib.rs": "63aee1908ba57563748428a1bb42c2cbd079a3284907043f59744277a08359b0",
+    "build/before.json": "04c496e585adfda5542adba8711b6f52699ab200be8214899265e558f72a91c3",
+    "build/command.json": "b38c7e307ef6efc4b8be596f1fdf300474f020cd8c0fb486e98c35e7ea1ca6d0",
+    "build/compiler.txt": "b569b0c98ea3133c7252b4b8ea6b39b7b353813df0dd5f5c412c355691424112",
+    "build/compiler.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build/stderr.log": "c5618ddd15923116a449534dc6a21bec14ef1fe85960cee749e7fb7b60c35ba4",
+    "src/bin/tantivy_worker.rs": "b502c978356e02f02171b68f5143ea1d05fb76beba5354c26e008ef16d45e562",
+    "src/bin/configured_worker.rs": "d63a488d294a42a238284eb4bf3936bb835d1fc8bc9a228997545c9561e91664",
+    "original-harness/src/lib.rs": "63aee1908ba57563748428a1bb42c2cbd079a3284907043f59744277a08359b0",
+    "original-harness/src/bin/tantivy_worker.rs": "b502c978356e02f02171b68f5143ea1d05fb76beba5354c26e008ef16d45e562",
+    "original-harness/src/bin/configured_worker.rs": "d63a488d294a42a238284eb4bf3936bb835d1fc8bc9a228997545c9561e91664"
+  },
+  "observation": "Compiler log reports release completion; no build receipt, diagnostic folder or final receipt exists. Historical process handle no longer available. Cause unknown; no completed diagnostic claim. Fresh retry repeats all 103 cases and uses a separate build target.",
+  "retry": "required-reach-run-retry-oct11"
+}

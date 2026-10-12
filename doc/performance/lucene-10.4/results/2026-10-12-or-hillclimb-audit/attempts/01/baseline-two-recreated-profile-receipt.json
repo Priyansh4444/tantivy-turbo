@@ -1,0 +1,46 @@
+{
+  "command": [
+    "perf",
+    "record",
+    "-e",
+    "cycles:u",
+    "-F",
+    "499",
+    "-o",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/baseline-two-recreated-perf.data",
+    "--",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-refinement-oct07/target/release/tantivy_worker",
+    "/home/pronsh/Coding/playground/search/bench/wiki-1m-native-aligned-v11-oct05.idx",
+    "/home/pronsh/Coding/playground/search/bench/lucene-rs-balanced-oct06/queries.jsonl"
+  ],
+  "returncode": 0,
+  "seconds": 2.288143599999785,
+  "binary_sha256": "2efc80ae6cc57c4163cab798f50bfb35ceb085c039bc4dd4b8fe31d22d387bbf",
+  "binary_unchanged": true,
+  "script_sha256": "1b44c1372e6e645f223010068cb468766b6aaf79e4f511820bd26985b7bd2950",
+  "cases_sha256": "d860551c029f866e8a39a0208c95245ae0765cb4229804da756eb1c910b1171c",
+  "correctness_checksums_match": true,
+  "cases": [
+    {
+      "id": 481,
+      "terms": "american south"
+    },
+    {
+      "id": 843,
+      "terms": "home business"
+    },
+    {
+      "id": 673,
+      "terms": "times union"
+    },
+    {
+      "id": 383,
+      "terms": "interest only"
+    },
+    {
+      "id": 13,
+      "terms": "the of"
+    }
+  ],
+  "first_preparation_and_warmup_included_in_trace": true
+}

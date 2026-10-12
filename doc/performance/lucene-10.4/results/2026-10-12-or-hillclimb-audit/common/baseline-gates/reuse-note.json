@@ -1,0 +1,5 @@
+{
+  "fresh_default_and_configured": true,
+  "tests_clippy_formatting": "Reused from prior core whose 600 non-document source hashes and binary match baseline-provenance.json; not represented as a fresh run.",
+  "baseline_provenance": "../baseline-provenance.json"
+}

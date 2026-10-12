@@ -1,0 +1,58 @@
+{
+  "schema": "tantivy-or-attempt-source-v1",
+  "attempt": 21,
+  "status": "source_only_ready_uncompiled",
+  "worktree": "/home/pronsh/Coding/playground/search/tantivy-or-prefix-register-oct11",
+  "branch": "perf/or-prefix-register-oct11",
+  "parent_commit": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "edited_tracked_files": [
+    "src/query/boolean_query/or_maxscore.rs"
+  ],
+  "source_sha256": {
+    "src/query/boolean_query/or_maxscore.rs": "4bb058a4dd125ee819776b50f4506b01419bf42bba8cb2d6a0994a30cceae136"
+  },
+  "parent_source_sha256": "21153a76a7ae3091ac6400cc438f408b7ac367d9a534b1d290d30af5c3fb5901",
+  "term_source_unchanged_sha256": "dd1e18b5b1d273cf2c09959ea207997a1e93f854b0fc459fb0a1e76129b87277",
+  "patch_sha256": "b0c6cbd13fe4369270aa743a12489f05b61605049dd173f82f716b3d5b444c45",
+  "parent_test_count": 13,
+  "test_count": 13,
+  "parent_test_module_tail_byte_identical": true,
+  "parent_test_helpers_byte_identical": true,
+  "all_parent_tests_retained": true,
+  "test_names": [
+    "cached_global_prefix_preserves_equality_neighbors_and_large_threshold_jumps",
+    "cached_certificate_survives_density_rejection_widening_and_rejection_again",
+    "single_driver_batches_replay_every_dynamic_threshold_exactly",
+    "exact_traces_at_full_block_and_tail_boundaries",
+    "deferred_optional_clause_becomes_essential_after_shallow_full_blocks",
+    "globally_optional_dense_terms_cover_sparse_essential_gaps_and_tails",
+    "threshold_growth_promotes_local_optionals_to_global_certificates",
+    "similar_density_terms_keep_local_certificates_until_both_are_optional",
+    "exhausted_high_cost_remainder_changes_live_density_choice",
+    "exact_midpoint_leaves_preserve_incoming_order_and_strict_ties",
+    "duplicates_disparate_boosts_exhaustion_and_sparse_regions",
+    "exact_growing_threshold_traces_for_mixed_dense_and_sparse_terms",
+    "unsafe_domains_use_exhaustive_canonical_sum_before_any_seek"
+  ],
+  "added_test_names": [],
+  "static_checks": {
+    "git_diff_check": true,
+    "rustfmt_completed": true,
+    "sole_tracked_file_scope": true,
+    "exact_expected_three_statement_change": true
+  },
+  "runtime_checks": {
+    "build": false,
+    "tests": false,
+    "configured_oracles": false,
+    "latency": false,
+    "profiling": false,
+    "codegen": false
+  },
+  "notes": [
+    "No production/root tree edited.",
+    "Root owns all heavy/runtime work.",
+    "One region-local f64 scalar; no new allocation, array, persistent state, index format, or API. Actual register allocation/frame/binary changes unmeasured.",
+    "All 13 existing OR tests retained byte for byte; no assignment-mirroring test added."
+  ]
+}

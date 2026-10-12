@@ -1,0 +1,680 @@
+diff --git 1/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-17-source-or.rs 2/src/query/boolean_query/or_maxscore.rs
+index 0aee0c3be..fd144fb28 100644
+--- 1/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-17-source-or.rs
++++ 2/src/query/boolean_query/or_maxscore.rs
+@@ -1,3 +1,4 @@
++use crate::postings::compression::COMPRESSION_BLOCK_SIZE;
+ use crate::query::score_combiner::{SmallScoreSumUpperBound, SumCombiner};
+ use crate::query::term_query::{ScoredTermBatch, TermScorer};
+ use crate::query::weight::for_each_pruning_scorer;
+@@ -124,6 +125,7 @@ impl ClauseState {
+ #[derive(Debug)]
+ struct WidenedRegion {
+     lo: DocId,
++    max_doc: DocId,
+     tight_hi: DocId,
+     hi: DocId,
+     tight_first_essential: usize,
+@@ -139,6 +141,7 @@ struct WidenedRegion {
+ #[derive(Debug)]
+ struct ExpansionProposal {
+     lo: DocId,
++    max_doc: DocId,
+     tight_hi: DocId,
+     proposed_hi: DocId,
+     hi: DocId,
+@@ -440,11 +443,18 @@ pub(crate) fn or_maxscore(
+         // Publish a wider certificate only while the tight essential suffix
+         // stays unchanged. Speculation touches cold scratch, not live bounds,
+         // prefix entries or cursors. Stop at the first optional overflow.
++        // Bound the new physical span before lookahead; keep any already wider
++        // tight certificate intact instead of subdividing its owned interval.
+         let proposed_hi = selected_ends[first_essential..num_terms]
+             .iter()
+             .copied()
+             .min()
+-            .unwrap_or(max_doc);
++            .unwrap_or(max_doc)
++            .min(
++                lo.saturating_add(COMPRESSION_BLOCK_SIZE as DocId)
++                    .min(max_doc),
++            )
++            .max(tight_hi);
+         debug_assert!(tight_hi <= proposed_hi && proposed_hi <= max_doc);
+         #[cfg(test)]
+         let selected_bounds: Vec<_> = clauses.iter().map(|clause| clause.local_max).collect();
+@@ -508,6 +518,7 @@ pub(crate) fn or_maxscore(
+                 if let Some(regions) = regions.borrow_mut().as_mut() {
+                     regions.push(WidenedRegion {
+                         lo,
++                        max_doc,
+                         tight_hi,
+                         hi,
+                         tight_first_essential,
+@@ -543,6 +554,7 @@ pub(crate) fn or_maxscore(
+             if let Some(proposals) = proposals.borrow_mut().as_mut() {
+                 proposals.push(ExpansionProposal {
+                     lo,
++                    max_doc,
+                     tight_hi,
+                     proposed_hi,
+                     hi,
+@@ -818,13 +830,23 @@ mod tests {
+                 proposal.tight_hi,
+                 *proposal.selected_ends.iter().min().unwrap()
+             );
++            let essential_end = *proposal.selected_ends[proposal.first_essential..]
++                .iter()
++                .min()
++                .unwrap();
++            // Independent widened integer arithmetic avoids reusing the
++            // production saturating expression as the endpoint oracle.
++            let capped = u64::from(essential_end)
++                .min(u64::from(proposal.lo) + 128)
++                .min(u64::from(proposal.max_doc));
+             assert_eq!(
+                 proposal.proposed_hi,
+-                *proposal.selected_ends[proposal.first_essential..]
+-                    .iter()
+-                    .min()
+-                    .unwrap()
++                u64::from(proposal.tight_hi).max(capped) as DocId
+             );
++            assert!(proposal.proposed_hi <= proposal.max_doc);
++            if proposal.proposed_hi > proposal.tight_hi {
++                assert!(u64::from(proposal.proposed_hi) - u64::from(proposal.lo) <= 128);
++            }
+             let mut sum = 0.0f64;
+             for (rank, &bound) in proposal.proposed_bounds.iter().enumerate() {
+                 let effective = if proposal.docs[rank] >= proposal.tight_hi {
+@@ -865,13 +887,19 @@ mod tests {
+             assert!(region.lo < region.tight_hi && region.tight_hi < region.hi);
+             assert!(region.tight_first_essential < leaves.len());
+             assert_eq!(region.tight_first_essential, region.first_essential);
++            let essential_end = *region.selected_ends[region.tight_first_essential..]
++                .iter()
++                .min()
++                .unwrap();
+             assert_eq!(
+                 region.hi,
+-                *region.selected_ends[region.tight_first_essential..]
+-                    .iter()
+-                    .min()
+-                    .unwrap()
++                u64::from(region.tight_hi).max(
++                    u64::from(essential_end)
++                        .min(u64::from(region.lo) + 128)
++                        .min(u64::from(region.max_doc))
++                ) as DocId
+             );
++            assert!(u64::from(region.hi) - u64::from(region.lo) <= 128);
+             if region.first_essential + 1 == leaves.len() {
+                 // The last rank was an old essential too. A widened sole driver
+                 // cannot cross its own selected block end; refills cross regions.
+@@ -1031,11 +1059,14 @@ mod tests {
+                     .iter()
+                     .find(|proposal| proposal.lo == 0)
+                     .unwrap();
+-                assert!(proposal.admitted);
++                assert!(
++                    !proposal.admitted,
++                    "the physical cap does not extend lo0's tight128 interval"
++                );
+                 assert_eq!(proposal.ordinals, ranks);
+                 assert_eq!(
+                     (proposal.tight_hi, proposal.proposed_hi, proposal.hi),
+-                    (128, 509, 509)
++                    (128, 128, 128)
+                 );
+                 assert_eq!(proposal.first_essential, 2);
+                 let future_rank = proposal
+@@ -1044,18 +1075,12 @@ mod tests {
+                     .position(|&ordinal| ordinal == 1)
+                     .unwrap();
+                 assert_eq!(proposal.docs[future_rank], 300);
+-                assert!(
+-                    proposal.docs[future_rank] >= proposal.tight_hi
+-                        && proposal.docs[future_rank] < proposal.hi
+-                );
+-                assert!(proposal.bounds[future_rank] > 0.0);
+-                assert_eq!(
+-                    proposal.bounds[future_rank].to_bits(),
+-                    proposal.proposed_bounds[future_rank].to_bits()
+-                );
++                assert!(proposal.docs[future_rank] >= proposal.hi);
++                assert_eq!(proposal.bounds[future_rank].to_bits(), 0.0f32.to_bits());
++                assert!(proposal.proposed_bounds.is_empty());
+                 assert!(evidence.progress.iter().any(|event| matches!(event,
+-                    CursorProgress::Batch { ordinal, floor: 0, up_to: 509, docs, doc: 512, .. }
+-                    if *ordinal == driver_ordinal && docs.len() == 128
++                    CursorProgress::Batch { ordinal, floor: 0, up_to: 128, docs, doc: 128, .. }
++                    if *ordinal == driver_ordinal && docs.len() == 32
+                 )));
+                 assert!(accepted.iter().any(|&(doc, _)| doc == 428));
+             }
+@@ -1096,14 +1121,14 @@ mod tests {
+                             .iter()
+                             .find(|proposal| proposal.lo == 0)
+                             .unwrap();
+-                        assert_eq!(
+-                            proposal.admitted, !reject,
++                        assert!(
++                            !proposal.admitted,
+                             "count={count} reverse={reverse} limit={limit}"
+                         );
+                         assert_eq!(proposal.first_essential, count - 1);
+                         assert_eq!(proposal.tight_hi, 128);
+-                        assert_eq!(proposal.proposed_hi, 509);
+-                        assert_eq!(proposal.hi, if reject { 128 } else { 509 });
++                        assert_eq!(proposal.proposed_hi, 128);
++                        assert_eq!(proposal.hi, 128);
+                         let rank = proposal
+                             .ordinals
+                             .iter()
+@@ -1111,17 +1136,8 @@ mod tests {
+                             .unwrap();
+                         assert!(rank < proposal.first_essential);
+                         assert_eq!(proposal.docs[rank], 300);
+-                        assert!(proposal.proposed_bounds[rank] > 0.0);
+-                        if reject {
+-                            assert_eq!(proposal.bounds[rank].to_bits(), 0.0f32.to_bits());
+-                            assert_eq!(
+-                                proposal.proposed_bounds.len(),
+-                                rank + 1,
+-                                "stop at first overflow"
+-                            );
+-                        } else {
+-                            assert!(proposal.bounds[rank] > 0.0);
+-                        }
++                        assert!(proposal.proposed_bounds.is_empty());
++                        assert_eq!(proposal.bounds[rank].to_bits(), 0.0f32.to_bits());
+                         assert!(accepted.iter().any(|&(doc, _)| doc == 428));
+                     }
+                 }
+@@ -1173,13 +1189,13 @@ mod tests {
+                 assert_eq!(proposal.first_essential, 3);
+                 assert_eq!(
+                     (proposal.tight_hi, proposal.proposed_hi, proposal.hi),
+-                    (128, 509, 128)
++                    (128, 128, 128)
+                 );
+                 assert!(!proposal.admitted);
+-                assert_eq!(proposal.proposed_bounds.len(), 2);
++                assert!(proposal.proposed_bounds.is_empty());
+                 assert_eq!(proposal.docs[1], 300);
+                 assert_eq!(proposal.docs[2], 301);
+-                assert!(proposal.selected_ends[2] < proposal.proposed_hi);
++                assert!(proposal.selected_ends[2] > proposal.proposed_hi);
+                 assert!(proposal.bounds[1] == 0.0 && proposal.bounds[2] == 0.0);
+                 assert_eq!(proposal.tight_prefix, proposal.chosen_prefix);
+                 assert!(accepted.iter().any(|&(doc, _)| doc == 428));
+@@ -1218,23 +1234,25 @@ mod tests {
+                 .iter()
+                 .position(|&ordinal| ordinal == future_ordinal)
+                 .unwrap();
+-            assert!(proposal.tight_hi <= 300 && 300 < proposal.proposed_hi);
++            assert_eq!(
++                (proposal.tight_hi, proposal.proposed_hi, proposal.hi),
++                (128, 128, 128)
++            );
+             assert_eq!(proposal.docs[rank], 300, "old cleanup must have been zero");
+-            assert!(!proposal.admitted, "promotion must reject expansion");
++            assert!(
++                !proposal.admitted,
++                "the cap stops before restoring future300"
++            );
+             assert_eq!(proposal.hi, proposal.tight_hi);
+             assert_eq!(proposal.bounds[rank].to_bits(), 0.0f32.to_bits());
+-            assert!(proposal.proposed_bounds[rank] > 0.0);
+-            assert!(proposal.selected_ends[rank] < proposal.proposed_hi);
++            assert!(proposal.proposed_bounds.is_empty());
++            assert!(proposal.selected_ends[rank] > proposal.proposed_hi);
+             let future_leaf = scalar_leaves(&scorers)[1]
+                 .iter()
+                 .find(|&&(doc, _, _)| doc == 428)
+                 .unwrap()
+                 .2;
+             assert!(Score::from_bits(future_leaf) > proposal.selected_bounds[rank]);
+-            assert_eq!(
+-                proposal.proposed_bounds[rank].to_bits(),
+-                scorers[1].max_score().to_bits()
+-            );
+             assert!(rank < proposal.first_essential);
+             assert!(
+                 evidence.progress.iter().any(|event| matches!(event,
+@@ -1279,16 +1297,19 @@ mod tests {
+                 fixture(&weak, &norms, 0.002),
+             ];
+             let (accepted, evidence) = check_widening(scorers, 4096, 0.01, 1);
+-            assert!(!evidence.regions.is_empty(), "length={length}");
++            assert!(!evidence.proposals.is_empty(), "length={length}");
+             assert!(evidence
+                 .regions
+                 .iter()
+                 .all(|region| region.first_essential == 2));
+             if length >= 129 {
+                 assert!(accepted.iter().any(|&(doc, _)| doc == 382));
+-                assert!(evidence.progress.iter().any(|event| matches!(event,
+-                    CursorProgress::Batch { docs, doc: 382, up_to: 382, .. } if docs.len() == 128
+-                )), "exact exclusive end must remain first unread: length={length}");
++                assert!(
++                    evidence.progress.iter().any(|event| matches!(event,
++                        CursorProgress::Batch { docs, doc, .. } if docs.contains(&382) && *doc > 382
++                    )),
++                    "owned winning leaf must retire before the real head: length={length}"
++                );
+             }
+             assert!(
+                 evidence.progress.iter().any(|event| matches!(event,
+@@ -1324,7 +1345,7 @@ mod tests {
+                     for limit in [0, 1, 10] {
+                         let (_, evidence) = check_widening(ordered.clone(), 2048, 0.05, limit);
+                         assert!(
+-                            !evidence.regions.is_empty(),
++                            !evidence.proposals.is_empty(),
+                             "count={count} disjoint={disjoint} limit={limit}"
+                         );
+                     }
+@@ -1359,7 +1380,7 @@ mod tests {
+         );
+         assert!(!evidence.skips.is_empty());
+         assert!(evidence.skips.iter().all(|&(lo, hi)| lo < hi));
+-        assert!(!evidence.regions.is_empty());
++        assert!(!evidence.proposals.is_empty());
+         assert!(
+             evidence.progress.iter().any(|event| matches!(
+                 event,
+@@ -1409,7 +1430,7 @@ mod tests {
+                 for limit in [0, 1, 10] {
+                     let (accepted, evidence) =
+                         check_widening(ordered.clone(), 1200, threshold, limit);
+-                    assert!(!evidence.regions.is_empty());
++                    assert!(!evidence.proposals.is_empty());
+                     assert!(
+                         accepted.iter().any(|&(doc, _)| doc == 381),
+                         "later competitive full-block leaf: order={order:?} \
+@@ -1521,7 +1542,7 @@ mod tests {
+                 for limit in [0, 1, 10] {
+                     let (_, evidence) = check_widening(scorers.clone(), 1536, 0.01, limit);
+                     assert!(
+-                        !evidence.regions.is_empty(),
++                        !evidence.proposals.is_empty(),
+                         "count={count} parameters={parameters:?}"
+                     );
+                 }
+@@ -1575,20 +1596,19 @@ mod tests {
+             .iter()
+             .position(|&ordinal| ordinal == 1)
+             .unwrap();
+-        assert!(proposal.tight_hi <= 150 && 150 < proposal.proposed_hi);
++        assert_eq!(
++            (proposal.tight_hi, proposal.proposed_hi, proposal.hi),
++            (128, 128, 128)
++        );
+         assert!(rank < proposal.first_essential);
+-        assert!(proposal.selected_ends[rank] < proposal.proposed_hi);
++        assert_eq!(proposal.selected_ends[rank], proposal.proposed_hi);
+         assert!(!proposal.admitted);
+         assert_eq!(
+             proposal.bounds[rank].to_bits(),
+             proposal.selected_bounds[rank].to_bits()
+         );
+         assert!(Score::from_bits(later_leaf) > proposal.selected_bounds[rank]);
+-        assert!(proposal.proposed_bounds[rank] >= Score::from_bits(later_leaf));
+-        assert!(
+-            proposal.proposed_bounds[rank] < scorers[1].max_score(),
+-            "unsaturated native range must be tighter than query-global"
+-        );
++        assert!(proposal.proposed_bounds.is_empty());
+         assert!(
+             evidence.progress.iter().any(|event| matches!(
+                 event,
+@@ -1653,7 +1673,7 @@ mod tests {
+             );
+             for limit in [0, 1, 10] {
+                 let (_, evidence) = check_widening(scorers.clone(), 1200, 0.01, limit);
+-                assert!(!evidence.regions.is_empty());
++                assert!(!evidence.proposals.is_empty());
+             }
+         }
+         Ok(())
+@@ -1700,7 +1720,7 @@ mod tests {
+         assert_eq!(actual, expected);
+         assert!(actual.0.iter().any(|&(doc, _, _)| doc == 127));
+         assert!(actual.1 .1 >= 128, "must retain a later live winner");
+-        assert!(!evidence.regions.is_empty());
++        assert!(!evidence.proposals.is_empty());
+         let query = BooleanQuery::new(
+             ["alpha", "beta", "gamma"]
+                 .into_iter()
+@@ -1719,8 +1739,8 @@ mod tests {
+         let top = searcher.search(&query, &TopDocs::with_limit(1).order_by_score())?;
+         let public_evidence = finish_widening_evidence(&leaves);
+         assert!(
+-            !public_evidence.regions.is_empty(),
+-            "public TopDocs must actually widen"
++            !public_evidence.proposals.is_empty(),
++            "public TopDocs must actually prepare certified regions"
+         );
+         assert_eq!(top.len(), 1);
+         assert_eq!((top[0].0.to_bits(), top[0].1.doc_id), expected.1);
+@@ -1775,7 +1795,7 @@ mod tests {
+         let evidence = finish_widening_evidence(&leaves);
+         assert_eq!(actual, expected);
+         assert!(actual.iter().any(|&(doc, _, _)| doc == 600));
+-        assert!(!evidence.regions.is_empty());
++        assert!(!evidence.proposals.is_empty());
+         for boost in [0.0, -1.0, Score::INFINITY, Score::NAN] {
+             let exceptional = fixture(&dense, &norms, boost);
+             let (_, evidence) = check_widening(
+@@ -1790,6 +1810,301 @@ mod tests {
+         }
+     }
+ 
++    #[test]
++    fn capped_partition_admits_and_rejects_zero_restoration_n3_n32() {
++        let norms = vec![1; 3000];
++        let dense: Vec<_> = (0..1024).map(|doc| (doc, 1)).collect();
++        let future: Vec<_> = (132..732)
++            .map(|doc| (doc, if doc == 200 { 1000 } else { 1 }))
++            .collect();
++        let driver: Vec<_> = (0..600).map(|i| (4 * i, 1)).collect();
++        for count in [3, 32] {
++            for reject in [false, true] {
++                let mut originals: Vec<_> = (0..count - 2)
++                    .map(|i| fixture(&dense, &norms, 0.00001 * (i + 1) as Score))
++                    .collect();
++                originals.push(fixture(&future, &norms, if reject { 0.02 } else { 0.001 }));
++                originals.push(fixture(&driver, &norms, 0.1));
++                for scorer in &mut originals {
++                    scorer.seek(100);
++                }
++                for reverse in [false, true] {
++                    let mut ordered = originals.clone();
++                    if reverse {
++                        ordered.reverse();
++                    }
++                    let future_ordinal = if reverse { 1 } else { count - 2 };
++                    for limit in [0, 1, 10] {
++                        let (accepted, evidence) =
++                            check_widening(ordered.clone(), 3000, 0.025, limit);
++                        let first = &evidence.proposals[0];
++                        assert_eq!(
++                            (first.lo, first.tight_hi, first.proposed_hi),
++                            (100, 128, 228)
++                        );
++                        assert_eq!(first.first_essential, count - 1);
++                        assert_eq!(first.admitted, !reject);
++                        assert_eq!(first.hi, if reject { 128 } else { 228 });
++                        let rank = first
++                            .ordinals
++                            .iter()
++                            .position(|&ordinal| ordinal == future_ordinal)
++                            .unwrap();
++                        assert_eq!(rank, count - 2);
++                        assert_eq!(first.docs[rank], 132);
++                        assert!(first.proposed_bounds[rank] > 0.0);
++                        if reject {
++                            assert_eq!(first.bounds[rank].to_bits(), 0.0f32.to_bits());
++                            assert_eq!(first.tight_prefix, first.chosen_prefix);
++                        } else {
++                            assert!(first.bounds[rank] > 0.0);
++                            assert!(evidence
++                                .regions
++                                .iter()
++                                .any(|region| region.lo == 100 && region.hi == 228));
++                            assert!(evidence.progress.iter().any(|event| matches!(event,
++                                CursorProgress::Batch {floor:100,up_to:228,docs,doc:228,..}
++                                if docs.len()==32 && docs.first()==Some(&100) && docs.last()==Some(&224)
++                            )));
++                        }
++                        assert!(accepted.iter().any(|&(doc, _)| doc == 200));
++                    }
++                }
++            }
++        }
++    }
++
++    #[test]
++    fn capped_partition_stops_before_the_later_optional_after_overflow() {
++        let norms = vec![1; 1200];
++        let dense: Vec<_> = (0..1024).map(|doc| (doc, 1)).collect();
++        let future: Vec<_> = (132..732)
++            .map(|doc| (doc, if doc == 200 { 1000 } else { 1 }))
++            .collect();
++        let later_optional: Vec<_> = (133..733).map(|doc| (doc, 1)).collect();
++        let driver: Vec<_> = (0..130).map(|i| (4 * i, 1)).collect();
++        let mut originals = vec![
++            fixture(&dense, &norms, 0.001),
++            fixture(&future, &norms, 0.02),
++            fixture(&later_optional, &norms, 0.03),
++            fixture(&driver, &norms, 0.1),
++        ];
++        for scorer in &mut originals {
++            scorer.seek(100);
++        }
++        for reverse in [false, true] {
++            let mut ordered = originals.clone();
++            if reverse {
++                ordered.reverse();
++            }
++            for limit in [0, 1, 10] {
++                let (accepted, evidence) = check_widening(ordered.clone(), 1200, 0.015, limit);
++                let first = &evidence.proposals[0];
++                assert_eq!(
++                    (first.lo, first.tight_hi, first.proposed_hi, first.hi),
++                    (100, 128, 228, 128)
++                );
++                assert_eq!(
++                    first.ordinals,
++                    if reverse {
++                        vec![3, 2, 1, 0]
++                    } else {
++                        vec![0, 1, 2, 3]
++                    }
++                );
++                assert_eq!(first.first_essential, 3);
++                assert!(!first.admitted);
++                assert_eq!(first.proposed_bounds.len(), 2);
++                assert_eq!(first.docs[1..3], [132, 133]);
++                assert!(first.bounds[1] == 0.0 && first.bounds[2] == 0.0);
++                assert_eq!(first.tight_prefix, first.chosen_prefix);
++                assert!(accepted.iter().any(|&(doc, _)| doc == 200));
++            }
++        }
++    }
++
++    #[test]
++    fn capped_partition_preserves_wide_tight_regions_and_dense_refills() {
++        let norms = vec![1; 1800];
++        let sparse: Vec<_> = (0..385).map(|i| (4 * i, 1)).collect();
++        for count in [3, 32] {
++            let mut scorers: Vec<_> = (0..count - 1)
++                .map(|i| fixture(&sparse, &norms, 0.00001 * (i + 1) as Score))
++                .collect();
++            scorers.push(fixture(&sparse, &norms, 1.0));
++            for limit in [0, 1, 10] {
++                let (_, evidence) = check_widening(scorers.clone(), 1800, 0.05, limit);
++                let first = &evidence.proposals[0];
++                assert_eq!(
++                    (first.lo, first.tight_hi, first.proposed_hi, first.hi),
++                    (0, 509, 509, 509)
++                );
++                assert!(!first.admitted && first.proposed_bounds.is_empty());
++                assert_eq!(first.first_essential, count - 1);
++                assert!(evidence.progress.iter().any(|event| matches!(event,
++                    CursorProgress::Batch {floor:0,up_to:509,docs,doc:512,..} if docs.len()==128
++                )));
++            }
++        }
++        let weak: Vec<_> = (0..385).map(|doc| (doc, 1)).collect();
++        let driver: Vec<_> = (0..385)
++            .map(|doc| (doc, if doc == 384 { 2 } else { 1 }))
++            .collect();
++        let scorers = vec![
++            fixture(&weak, &norms, 0.001),
++            fixture(&driver, &norms, 1.0),
++            fixture(&weak, &norms, 0.002),
++        ];
++        let (accepted, evidence) = check_widening(scorers, 1800, 0.01, 0);
++        for (floor, up_to, head) in [(0, 128, 128), (128, 256, 256), (256, 384, 384)] {
++            assert!(evidence.progress.iter().any(|event| matches!(event,
++                CursorProgress::Batch {floor:actual_floor,up_to:actual_end,docs,doc,..}
++                if *actual_floor==floor && *actual_end==up_to && *doc==head && docs.len()==128
++            )));
++        }
++        assert!(evidence.progress.iter().any(|event| matches!(event,
++            CursorProgress::Batch {floor:384,docs,doc:TERMINATED,..} if docs==&[384]
++        )));
++        assert!(accepted.iter().any(|&(doc, _)| doc == 384));
++    }
++
++    #[test]
++    fn capped_partition_essential_endpoint_retains_exclusive_winning_head() {
++        let norms = vec![1; 600];
++        let weak: Vec<_> = (0..400).map(|doc| (doc, 1)).collect();
++        let driver: Vec<_> = (64..464)
++            .map(|doc| (doc, if doc == 192 { 2 } else { 1 }))
++            .collect();
++        for count in [3, 32] {
++            let mut scorers: Vec<_> = (0..count - 1)
++                .map(|i| fixture(&weak, &norms, 0.00001 * (i + 1) as Score))
++                .collect();
++            scorers.push(fixture(&driver, &norms, 1.0));
++            for scorer in &mut scorers {
++                scorer.seek(100);
++            }
++            let (accepted, evidence) = check_widening(scorers, 600, 0.05, 0);
++            let first = &evidence.proposals[0];
++            assert_eq!(
++                (first.lo, first.tight_hi, first.proposed_hi, first.hi),
++                (100, 128, 192, 192)
++            );
++            assert!(first.admitted && first.hi < 228);
++            assert_eq!(first.first_essential, count - 1);
++            assert!(evidence.progress.iter().any(|event| matches!(event,
++                CursorProgress::Batch {floor:100,up_to:192,docs,doc:192,tf:2,..}
++                if docs.len()==92 && docs.last()==Some(&191) && !docs.contains(&192)
++            )));
++            assert!(evidence.progress.iter().any(|event| matches!(event,
++                CursorProgress::Batch {floor:192,docs,..} if docs.first()==Some(&192)
++            )));
++            assert!(accepted.iter().any(|&(doc, _)| doc == 192));
++        }
++    }
++
++    #[test]
++    fn capped_partition_rejects_native_crossed_promotion_and_keeps_later_leaf() -> crate::Result<()>
++    {
++        use crate::query::{EnableScoring, TermQuery};
++        use crate::schema::{IndexRecordOption, Schema, TEXT};
++        let mut schema = Schema::builder();
++        let field = schema.add_text_field("text", TEXT);
++        let index = crate::Index::create_in_ram(schema.build());
++        let mut writer = index.writer_for_tests()?;
++        for doc in 0..1536 {
++            let mut text = "alpha beta".to_string();
++            if doc == 138 {
++                for _ in 0..19 {
++                    text.push_str(" beta");
++                }
++            }
++            if doc % 3 != 2 {
++                let tf = match doc {
++                    127 => 2000,
++                    1024 => 1000,
++                    130 => 20,
++                    _ => 1,
++                };
++                for _ in 0..tf {
++                    text.push_str(" gamma");
++                }
++            }
++            writer.add_document(doc!(field => text))?;
++        }
++        writer.commit()?;
++        let searcher = index.reader()?.searcher();
++        let mut scorers = Vec::new();
++        for (term, boost) in [("alpha", 0.005), ("beta", 0.01), ("gamma", 1.0)] {
++            let query = TermQuery::new(
++                crate::Term::from_field_text(field, term),
++                IndexRecordOption::WithFreqs,
++            );
++            let weight =
++                query.specialized_weight(EnableScoring::enabled_from_searcher(&searcher))?;
++            let mut scorer = weight
++                .term_scorer_for_test(searcher.segment_reader(0), boost)?
++                .unwrap();
++            scorer.seek(17);
++            scorers.push(scorer);
++        }
++        let leaves = scalar_leaves(&scorers);
++        let later_beta =
++            Score::from_bits(leaves[1].iter().find(|&&(doc, _, _)| doc == 138).unwrap().2);
++        let selected_alpha = scorers[0].clone().block_max_score();
++        let selected_beta = scorers[1].clone().block_max_score();
++        let selected_sum = f64::from(selected_alpha) + f64::from(selected_beta);
++        let later_sum = f64::from(selected_alpha) + f64::from(later_beta);
++        assert!(selected_sum < later_sum);
++        let threshold = ((selected_sum + later_sum) * 0.5) as Score;
++        let (accepted, evidence) = check_widening(scorers.clone(), 1536, threshold, 0);
++        let first = &evidence.proposals[0];
++        assert_eq!(
++            (first.lo, first.tight_hi, first.proposed_hi, first.hi),
++            (17, 128, 145, 128)
++        );
++        assert_eq!(first.ordinals, [0, 1, 2]);
++        assert_eq!(first.first_essential, 2);
++        assert_eq!(first.selected_ends, [128, 128, 191]);
++        assert!(!first.admitted);
++        assert_eq!(first.proposed_bounds.len(), 2);
++        assert!(first.selected_bounds[1] < later_beta);
++        assert!(
++            later_beta <= first.proposed_bounds[1]
++                && first.proposed_bounds[1] < scorers[1].max_score()
++        );
++        assert_eq!(
++            first.bounds[1].to_bits(),
++            first.selected_bounds[1].to_bits()
++        );
++        assert_eq!(first.tight_prefix, first.chosen_prefix);
++        assert!(accepted.iter().any(|&(doc, _)| doc == 138));
++        Ok(())
++    }
++
++    #[test]
++    fn capped_partition_ceiling_and_empty_segment_are_safe() {
++        let lo = TERMINATED - 100;
++        let max_doc = TERMINATED;
++        let tight_hi = TERMINATED - 50;
++        let actual = tight_hi.max(
++            TERMINATED.min(
++                lo.saturating_add(COMPRESSION_BLOCK_SIZE as DocId)
++                    .min(max_doc),
++            ),
++        );
++        assert_eq!(
++            u64::from(actual),
++            u64::from(tight_hi).max((u64::from(lo) + 128).min(u64::from(max_doc)))
++        );
++        assert_eq!(actual, TERMINATED);
++        let mut empty = fixture(&[(0, 1)], &[1], 1.0);
++        assert_eq!(empty.advance(), TERMINATED);
++        let (accepted, evidence) =
++            check_widening(vec![empty.clone(), empty.clone(), empty], 0, 0.0, 0);
++        assert!(accepted.is_empty() && evidence.proposals.is_empty());
++        assert!(evidence.regions.is_empty() && evidence.progress.is_empty());
++    }
++
+     fn check_scheduled_thresholds(
+         scorers: Vec<TermScorer>,
+         max_doc: DocId,
+@@ -1982,7 +2297,7 @@ mod tests {
+             "{choices:?}"
+         );
+         assert_eq!(choices[rejected].0, 0);
+-        assert_eq!(choices[widened].0, 2160);
++        assert!(choices[widened].0 >= 200 && choices[widened].0 < 2160);
+         assert_eq!(choices[rejected_again].0, 3891);
+         assert!(states.iter().any(|state| state.2 == 3));
+         assert_eq!(states.last().unwrap().4, 3);

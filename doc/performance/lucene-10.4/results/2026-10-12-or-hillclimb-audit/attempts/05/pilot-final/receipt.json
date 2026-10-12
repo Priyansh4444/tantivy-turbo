@@ -1,0 +1,369 @@
+{
+  "seconds": 4.4491984769993,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 129797.0308310992,
+        "baseline_mean_ns": 130577.7198391421,
+        "ratio_mean": 0.994021269409478,
+        "median_ratio": 0.9942786764337321
+      },
+      "BA": {
+        "candidate_mean_ns": 131344.52144772117,
+        "baseline_mean_ns": 131698.34852546916,
+        "ratio_mean": 0.9973133522044161,
+        "median_ratio": 0.9964928917872257
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 319120.22330097086,
+        "baseline_mean_ns": 319644.47572815535,
+        "ratio_mean": 0.9983598889798104,
+        "median_ratio": 0.9975561874638604
+      },
+      "BA": {
+        "candidate_mean_ns": 321544.6504854369,
+        "baseline_mean_ns": 322952.3883495146,
+        "ratio_mean": 0.9956410359085063,
+        "median_ratio": 0.9972476298584761
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 39064.30198019802,
+        "baseline_mean_ns": 40043.00247524752,
+        "ratio_mean": 0.9755587634654898,
+        "median_ratio": 0.9901772235372022
+      },
+      "BA": {
+        "candidate_mean_ns": 40336.85643564357,
+        "baseline_mean_ns": 40285.63366336634,
+        "ratio_mean": 1.0012714897996953,
+        "median_ratio": 0.9965925861193682
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 725,
+      "kind": "OR",
+      "terms": [
+        "debra",
+        "jo",
+        "rupp"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1278764232821084,
+      "BA": 1.103173669138127
+    },
+    {
+      "id": 503,
+      "kind": "OR",
+      "terms": [
+        "clothing",
+        "optional"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0994989570565339,
+      "BA": 1.1065641069962404
+    },
+    {
+      "id": 863,
+      "kind": "OR",
+      "terms": [
+        "rolex",
+        "watches"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1249526216045482,
+      "BA": 1.0929657559648907
+    },
+    {
+      "id": 306,
+      "kind": "TERM",
+      "terms": [
+        "camp"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0909025941542199,
+      "BA": 1.0755941047880968
+    },
+    {
+      "id": 879,
+      "kind": "OR",
+      "terms": [
+        "pocket",
+        "pc"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2627237627237626,
+      "BA": 1.072050196617745
+    },
+    {
+      "id": 875,
+      "kind": "OR",
+      "terms": [
+        "canon",
+        "powershot"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.097799511002445,
+      "BA": 1.0675589547482474
+    },
+    {
+      "id": 721,
+      "kind": "OR",
+      "terms": [
+        "immigration",
+        "to",
+        "mexico"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.059193655320799,
+      "BA": 1.1381814448513055
+    },
+    {
+      "id": 845,
+      "kind": "OR",
+      "terms": [
+        "perfume",
+        "bottles"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0539756706678483,
+      "BA": 1.125300133392619
+    },
+    {
+      "id": 553,
+      "kind": "OR",
+      "terms": [
+        "elise",
+        "neal"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1243945398502861,
+      "BA": 1.0433618843683083
+    },
+    {
+      "id": 915,
+      "kind": "OR",
+      "terms": [
+        "google",
+        "satellite"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0412584481584324,
+      "BA": 1.1525835487588376
+    },
+    {
+      "id": 893,
+      "kind": "OR",
+      "terms": [
+        "power",
+        "rangers",
+        "ninja",
+        "storm"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0452915644461218,
+      "BA": 1.0411968427835052
+    },
+    {
+      "id": 589,
+      "kind": "OR",
+      "terms": [
+        "sarah",
+        "fisher"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.040365126493755,
+      "BA": 1.2445684734966733
+    },
+    {
+      "id": 833,
+      "kind": "OR",
+      "terms": [
+        "usb",
+        "hub"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0799022372626434,
+      "BA": 1.0400340715502556
+    },
+    {
+      "id": 783,
+      "kind": "OR",
+      "terms": [
+        "abilene",
+        "tx"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.087353910698232,
+      "BA": 1.0399533013361006
+    },
+    {
+      "id": 1156,
+      "kind": "PHRASE",
+      "terms": [
+        "university",
+        "of",
+        "akron"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0392467309913198,
+      "BA": 1.0425657301060154
+    },
+    {
+      "id": 411,
+      "kind": "OR",
+      "terms": [
+        "japan",
+        "airlines"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.035100479500027,
+      "BA": 1.2813472885225488
+    },
+    {
+      "id": 645,
+      "kind": "OR",
+      "terms": [
+        "camp",
+        "claiborne"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0569605961386475,
+      "BA": 1.0336171624460908
+    },
+    {
+      "id": 439,
+      "kind": "OR",
+      "terms": [
+        "sore",
+        "muscles"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0320071791803769,
+      "BA": 1.1234169557150924
+    },
+    {
+      "id": 714,
+      "kind": "AND",
+      "terms": [
+        "roundabout",
+        "theatre"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0273861485573024,
+      "BA": 1.102011553115654
+    },
+    {
+      "id": 825,
+      "kind": "OR",
+      "terms": [
+        "civil",
+        "war",
+        "battlefields"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0258019948371773,
+      "BA": 1.0386995457009853
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791418291.450758,
+      "loadavg": [
+        2.65673828125,
+        3.1259765625,
+        3.0576171875
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 237933 python          93.0",
+        " 193666 helium          45.5",
+        "   2192 helium          12.9",
+        "  44668 vesktop         11.2",
+        "  44549 vesktop          7.6",
+        "   2142 helium           5.3",
+        "   1439 Hyprland         4.7",
+        " 205348 opencode         4.2",
+        "  15472 t3code           4.1",
+        "  15483 t3code           3.0",
+        " 232208 codex            2.8",
+        " 223802 helium           2.8"
+      ]
+    },
+    {
+      "at": 1791418294.6437275,
+      "loadavg": [
+        2.65673828125,
+        3.1259765625,
+        3.0576171875
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 193666 helium          45.5",
+        " 237933 python          22.4",
+        "   2192 helium          12.9",
+        "  44668 vesktop         11.2",
+        "  44549 vesktop          7.6",
+        "   2142 helium           5.3",
+        "   1439 Hyprland         4.7",
+        " 205348 opencode         4.2",
+        "  15472 t3code           4.1",
+        "  15483 t3code           3.0",
+        " 232208 codex            2.8",
+        " 223802 helium           2.8"
+      ]
+    }
+  ]
+}

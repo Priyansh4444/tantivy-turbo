@@ -1,0 +1,99 @@
+{
+  "groups": {
+    "ALL": {
+      "queries": 1201,
+      "candidate_over_port": {
+        "AB": 1.096892504875966,
+        "BA": 1.09858075453069
+      },
+      "arithmetic_port_self_control": {
+        "AB": 1.0078442781636445,
+        "BA": 0.990836309398878
+      },
+      "control_log_spread": 0.009205935491289424,
+      "candidate_win_both_beyond_port_self_controls": false
+    },
+    "TERM": {
+      "queries": 300,
+      "candidate_over_port": {
+        "AB": 0.6819478803143723,
+        "BA": 0.6807730204417328
+      },
+      "arithmetic_port_self_control": {
+        "AB": 0.9934234883309091,
+        "BA": 0.9990439909525226
+      },
+      "control_log_spread": 0.0065982322045684974,
+      "candidate_win_both_beyond_port_self_controls": true
+    },
+    "AND": {
+      "queries": 300,
+      "candidate_over_port": {
+        "AB": 1.3182147153372852,
+        "BA": 1.3241594179223655
+      },
+      "arithmetic_port_self_control": {
+        "AB": 1.009866951083083,
+        "BA": 0.9855229779749876
+      },
+      "control_log_spread": 0.014582836603351175,
+      "candidate_win_both_beyond_port_self_controls": false
+    },
+    "OR": {
+      "queries": 301,
+      "candidate_over_port": {
+        "AB": 1.5517706275912813,
+        "BA": 1.5733425304031918
+      },
+      "arithmetic_port_self_control": {
+        "AB": 1.0186291933779485,
+        "BA": 0.9936369878175697
+      },
+      "control_log_spread": 0.018457795354103603,
+      "candidate_win_both_beyond_port_self_controls": false
+    },
+    "OR_3PLUS": {
+      "queries": 103,
+      "candidate_over_port": {
+        "AB": 1.8050872104122224,
+        "BA": 1.8279049926465742
+      },
+      "arithmetic_port_self_control": {
+        "AB": 1.0251796750409299,
+        "BA": 0.9909361698094644
+      },
+      "control_log_spread": 0.024867889951255783,
+      "candidate_win_both_beyond_port_self_controls": false
+    },
+    "OR_2": {
+      "queries": 198,
+      "candidate_over_port": {
+        "AB": 0.9953564773707066,
+        "BA": 1.0122677453668496
+      },
+      "arithmetic_port_self_control": {
+        "AB": 1.0042900166155613,
+        "BA": 0.9995839494276101
+      },
+      "control_log_spread": 0.004280840728059725,
+      "candidate_win_both_beyond_port_self_controls": false
+    },
+    "PHRASE": {
+      "queries": 300,
+      "candidate_over_port": {
+        "AB": 0.8610157349279559,
+        "BA": 0.8564013344769437
+      },
+      "arithmetic_port_self_control": {
+        "AB": 1.0036766800646792,
+        "BA": 0.9910303387635649
+      },
+      "control_log_spread": 0.009010130828562245,
+      "candidate_win_both_beyond_port_self_controls": true
+    }
+  },
+  "actual_port_target_met": false,
+  "controls_scope": "Contemporaneous fixed-port self comparisons only. Candidate self comparisons are retained in the separate parent-comparison lane.",
+  "samples_sha256": "a3c1030b5fa3cd6eaee8817e8f661666f6f7d4858f03785569535a0d1686d5c7",
+  "controller_sha256": "8586fb967a7e8faa5034b6ac90f26c6600e1794383bb5956ff9b202c8d446ec3"
+}

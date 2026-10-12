@@ -1,0 +1,28 @@
+{
+  "mistake": "Legacy post-profile call reused baseline-two output names and replaced the initial raw profile.",
+  "preserved_candidate": [
+    {
+      "from": "baseline-two-perf.data",
+      "to": "candidate-two-overlap-perf.data"
+    },
+    {
+      "from": "baseline-two-perf-report.txt",
+      "to": "candidate-two-overlap-perf-report.txt"
+    },
+    {
+      "from": "baseline-two-perf.stderr",
+      "to": "candidate-two-overlap-perf.stderr"
+    },
+    {
+      "from": "baseline-two-profile-receipt.json",
+      "to": "candidate-two-overlap-profile-receipt.json"
+    },
+    {
+      "from": "baseline-two-profile-replies.json",
+      "to": "candidate-two-overlap-profile-replies.json"
+    }
+  ],
+  "candidate_profile_limit": "This diagnostic overlapped own clippy; exclude it from clean paired profile interpretation.",
+  "correction": "Recreate baseline and candidate serially from preserved binaries under distinct labels. Add refusal to overwrite outputs.",
+  "latency_results_affected": false
+}

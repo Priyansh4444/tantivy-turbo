@@ -1,0 +1,398 @@
+{
+  "seconds": 8.68758304900075,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 299782.8967828418,
+        "baseline_mean_ns": 240415.5254691689,
+        "ratio_mean": 1.2469365120984512,
+        "median_ratio": 1.0120143454871489
+      },
+      "BA": {
+        "candidate_mean_ns": 296732.5,
+        "baseline_mean_ns": 246716.84852546916,
+        "ratio_mean": 1.202724912276786,
+        "median_ratio": 1.012574364521363
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 807348.5970873786,
+        "baseline_mean_ns": 593144.6504854369,
+        "ratio_mean": 1.361132729472709,
+        "median_ratio": 1.0610702092053963
+      },
+      "BA": {
+        "candidate_mean_ns": 795601.5436893204,
+        "baseline_mean_ns": 611889.0825242718,
+        "ratio_mean": 1.3002381745514493,
+        "median_ratio": 1.060279748954231
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 73678.70544554456,
+        "baseline_mean_ns": 73911.53712871287,
+        "ratio_mean": 0.9968498600866215,
+        "median_ratio": 0.9927744190897139
+      },
+      "BA": {
+        "candidate_mean_ns": 74748.13613861386,
+        "baseline_mean_ns": 74432.83415841585,
+        "ratio_mean": 1.0042360603860248,
+        "median_ratio": 0.9936331003918916
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 920,
+      "kind": "OR",
+      "terms": [
+        "a",
+        "search",
+        "engine",
+        "is",
+        "an",
+        "information",
+        "retrieval",
+        "software",
+        "system",
+        "designed",
+        "to",
+        "help",
+        "find",
+        "information",
+        "stored",
+        "on",
+        "one",
+        "or",
+        "more",
+        "computer",
+        "systems"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 2.058505750926707,
+      "BA": 2.05336624693368
+    },
+    {
+      "id": 442,
+      "kind": "AND",
+      "terms": [
+        "danbury",
+        "ct"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2490715132358752,
+      "BA": 1.2344848439035452
+    },
+    {
+      "id": 349,
+      "kind": "OR",
+      "terms": [
+        "milwaukee",
+        "newspaper"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1748412734664049,
+      "BA": 1.2805514656672468
+    },
+    {
+      "id": 783,
+      "kind": "OR",
+      "terms": [
+        "abilene",
+        "tx"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1569054533720555,
+      "BA": 1.199692158133506
+    },
+    {
+      "id": 909,
+      "kind": "OR",
+      "terms": [
+        "niceville",
+        "high",
+        "school"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1269236060612016,
+      "BA": 1.137626642093733
+    },
+    {
+      "id": 579,
+      "kind": "OR",
+      "terms": [
+        "john",
+        "wilkes",
+        "booth"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1251592262345587,
+      "BA": 1.1339371378132554
+    },
+    {
+      "id": 737,
+      "kind": "OR",
+      "terms": [
+        "playa",
+        "del",
+        "rey"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1526136707916754,
+      "BA": 1.12272646452814
+    },
+    {
+      "id": 915,
+      "kind": "OR",
+      "terms": [
+        "google",
+        "satellite"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1192880640110323,
+      "BA": 1.2570295110761172
+    },
+    {
+      "id": 571,
+      "kind": "OR",
+      "terms": [
+        "lost",
+        "episode"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1168990995928216,
+      "BA": 1.12981390298242
+    },
+    {
+      "id": 917,
+      "kind": "OR",
+      "terms": [
+        "laborers",
+        "international",
+        "union",
+        "of",
+        "north",
+        "america"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1162375642971054,
+      "BA": 1.1169176325996775
+    },
+    {
+      "id": 679,
+      "kind": "OR",
+      "terms": [
+        "care",
+        "a",
+        "lot"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2545036340924445,
+      "BA": 1.114402623129291
+    },
+    {
+      "id": 1139,
+      "kind": "PHRASE",
+      "terms": [
+        "business",
+        "consultants"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1137542177233173,
+      "BA": 1.5132646490663233
+    },
+    {
+      "id": 817,
+      "kind": "OR",
+      "terms": [
+        "centerville",
+        "high",
+        "school"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1128717503585916,
+      "BA": 1.1444799195448956
+    },
+    {
+      "id": 1003,
+      "kind": "PHRASE",
+      "terms": [
+        "ace",
+        "frehley"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2724731182795699,
+      "BA": 1.1090549766439095
+    },
+    {
+      "id": 639,
+      "kind": "OR",
+      "terms": [
+        "chicken",
+        "noodle",
+        "soup"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.115506997437558,
+      "BA": 1.1052114358284324
+    },
+    {
+      "id": 765,
+      "kind": "OR",
+      "terms": [
+        "napa",
+        "auto",
+        "parts"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.125187410636241,
+      "BA": 1.104719416386083
+    },
+    {
+      "id": 7,
+      "kind": "TERM",
+      "terms": [
+        "saxophone"
+      ],
+      "tags": [
+        "wiki20",
+        "term",
+        "low"
+      ],
+      "AB": 1.2332892124420913,
+      "BA": 1.1038723935812433
+    },
+    {
+      "id": 827,
+      "kind": "OR",
+      "terms": [
+        "national",
+        "security",
+        "cutter"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1014046029741502,
+      "BA": 1.13260042492218
+    },
+    {
+      "id": 585,
+      "kind": "OR",
+      "terms": [
+        "jaguar",
+        "x",
+        "type"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1890327080156506,
+      "BA": 1.0975174648362145
+    },
+    {
+      "id": 393,
+      "kind": "OR",
+      "terms": [
+        "new",
+        "york",
+        "population"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0950521946817808,
+      "BA": 1.1058248121288103
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791406036.3750768,
+      "loadavg": [
+        1.89208984375,
+        1.61865234375,
+        1.5390625
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 128115 ps               100",
+        " 128079 python          90.8",
+        "  59329 helium          13.8",
+        "   2192 helium          10.4",
+        "  44668 vesktop          7.7",
+        "  44549 vesktop          6.3",
+        "  15472 t3code           5.4",
+        "   1439 Hyprland         4.5",
+        "   2142 helium           4.2",
+        "  15483 t3code           2.8",
+        "  14870 helium           2.5",
+        " 120518 helium           1.7"
+      ]
+    },
+    {
+      "at": 1791406043.202592,
+      "loadavg": [
+        1.90087890625,
+        1.625,
+        1.5419921875
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 128131 ps               200",
+        " 128079 python          18.0",
+        "  59329 helium          13.8",
+        "   2192 helium          10.4",
+        "  44668 vesktop          7.7",
+        "  44549 vesktop          6.3",
+        "  15472 t3code           5.4",
+        "   1439 Hyprland         4.5",
+        "   2142 helium           4.2",
+        "  15483 t3code           2.8",
+        "  14870 helium           2.5",
+        " 120518 helium           1.7"
+      ]
+    }
+  ]
+}

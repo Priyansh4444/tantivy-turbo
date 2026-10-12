@@ -1,0 +1,10 @@
+{
+  "original_sha256": "4c56911f9cabe4fd06f8d1fe2f999564267c8fa3196600f29fe1b42ba1e848f7",
+  "final_sha256": "454b9020c79fc8a7bfa3a4c4c7290883bd5c6203b88d7435f04c66af8ca6adf5",
+  "correction_patch_sha256": "f844541e3ed305d4c4aae449bbe1c3cdeb604f3c13e9e046071dd5ae0cf28946",
+  "final_full_patch_sha256": "4d6014c14246d4c6ad66cfcc8263d8193b6f5cbb60e719b1efaed8d11c37d14d",
+  "only_test_setup_changed": true,
+  "original_stage_retained": "attempt-19/pre-initial-seek-fix/tests-targeted",
+  "semantic_assertions_and_corpora_preserved": true,
+  "root_read_full_analysis_and_correction_patch": true
+}

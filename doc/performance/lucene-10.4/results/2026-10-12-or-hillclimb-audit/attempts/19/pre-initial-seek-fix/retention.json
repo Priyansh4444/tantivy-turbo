@@ -1,0 +1,11 @@
+{
+  "status": "original_failed_targeted_stage_retained",
+  "passed": 30,
+  "failed": 2,
+  "source_sha256": {
+    "src/query/boolean_query/or_maxscore.rs": "4c56911f9cabe4fd06f8d1fe2f999564267c8fa3196600f29fe1b42ba1e848f7",
+    "src/query/term_query/term_scorer.rs": "21b05a2b6513223a81613ee0f40c4a31f6990a427bb0d4b60324154a55753cdb"
+  },
+  "release_build_ran": false,
+  "cause_under_review": "Two additive fixture initial seek calls violate forward-only TermScorer seek contract before running mechanism. No assertion relaxed; source review pending."
+}

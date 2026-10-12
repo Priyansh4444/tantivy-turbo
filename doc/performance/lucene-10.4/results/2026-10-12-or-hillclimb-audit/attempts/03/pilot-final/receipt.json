@@ -1,0 +1,373 @@
+{
+  "seconds": 8.85309111099923,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 243775.22117962467,
+        "baseline_mean_ns": 246640.81903485255,
+        "ratio_mean": 0.9883814939212355,
+        "median_ratio": 0.984024458510959
+      },
+      "BA": {
+        "candidate_mean_ns": 237898.33512064343,
+        "baseline_mean_ns": 254006.98793565683,
+        "ratio_mean": 0.9365818517595511,
+        "median_ratio": 0.9796279725072825
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 598808.1601941747,
+        "baseline_mean_ns": 611443.4077669902,
+        "ratio_mean": 0.9793353768929166,
+        "median_ratio": 0.9553524880649035
+      },
+      "BA": {
+        "candidate_mean_ns": 576225.9174757282,
+        "baseline_mean_ns": 630435.3689320388,
+        "ratio_mean": 0.914012674212518,
+        "median_ratio": 0.9497195150324432
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 74510.14851485149,
+        "baseline_mean_ns": 75090.68069306931,
+        "ratio_mean": 0.9922689184215718,
+        "median_ratio": 0.9874521890948685
+      },
+      "BA": {
+        "candidate_mean_ns": 75828.83663366336,
+        "baseline_mean_ns": 76378.65346534654,
+        "ratio_mean": 0.9928014332966393,
+        "median_ratio": 0.9831606635122199
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 381,
+      "kind": "OR",
+      "terms": [
+        "catholic",
+        "answers"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2573576333052556,
+      "BA": 1.2163869936689409
+    },
+    {
+      "id": 839,
+      "kind": "OR",
+      "terms": [
+        "medal",
+        "of",
+        "honor"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1503755558979836,
+      "BA": 1.1503711695297139
+    },
+    {
+      "id": 533,
+      "kind": "OR",
+      "terms": [
+        "missy",
+        "elliott"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1426021664204826,
+      "BA": 1.17091519976627
+    },
+    {
+      "id": 419,
+      "kind": "OR",
+      "terms": [
+        "intramuscular",
+        "injections"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1276977015971952,
+      "BA": 1.1142029427460547
+    },
+    {
+      "id": 739,
+      "kind": "OR",
+      "terms": [
+        "domain",
+        "names"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0994086132730294,
+      "BA": 1.1100349764353676
+    },
+    {
+      "id": 559,
+      "kind": "OR",
+      "terms": [
+        "bmw",
+        "engines"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1705196966894766,
+      "BA": 1.0888616724501599
+    },
+    {
+      "id": 679,
+      "kind": "OR",
+      "terms": [
+        "care",
+        "a",
+        "lot"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.081274429923024,
+      "BA": 1.0810199242658198
+    },
+    {
+      "id": 551,
+      "kind": "OR",
+      "terms": [
+        "developmental",
+        "delays"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0648537255535802,
+      "BA": 1.2888636319100155
+    },
+    {
+      "id": 441,
+      "kind": "OR",
+      "terms": [
+        "connecticut",
+        "post"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2143668370244178,
+      "BA": 1.0593967988475463
+    },
+    {
+      "id": 442,
+      "kind": "AND",
+      "terms": [
+        "danbury",
+        "ct"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0579765062523683,
+      "BA": 1.2160227797444974
+    },
+    {
+      "id": 357,
+      "kind": "OR",
+      "terms": [
+        "who",
+        "dares",
+        "wins"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1688583764472487,
+      "BA": 1.0515031412940392
+    },
+    {
+      "id": 589,
+      "kind": "OR",
+      "terms": [
+        "sarah",
+        "fisher"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0386100386100385,
+      "BA": 1.2620503341390588
+    },
+    {
+      "id": 85,
+      "kind": "TERM",
+      "terms": [
+        "elbow"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0365763364430622,
+      "BA": 1.036589762076424
+    },
+    {
+      "id": 585,
+      "kind": "OR",
+      "terms": [
+        "jaguar",
+        "x",
+        "type"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0342803552711426,
+      "BA": 1.036427192693376
+    },
+    {
+      "id": 607,
+      "kind": "OR",
+      "terms": [
+        "analog",
+        "computer"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0337971645529778,
+      "BA": 1.2595068727603358
+    },
+    {
+      "id": 612,
+      "kind": "AND",
+      "terms": [
+        "graduate",
+        "management",
+        "admission",
+        "test"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1364390577587569,
+      "BA": 1.0337609772226037
+    },
+    {
+      "id": 517,
+      "kind": "OR",
+      "terms": [
+        "fatherless",
+        "children"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0313107623228497,
+      "BA": 1.0515356585111921
+    },
+    {
+      "id": 519,
+      "kind": "OR",
+      "terms": [
+        "hotel",
+        "del",
+        "coronado"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0307322727758035,
+      "BA": 1.0334597371274006
+    },
+    {
+      "id": 15,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "american"
+      ],
+      "tags": [
+        "wiki20",
+        "union",
+        "orHighMed",
+        "luceneutil:OrHighMed"
+      ],
+      "AB": 1.0419467141215353,
+      "BA": 1.0306994243857928
+    },
+    {
+      "id": 849,
+      "kind": "OR",
+      "terms": [
+        "edith",
+        "head"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0298749587263305,
+      "BA": 1.1208785106412518
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791406286.4980874,
+      "loadavg": [
+        3.04052734375,
+        2.548828125,
+        1.9521484375
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 129920 ps               100",
+        " 129860 python          92.8",
+        "  59329 helium          13.9",
+        "   2192 helium          10.6",
+        "  44668 vesktop          7.5",
+        "  44549 vesktop          6.4",
+        "  15472 t3code           5.7",
+        "   1439 Hyprland         4.5",
+        "   2142 helium           4.3",
+        "  15483 t3code           2.8",
+        " 128209 kworker/u64:0-b  2.8",
+        "  14870 helium           2.5"
+      ]
+    },
+    {
+      "at": 1791406293.1170578,
+      "loadavg": [
+        2.876953125,
+        2.52294921875,
+        1.94677734375
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 129860 python          21.0",
+        "  59329 helium          13.9",
+        "   2192 helium          10.6",
+        "  44668 vesktop          7.5",
+        "  44549 vesktop          6.4",
+        "  15472 t3code           5.7",
+        "   1439 Hyprland         4.5",
+        "   2142 helium           4.3",
+        "  15483 t3code           2.8",
+        " 128209 kworker/u64:0-b  2.8",
+        "  14870 helium           2.5",
+        " 120518 helium           1.5"
+      ]
+    }
+  ]
+}

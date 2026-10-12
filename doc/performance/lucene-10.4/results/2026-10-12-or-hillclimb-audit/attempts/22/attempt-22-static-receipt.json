@@ -1,0 +1,92 @@
+{
+   "added_test_names" : [],
+   "all_parent_tests_retained" : true,
+   "attempt" : 22,
+   "branch" : "perf/or-threshold-cutoff-oct11",
+   "edited_tracked_files" : [
+      "src/query/boolean_query/or_maxscore.rs",
+      "src/query/score_combiner.rs"
+   ],
+   "integration" : {
+      "global_and_local_partition_helpers_unchanged" : true,
+      "live_threshold_old_helper_debug_equality_under_cfg_test" : true,
+      "only_optional_inner_predicate_replaced" : true,
+      "original_factor_multiply_unchanged" : true,
+      "private_field_one_f64_cutoff_wrapper" : true,
+      "production_quotient_shortcut" : false,
+      "query_entry_initialization_after_eligibility" : true,
+      "refresh_immediately_after_every_callback_assignment" : true,
+      "unaccepted_attempt_21_not_stacked" : true
+   },
+   "notes" : [
+      "Root owns all runtime work; source-only rustfmt and diff checks.",
+      "No root/production tree modified.",
+      "Actual frame/register allocation, binary size, RSS, generated code and speed remain unmeasured.",
+      "Existing full owned-batch fixture preserves unchanged deletion callbacks followed by raises and canonical traces."
+   ],
+   "numeric_added_test_names" : [
+      "small_bound_cutoff_preserves_all_threshold_classes_and_signed_zeros",
+      "small_bound_cutoff_direct_products_witness_even_odd_midpoints_and_overflow",
+      "small_bound_cutoff_matches_rounded_products_near_every_exponent_boundary",
+      "small_bound_cutoff_matches_fixed_seed_valid_raw_bit_sums"
+   ],
+   "numeric_parent_test_count" : 4,
+   "numeric_test_count" : 8,
+   "numeric_test_names" : [
+      "small_bound_cutoff_preserves_all_threshold_classes_and_signed_zeros",
+      "small_bound_cutoff_direct_products_witness_even_odd_midpoints_and_overflow",
+      "small_bound_cutoff_matches_rounded_products_near_every_exponent_boundary",
+      "small_bound_cutoff_matches_fixed_seed_valid_raw_bit_sums",
+      "small_score_sum_bound_matches_generic_at_cast_boundaries",
+      "small_score_sum_bound_matches_generic_for_disjoint_leaf_sums",
+      "score_sum_bound_covers_double_order_error_at_float_midpoint",
+      "score_sum_bound_handles_signed_pointwise_replacements_and_extremes"
+   ],
+   "original_numeric_helpers_and_tests_tail_byte_identical" : true,
+   "parent_commit" : "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+   "parent_source_sha256" : {
+      "src/query/boolean_query/or_maxscore.rs" : "21153a76a7ae3091ac6400cc438f408b7ac367d9a534b1d290d30af5c3fb5901",
+      "src/query/score_combiner.rs" : "9392f9d0c0f537252e27bdb68eccc2623d43607980e12d45e45458026aab6eb0"
+   },
+   "parent_test_count" : 13,
+   "parent_test_helpers_byte_identical" : true,
+   "parent_test_module_tail_byte_identical" : true,
+   "patch_sha256" : "4594ba2e4096973b495e1fa019b637bdd1b833b08f540ad62ce9969d140c40e9",
+   "runtime_checks" : {
+      "build" : false,
+      "codegen" : false,
+      "configured_oracles" : false,
+      "latency" : false,
+      "profiling" : false,
+      "tests" : false
+   },
+   "schema" : "tantivy-or-attempt-source-v1",
+   "source_sha256" : {
+      "src/query/boolean_query/or_maxscore.rs" : "590f6a2b0f493fe2c0b6ab7c17a41ab610c95e50a76c8f4a6ff42f44e544806e",
+      "src/query/score_combiner.rs" : "2679f2aab4434a4f4b75456185fee01d03506b5d40fb95f519e135664068997e"
+   },
+   "static_checks" : {
+      "git_diff_check" : true,
+      "rustfmt_completed" : true,
+      "two_tracked_file_scope" : true
+   },
+   "status" : "source_only_ready_uncompiled",
+   "term_source_unchanged_sha256" : "dd1e18b5b1d273cf2c09959ea207997a1e93f854b0fc459fb0a1e76129b87277",
+   "test_count" : 13,
+   "test_names" : [
+      "cached_global_prefix_preserves_equality_neighbors_and_large_threshold_jumps",
+      "cached_certificate_survives_density_rejection_widening_and_rejection_again",
+      "single_driver_batches_replay_every_dynamic_threshold_exactly",
+      "exact_traces_at_full_block_and_tail_boundaries",
+      "deferred_optional_clause_becomes_essential_after_shallow_full_blocks",
+      "globally_optional_dense_terms_cover_sparse_essential_gaps_and_tails",
+      "threshold_growth_promotes_local_optionals_to_global_certificates",
+      "similar_density_terms_keep_local_certificates_until_both_are_optional",
+      "exhausted_high_cost_remainder_changes_live_density_choice",
+      "exact_midpoint_leaves_preserve_incoming_order_and_strict_ties",
+      "duplicates_disparate_boosts_exhaustion_and_sparse_regions",
+      "exact_growing_threshold_traces_for_mixed_dense_and_sparse_terms",
+      "unsafe_domains_use_exhaustive_canonical_sum_before_any_seek"
+   ],
+   "worktree" : "/home/pronsh/Coding/playground/search/tantivy-or-threshold-cutoff-oct11"
+}

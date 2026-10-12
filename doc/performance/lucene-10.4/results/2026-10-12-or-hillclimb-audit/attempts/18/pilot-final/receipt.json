@@ -1,0 +1,367 @@
+{
+  "seconds": 9.65462688599655,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 246192.88471849865,
+        "baseline_mean_ns": 246885.25737265416,
+        "ratio_mean": 0.9971955690610136,
+        "median_ratio": 1.0035095005710726
+      },
+      "BA": {
+        "candidate_mean_ns": 245413.6179624665,
+        "baseline_mean_ns": 245625.45174262734,
+        "ratio_mean": 0.9991375739824274,
+        "median_ratio": 1.0020565317734158
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 571879.1310679612,
+        "baseline_mean_ns": 575562.3980582524,
+        "ratio_mean": 0.9936005774478713,
+        "median_ratio": 0.9872132039539313
+      },
+      "BA": {
+        "candidate_mean_ns": 570138.3155339806,
+        "baseline_mean_ns": 570327.3300970874,
+        "ratio_mean": 0.9996685858223301,
+        "median_ratio": 0.9961006742996389
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 81103.62623762376,
+        "baseline_mean_ns": 81348.95544554456,
+        "ratio_mean": 0.9969842365328832,
+        "median_ratio": 1.0123197190813134
+      },
+      "BA": {
+        "candidate_mean_ns": 80977.81930693069,
+        "baseline_mean_ns": 80682.9900990099,
+        "ratio_mean": 1.00365416809118,
+        "median_ratio": 1.0050943572108684
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 389,
+      "kind": "OR",
+      "terms": [
+        "chicken",
+        "coop"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2478843270951208,
+      "BA": 1.2616273517333587
+    },
+    {
+      "id": 1020,
+      "kind": "PHRASE",
+      "terms": [
+        "hotel",
+        "del",
+        "coronado"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.243500995276152,
+      "BA": 1.2138068949977467
+    },
+    {
+      "id": 695,
+      "kind": "OR",
+      "terms": [
+        "hawk",
+        "mountain"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1525843151292547,
+      "BA": 1.2191806273805468
+    },
+    {
+      "id": 777,
+      "kind": "OR",
+      "terms": [
+        "mood",
+        "swings"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1215541350379545,
+      "BA": 1.2096550356859634
+    },
+    {
+      "id": 435,
+      "kind": "OR",
+      "terms": [
+        "helen",
+        "of",
+        "troy"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1078310384701344,
+      "BA": 1.1410512797890382
+    },
+    {
+      "id": 687,
+      "kind": "OR",
+      "terms": [
+        "david",
+        "koresh"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.096562518812835,
+      "BA": 1.1528957829916595
+    },
+    {
+      "id": 697,
+      "kind": "OR",
+      "terms": [
+        "kristanna",
+        "loken"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0807245080500893,
+      "BA": 1.3218118466898954
+    },
+    {
+      "id": 657,
+      "kind": "OR",
+      "terms": [
+        "naked",
+        "news"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.080195366773471,
+      "BA": 1.2696912625277461
+    },
+    {
+      "id": 649,
+      "kind": "OR",
+      "terms": [
+        "home",
+        "loan"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1874186250719128,
+      "BA": 1.066230282405438
+    },
+    {
+      "id": 669,
+      "kind": "OR",
+      "terms": [
+        "john",
+        "klein"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.064042702323826,
+      "BA": 1.074068367153423
+    },
+    {
+      "id": 761,
+      "kind": "OR",
+      "terms": [
+        "ambassador",
+        "of",
+        "italy"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1269193654878193,
+      "BA": 1.0592752289730807
+    },
+    {
+      "id": 501,
+      "kind": "OR",
+      "terms": [
+        "jonathan",
+        "daniel"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0557604466249366,
+      "BA": 1.2472375335836805
+    },
+    {
+      "id": 341,
+      "kind": "OR",
+      "terms": [
+        "freelance",
+        "work"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.054076439477098,
+      "BA": 1.0883991354905482
+    },
+    {
+      "id": 513,
+      "kind": "OR",
+      "terms": [
+        "heart",
+        "disease"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1265638024481268,
+      "BA": 1.05190928129038
+    },
+    {
+      "id": 335,
+      "kind": "OR",
+      "terms": [
+        "scottsdale",
+        "az"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.049803343166175,
+      "BA": 1.317442485224442
+    },
+    {
+      "id": 739,
+      "kind": "OR",
+      "terms": [
+        "domain",
+        "names"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0493891671771955,
+      "BA": 1.2516084982838585
+    },
+    {
+      "id": 437,
+      "kind": "OR",
+      "terms": [
+        "long",
+        "legs"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.048580693746446,
+      "BA": 1.15168669618385
+    },
+    {
+      "id": 805,
+      "kind": "OR",
+      "terms": [
+        "akron",
+        "beacon"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.048182254615284,
+      "BA": 1.2675667245911866
+    },
+    {
+      "id": 353,
+      "kind": "OR",
+      "terms": [
+        "omaha",
+        "symphony"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.4356726457399103,
+      "BA": 1.0457887618345014
+    },
+    {
+      "id": 605,
+      "kind": "OR",
+      "terms": [
+        "mercedes",
+        "benz"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0457554517133956,
+      "BA": 1.08210903706013
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791716866.6453671,
+      "loadavg": [
+        4.9326171875,
+        5.314453125,
+        6.46728515625
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        "3597556 python3         95.5",
+        "2886977 vesktop         92.1",
+        "3111450 helium          17.1",
+        "2886856 vesktop         11.3",
+        "2886914 vesktop         10.3",
+        "3465431 t3code           8.0",
+        "3465440 t3code           7.3",
+        "3233546 helium           7.0",
+        "   2358 helium           6.7",
+        "3578503 t3code           6.4",
+        "   1429 Hyprland         6.2",
+        "2887184 vesktop          5.4"
+      ]
+    },
+    {
+      "at": 1791716873.342229,
+      "loadavg": [
+        5.0986328125,
+        5.3427734375,
+        6.47021484375
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        "3597990 ps               200",
+        "2886977 vesktop         92.2",
+        "3597556 python3         25.1",
+        "3111450 helium          17.1",
+        "2886856 vesktop         11.3",
+        "2886914 vesktop         10.3",
+        "3465431 t3code           8.1",
+        "3465440 t3code           7.4",
+        "3233546 helium           7.0",
+        "   2358 helium           6.7",
+        "3578503 t3code           6.4",
+        "   1429 Hyprland         6.2"
+      ]
+    }
+  ]
+}

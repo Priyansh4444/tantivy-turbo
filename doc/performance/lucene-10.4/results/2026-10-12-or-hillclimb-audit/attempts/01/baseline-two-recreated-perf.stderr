@@ -1,0 +1,2 @@
+[ perf record: Woken up 32 times to write data ]
+[ perf record: Captured and wrote 0.053 MB /home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/baseline-two-recreated-perf.data (1085 samples) ]

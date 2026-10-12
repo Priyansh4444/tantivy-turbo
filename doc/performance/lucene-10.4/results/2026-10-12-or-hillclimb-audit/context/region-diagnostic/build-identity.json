@@ -1,0 +1,6 @@
+{
+  "binary_sha256": "6c546e4870f1bf5a3e560ec464acaee937f5d1e21de622ea504dd6adb7dffb49",
+  "controller_sha256": "97cc4986fc7dd4d72991c9c427277736ae1f93ee7ec8eb17965b6095206f709d",
+  "source_sha256": "cd2865e1364a66fadda587bc5a24eaaec6086b39fcfd48f1493fdeb8974b36bd",
+  "purpose": "Aggregate instrumentation only. Excluded from latency acceptance."
+}

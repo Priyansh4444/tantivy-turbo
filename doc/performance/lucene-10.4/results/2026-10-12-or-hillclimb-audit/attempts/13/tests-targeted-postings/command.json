@@ -1,0 +1,14 @@
+[
+  "cargo",
+  "test",
+  "--locked",
+  "--manifest-path",
+  "../../../tantivy-or-hillclimb-oct07/Cargo.toml",
+  "--target-dir",
+  "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/test-target",
+  "--lib",
+  "postings::segment_postings::tests",
+  "--",
+  "--test-threads=2",
+  "--nocapture"
+]

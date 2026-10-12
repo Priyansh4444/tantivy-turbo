@@ -1,0 +1,172 @@
+--- a/src/query/boolean_query/or_maxscore.rs
++++ b/src/query/boolean_query/or_maxscore.rs
+@@ -60,6 +60,16 @@
+ #[cfg(test)]
+ #[derive(Clone, Debug)]
+ struct RequiredGapObservation {
++    num_terms: usize,
++    rank: usize,
++    owned_before: Vec<(DocId, u32)>,
++    owned_after: Vec<(DocId, u32)>,
++    pending_before: Vec<(DocId, u32)>,
++    pending_after: Vec<(DocId, u32)>,
++    lower_before: Vec<(DocId, DocId)>,
++    lower_after: Vec<(DocId, DocId)>,
++    driver_before: (DocId, DocId),
++    driver_after: (DocId, DocId),
+     lo: DocId,
+     hi: DocId,
+     trigger: DocId,
+@@ -383,6 +393,28 @@
+                     // batch entries strictly before it can be skipped.
+                     let optional_doc = clause.doc;
+                     let target = optional_doc.min(hi);
++                    #[cfg(test)]
++                    let owned_before: Vec<_> = batch.docs[..batch_len]
++                        .iter()
++                        .zip(&batch.scores[..batch_len])
++                        .map(|(&owned, &score)| (owned, score.to_bits()))
++                        .collect();
++                    #[cfg(test)]
++                    let pending_before: Vec<_> = batch.docs[batch_index..batch_len]
++                        .iter()
++                        .zip(&batch.scores[batch_index..batch_len])
++                        .map(|(&pending, &score)| (pending, score.to_bits()))
++                        .collect();
++                    #[cfg(test)]
++                    let lower_before: Vec<_> = clauses[..rank]
++                        .iter()
++                        .map(|clause| (clause.doc, scorers[clause.ordinal].doc()))
++                        .collect();
++                    #[cfg(test)]
++                    let driver_before = (
++                        clauses[first_essential].doc,
++                        scorers[clauses[first_essential].ordinal].doc(),
++                    );
+                     // A trigger-only gap saves no later candidate work. Avoid
+                     // both the bound pass and its cache check in that case.
+                     if batch_index + 1 < batch_len && batch.docs[batch_index + 1] < target {
+@@ -425,6 +457,16 @@
+                         REQUIRED_GAPS.with(|observations| {
+                             if let Some(observations) = observations.borrow_mut().as_mut() {
+                                 observations.push(RequiredGapObservation {
++                                    num_terms,
++                                    rank,
++                                    owned_after: owned_before.clone(),
++                                    owned_before,
++                                    pending_after: pending_before.clone(),
++                                    pending_before,
++                                    lower_after: lower_before.clone(),
++                                    lower_before,
++                                    driver_before,
++                                    driver_after: driver_before,
+                                     lo,
+                                     hi,
+                                     trigger: doc,
+@@ -442,6 +484,31 @@
+                         });
+                         if next_index != batch_index {
+                             batch_index = next_index;
++                            #[cfg(test)]
++                            REQUIRED_GAPS.with(|observations| {
++                                if let Some(observations) = observations.borrow_mut().as_mut() {
++                                    let observation = observations.last_mut().unwrap();
++                                    assert_eq!(observation.next_index, batch_index);
++                                    observation.owned_after = batch.docs[..batch_len]
++                                        .iter()
++                                        .zip(&batch.scores[..batch_len])
++                                        .map(|(&owned, &score)| (owned, score.to_bits()))
++                                        .collect();
++                                    observation.pending_after = batch.docs[batch_index..batch_len]
++                                        .iter()
++                                        .zip(&batch.scores[batch_index..batch_len])
++                                        .map(|(&pending, &score)| (pending, score.to_bits()))
++                                        .collect();
++                                    observation.lower_after = clauses[..rank]
++                                        .iter()
++                                        .map(|clause| (clause.doc, scorers[clause.ordinal].doc()))
++                                        .collect();
++                                    observation.driver_after = (
++                                        clauses[first_essential].doc,
++                                        scorers[clauses[first_essential].ordinal].doc(),
++                                    );
++                                }
++                            });
+                             continue 'candidates;
+                         }
+                     } else {
+@@ -449,6 +516,16 @@
+                         REQUIRED_GAPS.with(|observations| {
+                             if let Some(observations) = observations.borrow_mut().as_mut() {
+                                 observations.push(RequiredGapObservation {
++                                    num_terms,
++                                    rank,
++                                    owned_after: owned_before.clone(),
++                                    owned_before,
++                                    pending_after: pending_before.clone(),
++                                    pending_before,
++                                    lower_after: lower_before.clone(),
++                                    lower_before,
++                                    driver_before,
++                                    driver_after: driver_before,
+                                     lo,
+                                     hi,
+                                     trigger: doc,
+@@ -682,6 +759,57 @@
+             REQUIRED_GAPS.with(|observations| observations.borrow_mut().take().unwrap());
+         assert_eq!(actual, expected);
+         for observation in &observations {
++            assert_eq!(observation.num_terms, scorers.len());
++            assert_eq!(observation.rank + 2, observation.num_terms);
++            assert_eq!(observation.owned_before, observation.owned_after);
++            assert_eq!(observation.owned_before.len(), observation.batch_len);
++            assert_eq!(
++                observation.pending_before,
++                observation.owned_before[observation.batch_index..]
++            );
++            assert_eq!(observation.lower_before, observation.lower_after);
++            assert!(observation
++                .lower_before
++                .iter()
++                .all(|&(mirror, real)| mirror == real));
++            assert_eq!(observation.driver_before, observation.driver_after);
++            assert_eq!(observation.driver_before.0, observation.driver_before.1);
++            assert_eq!(observation.driver_before.0, observation.driver_doc);
++            assert_eq!(
++                observation.pending_before.len(),
++                observation.batch_len - observation.batch_index
++            );
++            assert_eq!(observation.pending_before[0].0, observation.trigger);
++            assert!(observation
++                .pending_before
++                .windows(2)
++                .all(|pair| pair[0].0 < pair[1].0));
++            assert!(observation
++                .pending_before
++                .iter()
++                .all(|&(doc, _)| doc < observation.hi));
++            let naive_count = observation
++                .pending_before
++                .iter()
++                .take_while(|&&(doc, _)| doc < observation.target)
++                .count();
++            let actually_skipped = observation.next_index - observation.batch_index;
++            if actually_skipped > 0 {
++                assert_eq!(actually_skipped, naive_count);
++                assert_eq!(
++                    observation.pending_after,
++                    observation.pending_before[naive_count..]
++                );
++                if observation
++                    .pending_before
++                    .iter()
++                    .any(|&(doc, _)| doc == observation.target)
++                {
++                    assert_eq!(observation.pending_after[0].0, observation.target);
++                }
++            } else {
++                assert_eq!(observation.pending_after, observation.pending_before);
++            }
+             assert!(observation.lo <= observation.trigger);
+             assert!(observation.trigger < observation.target);
+             assert!(observation.target <= observation.hi);

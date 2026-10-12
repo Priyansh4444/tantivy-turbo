@@ -1,0 +1,20 @@
+{
+  "base": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "before_source_sha256": "6c71f32394bac8d1c5998c511585904e09ac68757063b2f2bc96afb375258d1d",
+  "source_sha256": "a53374a75b5dbedb3e8f148b94f8da92a6d4383142e69cc8b50a92330c2f96d1",
+  "only_changed_functions": [
+    "wider_single_driver_retains_full_partial_batches_and_exact_end_heads",
+    "wider_midpoint_publication_keeps_literal_incoming_order_and_strict_neighbors"
+  ],
+  "reverse_two_function_replacement_sha256": "6c71f32394bac8d1c5998c511585904e09ac68757063b2f2bc96afb375258d1d",
+  "reverse_byte_equal": true,
+  "production_and_cfgtest_observer_prefix_byte_equal": true,
+  "production_and_cfgtest_observer_prefix_sha256": "937c6ec75ac01378ab9ac0e7f748ecadb42b85ad41868e1a740263b415434706",
+  "all_other_tests_byte_equal": true,
+  "static_checks": [
+    "rustfmt --edition 2021 --check",
+    "git diff --check"
+  ],
+  "runtime_checks": "none by agent; root owns rerun",
+  "source_stable": true
+}

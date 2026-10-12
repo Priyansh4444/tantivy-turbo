@@ -1,0 +1,8 @@
+[
+  "rustfmt",
+  "+1.99.0",
+  "--check",
+  "--edition",
+  "2021",
+  "../../../tantivy-or-hillclimb-oct07/src/query/term_query/term_scorer.rs"
+]

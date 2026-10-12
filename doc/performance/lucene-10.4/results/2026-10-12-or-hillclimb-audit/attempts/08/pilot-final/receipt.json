@@ -1,0 +1,389 @@
+{
+  "seconds": 4.346220747000189,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 128694.7493297587,
+        "baseline_mean_ns": 118975.63136729223,
+        "ratio_mean": 1.0816899885360758,
+        "median_ratio": 1.0080148997614364
+      },
+      "BA": {
+        "candidate_mean_ns": 133037.34048257372,
+        "baseline_mean_ns": 121806.6166219839,
+        "ratio_mean": 1.0922012627232178,
+        "median_ratio": 1.0284262347149435
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 311077.4514563107,
+        "baseline_mean_ns": 275792.3883495146,
+        "ratio_mean": 1.127940670581811,
+        "median_ratio": 1.1125096842463293
+      },
+      "BA": {
+        "candidate_mean_ns": 322197.5048543689,
+        "baseline_mean_ns": 283747.96116504853,
+        "ratio_mean": 1.135505973440124,
+        "median_ratio": 1.1239982794560435
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 40966.5198019802,
+        "baseline_mean_ns": 40922.262376237624,
+        "ratio_mean": 1.00108149997514,
+        "median_ratio": 0.9936010657331449
+      },
+      "BA": {
+        "candidate_mean_ns": 42863.47277227723,
+        "baseline_mean_ns": 41515.64356435643,
+        "ratio_mean": 1.0324655742318296,
+        "median_ratio": 1.0258959804398464
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 453,
+      "kind": "OR",
+      "terms": [
+        "trans",
+        "siberian",
+        "orchestra"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 2.267003287466289,
+      "BA": 2.2510512870898016
+    },
+    {
+      "id": 737,
+      "kind": "OR",
+      "terms": [
+        "playa",
+        "del",
+        "rey"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 2.0151606781640354,
+      "BA": 2.077731275612521
+    },
+    {
+      "id": 639,
+      "kind": "OR",
+      "terms": [
+        "chicken",
+        "noodle",
+        "soup"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 2.257931106690399,
+      "BA": 2.0092666137145883
+    },
+    {
+      "id": 765,
+      "kind": "OR",
+      "terms": [
+        "napa",
+        "auto",
+        "parts"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.962247675792285,
+      "BA": 2.0482730675311105
+    },
+    {
+      "id": 725,
+      "kind": "OR",
+      "terms": [
+        "debra",
+        "jo",
+        "rupp"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.8150106988574428,
+      "BA": 2.074106902000077
+    },
+    {
+      "id": 365,
+      "kind": "OR",
+      "terms": [
+        "ford",
+        "modeling",
+        "agency"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.7421532128696389,
+      "BA": 2.0554520117694772
+    },
+    {
+      "id": 583,
+      "kind": "OR",
+      "terms": [
+        "ellen",
+        "degeneres",
+        "show"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.7135828013423835,
+      "BA": 1.8822504297859313
+    },
+    {
+      "id": 505,
+      "kind": "OR",
+      "terms": [
+        "xena",
+        "warrior",
+        "princess"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.7082117743865948,
+      "BA": 1.7819023592359513
+    },
+    {
+      "id": 811,
+      "kind": "OR",
+      "terms": [
+        "corpus",
+        "christi",
+        "tx"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 2.0697137257646814,
+      "BA": 1.6704153188163522
+    },
+    {
+      "id": 781,
+      "kind": "OR",
+      "terms": [
+        "little",
+        "shop",
+        "of",
+        "horrors"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.6622932282832703,
+      "BA": 1.6811306258821848
+    },
+    {
+      "id": 889,
+      "kind": "OR",
+      "terms": [
+        "david",
+        "lee",
+        "roth"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.6791278245511212,
+      "BA": 1.5753591108909666
+    },
+    {
+      "id": 893,
+      "kind": "OR",
+      "terms": [
+        "power",
+        "rangers",
+        "ninja",
+        "storm"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.569580742901211,
+      "BA": 1.5482699238375912
+    },
+    {
+      "id": 585,
+      "kind": "OR",
+      "terms": [
+        "jaguar",
+        "x",
+        "type"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.546309767517714,
+      "BA": 1.5627230662168377
+    },
+    {
+      "id": 329,
+      "kind": "OR",
+      "terms": [
+        "plus",
+        "size",
+        "clothing"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.5395839812091403,
+      "BA": 1.5364176645232828
+    },
+    {
+      "id": 519,
+      "kind": "OR",
+      "terms": [
+        "hotel",
+        "del",
+        "coronado"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.534575585169346,
+      "BA": 1.5677906115840545
+    },
+    {
+      "id": 841,
+      "kind": "OR",
+      "terms": [
+        "hot",
+        "springs",
+        "south",
+        "dakota"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.5188683651914863,
+      "BA": 1.5179803934727507
+    },
+    {
+      "id": 635,
+      "kind": "OR",
+      "terms": [
+        "jefferson",
+        "davis",
+        "high",
+        "school"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.5096340552651233,
+      "BA": 1.6113012176695405
+    },
+    {
+      "id": 825,
+      "kind": "OR",
+      "terms": [
+        "civil",
+        "war",
+        "battlefields"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.4906016574886864,
+      "BA": 1.7090250232603692
+    },
+    {
+      "id": 699,
+      "kind": "OR",
+      "terms": [
+        "chicago",
+        "teachers",
+        "union"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.4868720110505143,
+      "BA": 1.5824144854390392
+    },
+    {
+      "id": 613,
+      "kind": "OR",
+      "terms": [
+        "graduate",
+        "management",
+        "admission",
+        "test"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.4412476863192463,
+      "BA": 1.5131789263838733
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791419944.9739714,
+      "loadavg": [
+        4.52099609375,
+        4.90673828125,
+        4.5126953125
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 312517 python          88.6",
+        " 193666 helium          45.7",
+        "   2192 helium          13.5",
+        " 240282 t3code          13.2",
+        "  44668 vesktop         10.5",
+        "  44549 vesktop          7.4",
+        " 240292 t3code           6.6",
+        "   2142 helium           5.5",
+        "   1439 Hyprland         4.9",
+        " 240094 t3code           4.2",
+        " 243726 claude           3.1",
+        " 303984 claude           2.5"
+      ]
+    },
+    {
+      "at": 1791419948.0643537,
+      "loadavg": [
+        4.39892578125,
+        4.875,
+        4.50439453125
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 193666 helium          45.7",
+        " 312587 gh              26.1",
+        " 312517 python          22.9",
+        "   2192 helium          13.5",
+        " 240282 t3code          13.2",
+        "  44668 vesktop         10.5",
+        "  44549 vesktop          7.4",
+        " 240292 t3code           6.6",
+        "   2142 helium           5.5",
+        "   1439 Hyprland         4.9",
+        " 240094 t3code           4.2",
+        " 243726 claude           3.1"
+      ]
+    }
+  ]
+}

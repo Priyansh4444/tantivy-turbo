@@ -1,0 +1,379 @@
+{
+  "seconds": 13.839880890998757,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 321149.23458445043,
+        "baseline_mean_ns": 283271.0227882037,
+        "ratio_mean": 1.1337172133719002,
+        "median_ratio": 0.9987282746926663
+      },
+      "BA": {
+        "candidate_mean_ns": 324660.6152815013,
+        "baseline_mean_ns": 325740.1380697051,
+        "ratio_mean": 0.9966859386914954,
+        "median_ratio": 0.9895181719485086
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 723723.7621359223,
+        "baseline_mean_ns": 650791.708737864,
+        "ratio_mean": 1.1120666603751015,
+        "median_ratio": 0.9981858582516352
+      },
+      "BA": {
+        "candidate_mean_ns": 798267.9611650485,
+        "baseline_mean_ns": 815823.3592233009,
+        "ratio_mean": 0.9784813736211648,
+        "median_ratio": 0.9696160648836224
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 100013.31683168317,
+        "baseline_mean_ns": 96221.57673267326,
+        "ratio_mean": 1.039406339282345,
+        "median_ratio": 0.9905589745334553
+      },
+      "BA": {
+        "candidate_mean_ns": 100383.80445544554,
+        "baseline_mean_ns": 91098.22029702971,
+        "ratio_mean": 1.1019293695106205,
+        "median_ratio": 0.9885263895728102
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 811,
+      "kind": "OR",
+      "terms": [
+        "corpus",
+        "christi",
+        "tx"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.3944915543228682,
+      "BA": 1.73864785922918
+    },
+    {
+      "id": 365,
+      "kind": "OR",
+      "terms": [
+        "ford",
+        "modeling",
+        "agency"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.3296837346695927,
+      "BA": 7.029078765600529
+    },
+    {
+      "id": 453,
+      "kind": "OR",
+      "terms": [
+        "trans",
+        "siberian",
+        "orchestra"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.3085333686290452,
+      "BA": 1.5676248835015933
+    },
+    {
+      "id": 635,
+      "kind": "OR",
+      "terms": [
+        "jefferson",
+        "davis",
+        "high",
+        "school"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.3774401520888624,
+      "BA": 1.2864285632047359
+    },
+    {
+      "id": 839,
+      "kind": "OR",
+      "terms": [
+        "medal",
+        "of",
+        "honor"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2546954997295157,
+      "BA": 1.8156184885544757
+    },
+    {
+      "id": 952,
+      "kind": "PHRASE",
+      "terms": [
+        "interest",
+        "only"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 2.0590870310978495,
+      "BA": 1.2496930562144493
+    },
+    {
+      "id": 34,
+      "kind": "TERM",
+      "terms": [
+        "helen"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.199198122433014,
+      "BA": 1.2143427886536156
+    },
+    {
+      "id": 385,
+      "kind": "OR",
+      "terms": [
+        "region",
+        "iv"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1805697666732764,
+      "BA": 1.1502040657241968
+    },
+    {
+      "id": 767,
+      "kind": "OR",
+      "terms": [
+        "law",
+        "school",
+        "rankings"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.13772125719189,
+      "BA": 1.1328202764976958
+    },
+    {
+      "id": 571,
+      "kind": "OR",
+      "terms": [
+        "lost",
+        "episode"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.3914815174153488,
+      "BA": 1.1124105710497316
+    },
+    {
+      "id": 675,
+      "kind": "OR",
+      "terms": [
+        "milan",
+        "tennessee"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1028246614058208,
+      "BA": 1.3207651713256707
+    },
+    {
+      "id": 363,
+      "kind": "OR",
+      "terms": [
+        "san",
+        "francisco"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0976774504385778,
+      "BA": 1.0907445999605734
+    },
+    {
+      "id": 905,
+      "kind": "OR",
+      "terms": [
+        "boulder",
+        "city",
+        "nevada"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1445762120683642,
+      "BA": 1.0905347149704125
+    },
+    {
+      "id": 871,
+      "kind": "OR",
+      "terms": [
+        "blue",
+        "ridge",
+        "parkway"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0864658204618443,
+      "BA": 1.3874514753408678
+    },
+    {
+      "id": 477,
+      "kind": "OR",
+      "terms": [
+        "columbia",
+        "university"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.085599272174379,
+      "BA": 1.1097312279095786
+    },
+    {
+      "id": 329,
+      "kind": "OR",
+      "terms": [
+        "plus",
+        "size",
+        "clothing"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 2.040922711949057,
+      "BA": 1.080828605506685
+    },
+    {
+      "id": 737,
+      "kind": "OR",
+      "terms": [
+        "playa",
+        "del",
+        "rey"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.168894459764352,
+      "BA": 1.0806465315831952
+    },
+    {
+      "id": 841,
+      "kind": "OR",
+      "terms": [
+        "hot",
+        "springs",
+        "south",
+        "dakota"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.4088158947635498,
+      "BA": 1.0791765032950806
+    },
+    {
+      "id": 615,
+      "kind": "OR",
+      "terms": [
+        "big",
+        "boss",
+        "man"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0990467281393381,
+      "BA": 1.076164983377622
+    },
+    {
+      "id": 893,
+      "kind": "OR",
+      "terms": [
+        "power",
+        "rangers",
+        "ninja",
+        "storm"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2381566707741642,
+      "BA": 1.0730976676173372
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791436810.074749,
+      "loadavg": [
+        10.1240234375,
+        7.03515625,
+        4.6513671875
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 517486 ps               100",
+        " 517493 chrome           100",
+        " 516655 python          91.7",
+        " 517097 rustc           90.4",
+        " 516729 rustc           88.5",
+        " 516957 rustc           82.1",
+        " 516938 rustc           72.5",
+        " 517196 rustc           71.6",
+        " 516963 rustc           69.5",
+        " 516960 rustc           68.7",
+        " 517393 rustc           68.4",
+        " 517236 rustc           68.3"
+      ]
+    },
+    {
+      "at": 1791436821.045852,
+      "loadavg": [
+        11.95654296875,
+        7.5283203125,
+        4.83740234375
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 520347 rustc            103",
+        " 520305 rustc            100",
+        " 519086 cc1             92.3",
+        " 520243 rustc           90.7",
+        " 519764 rustc           87.8",
+        " 520268 cc1             80.8",
+        " 467738 helium          45.6",
+        " 193666 helium          39.1",
+        " 500441 helium          33.1",
+        " 490821 helium          21.1",
+        "   2192 helium          20.3",
+        " 516655 python          16.1"
+      ]
+    }
+  ]
+}

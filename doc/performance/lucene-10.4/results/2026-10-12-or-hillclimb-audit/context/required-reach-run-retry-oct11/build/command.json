@@ -1,0 +1,28 @@
+{
+  "argv": [
+    "cargo",
+    "build",
+    "--locked",
+    "--release",
+    "--bin",
+    "tantivy_worker"
+  ],
+  "cwd": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/required-reach-run-retry-oct11",
+  "timeout_seconds": 1800,
+  "compiler_argv": [
+    "rustc",
+    "-Vv"
+  ],
+  "compiler_timeout_seconds": 30,
+  "rustflags": "-C target-cpu=native",
+  "jobs": 2,
+  "target_dir": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/required-reach-run-retry-oct11/target",
+  "profile": {
+    "opt_level": 3,
+    "lto": "fat",
+    "codegen_units": 1,
+    "overflow_checks": false,
+    "panic": "abort",
+    "debug": false
+  }
+}

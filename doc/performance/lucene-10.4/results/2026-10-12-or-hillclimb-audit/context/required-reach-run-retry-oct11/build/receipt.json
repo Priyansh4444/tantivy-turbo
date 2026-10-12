@@ -1,0 +1,27 @@
+{
+  "returncode": 0,
+  "error": null,
+  "source_index_parent_unchanged": true,
+  "compiler_matches": true,
+  "compiler_returncode": 0,
+  "wall_seconds": 186.3121572789969,
+  "profile": {
+    "opt_level": 3,
+    "lto": "fat",
+    "codegen_units": 1,
+    "overflow_checks": false,
+    "panic": "abort",
+    "debug": false
+  },
+  "rustflags": "-C target-cpu=native",
+  "jobs": 2,
+  "logs": {
+    "stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr.log": "0b3dc3492b471dfaf10cdd62acac8827ef2260fc08b72c0f6f589e09e85afe89",
+    "compiler.txt": "b569b0c98ea3133c7252b4b8ea6b39b7b353813df0dd5f5c412c355691424112",
+    "compiler.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "command.json": "46514017b39250c323c7062d4244f5439feb343a6651e6659ccce937b3b3c150"
+  },
+  "binary": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/required-reach-run-retry-oct11/target/release/tantivy_worker",
+  "binary_sha256": "793da5c3af3dd0545b3e8e1be1e6c81c2c435361a55c9243011b08d4faae2bd0"
+}

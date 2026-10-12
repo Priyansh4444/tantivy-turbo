@@ -1,0 +1,386 @@
+{
+  "seconds": 8.53147566199982,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 225825.77345844504,
+        "baseline_mean_ns": 238724.54155495978,
+        "ratio_mean": 0.9459679846382901,
+        "median_ratio": 1.0125418656025085
+      },
+      "BA": {
+        "candidate_mean_ns": 226081.9128686327,
+        "baseline_mean_ns": 239085.22654155496,
+        "ratio_mean": 0.9456122243058704,
+        "median_ratio": 1.0037715795230577
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 504833.854368932,
+        "baseline_mean_ns": 551610.9320388349,
+        "ratio_mean": 0.9151991468026061,
+        "median_ratio": 1.03565281822573
+      },
+      "BA": {
+        "candidate_mean_ns": 505049.7281553398,
+        "baseline_mean_ns": 552003.7524271845,
+        "ratio_mean": 0.9149389400608496,
+        "median_ratio": 1.0158203142140088
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 80672.94306930693,
+        "baseline_mean_ns": 80669.5198019802,
+        "ratio_mean": 1.000042435697338,
+        "median_ratio": 1.0072412882324961
+      },
+      "BA": {
+        "candidate_mean_ns": 80951.38118811882,
+        "baseline_mean_ns": 80832.98267326732,
+        "ratio_mean": 1.0014647302491615,
+        "median_ratio": 1.0007650779184734
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 817,
+      "kind": "OR",
+      "terms": [
+        "centerville",
+        "high",
+        "school"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 14.262310348841721,
+      "BA": 14.83982616614505
+    },
+    {
+      "id": 909,
+      "kind": "OR",
+      "terms": [
+        "niceville",
+        "high",
+        "school"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 9.018811869315218,
+      "BA": 9.293748104230575
+    },
+    {
+      "id": 435,
+      "kind": "OR",
+      "terms": [
+        "helen",
+        "of",
+        "troy"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 4.809343527343616,
+      "BA": 4.559219779950501
+    },
+    {
+      "id": 791,
+      "kind": "OR",
+      "terms": [
+        "university",
+        "of",
+        "akron"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 3.621368781258226,
+      "BA": 3.7177537275707055
+    },
+    {
+      "id": 691,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "oregonian",
+        "newspaper"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 3.0792713354280794,
+      "BA": 3.0394486743054734
+    },
+    {
+      "id": 431,
+      "kind": "OR",
+      "terms": [
+        "cured",
+        "of",
+        "cancer"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 2.6162952494362224,
+      "BA": 3.021026153861853
+    },
+    {
+      "id": 689,
+      "kind": "OR",
+      "terms": [
+        "bismarck",
+        "state",
+        "college"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 2.4381978802298345,
+      "BA": 2.4508719094320712
+    },
+    {
+      "id": 583,
+      "kind": "OR",
+      "terms": [
+        "ellen",
+        "degeneres",
+        "show"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 2.2030354756328316,
+      "BA": 2.146240155356565
+    },
+    {
+      "id": 609,
+      "kind": "OR",
+      "terms": [
+        "pump",
+        "it",
+        "up"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 2.262291005744663,
+      "BA": 1.8594790060841044
+    },
+    {
+      "id": 401,
+      "kind": "OR",
+      "terms": [
+        "battle",
+        "of",
+        "the",
+        "bulge"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.7617405416370828,
+      "BA": 1.7028231386659285
+    },
+    {
+      "id": 825,
+      "kind": "OR",
+      "terms": [
+        "civil",
+        "war",
+        "battlefields"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.5998467335078868,
+      "BA": 1.6226087975569234
+    },
+    {
+      "id": 655,
+      "kind": "OR",
+      "terms": [
+        "time",
+        "in",
+        "denver"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.5887816192213147,
+      "BA": 1.65829865334288
+    },
+    {
+      "id": 433,
+      "kind": "OR",
+      "terms": [
+        "lord",
+        "of",
+        "the",
+        "rings"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.5767212649790825,
+      "BA": 1.5797314640592541
+    },
+    {
+      "id": 723,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "daily",
+        "breeze"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.5465095353136538,
+      "BA": 1.5482733145583718
+    },
+    {
+      "id": 585,
+      "kind": "OR",
+      "terms": [
+        "jaguar",
+        "x",
+        "type"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.6318771741165305,
+      "BA": 1.5251322880892721
+    },
+    {
+      "id": 569,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "breakfast",
+        "club"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.5263478489358144,
+      "BA": 1.4663608087091757
+    },
+    {
+      "id": 827,
+      "kind": "OR",
+      "terms": [
+        "national",
+        "security",
+        "cutter"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.515928063921083,
+      "BA": 1.4195257867132867
+    },
+    {
+      "id": 653,
+      "kind": "OR",
+      "terms": [
+        "miami",
+        "dade",
+        "college"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.415469279300835,
+      "BA": 1.5047549967762734
+    },
+    {
+      "id": 905,
+      "kind": "OR",
+      "terms": [
+        "boulder",
+        "city",
+        "nevada"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.4041221463810953,
+      "BA": 2.007847974300934
+    },
+    {
+      "id": 725,
+      "kind": "OR",
+      "terms": [
+        "debra",
+        "jo",
+        "rupp"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.3594124643646044,
+      "BA": 1.4496914849856026
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791528626.557581,
+      "loadavg": [
+        5.6181640625,
+        4.52734375,
+        2.83935546875
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        "  12913 ps               100",
+        "  12901 python          95.5",
+        "   5070 helium          34.9",
+        "   2264 helium          28.6",
+        "   5408 helium          22.1",
+        "   6959 t3code          17.9",
+        "   6969 t3code          16.7",
+        "   3759 vesktop         14.2",
+        "   2218 helium          12.3",
+        "   3624 vesktop          9.9",
+        "   1503 Hyprland         8.3",
+        "   3482 opencode2        5.3"
+      ]
+    },
+    {
+      "at": 1791528632.6679358,
+      "loadavg": [
+        5.48828125,
+        4.5185546875,
+        2.845703125
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        "  12970 xearch-search    166",
+        "   5070 helium          34.7",
+        "   2264 helium          28.5",
+        "  12901 python          23.6",
+        "   5408 helium          21.9",
+        "   6959 t3code          17.9",
+        "   6969 t3code          16.7",
+        "   3759 vesktop         14.1",
+        "   2218 helium          12.3",
+        "   3624 vesktop          9.9",
+        "   1503 Hyprland         8.3",
+        "   3482 opencode2        5.2"
+      ]
+    }
+  ]
+}

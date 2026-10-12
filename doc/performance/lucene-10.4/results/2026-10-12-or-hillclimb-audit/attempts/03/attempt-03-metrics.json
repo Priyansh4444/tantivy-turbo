@@ -1,0 +1,599 @@
+{
+  "parent": {
+    "binary": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-01/tantivy_worker",
+    "binary_sha256": "fe03feaf8f0c822f5b500edab9330a41f7af9956def57d6aced6625802aff117",
+    "source_commit": "22f4a270926d513b2641cd44c5445008ecf3b276",
+    "compiled_sources": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-01/build-final/after.json",
+    "compiled_sources_sha256": "0ea28b13e45a4883ece7bbba6ec66b0668f351c3981cff96bd4c24c42645e0a7",
+    "exact_gate": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-01/verify/receipt.json",
+    "exact_gate_sha256": "c5bb6bed7b6daae1e23e388d8b5fcfc07461738f17f4c7ceba7dae166abad21b"
+  },
+  "groups": {
+    "ALL": {
+      "queries": 1201,
+      "primary": {
+        "AB": 0.9954414763396148,
+        "BA": 0.9733439379247603
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.012974396393008,
+          "BA": 0.9946897632687421
+        },
+        "PP": {
+          "AB": 1.0335627174226933,
+          "BA": 0.9965910762884252
+        }
+      },
+      "control_log_spread": 0.03301178279066109,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9872385079081332,
+          "TT": 1.0120453463397947,
+          "PP": 0.9968070747270591
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.975074625959349,
+          "TT": 0.9952456667771578,
+          "PP": 0.9887664692727641
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9916851258267079,
+          "TT": 1.0076989357771455,
+          "PP": 1.0085727031187544
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9777253767425644,
+          "TT": 1.000366633375419,
+          "PP": 1.0162176155967029
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 1.0001450235371734,
+          "TT": 1.011807290750918,
+          "PP": 1.040782302188384
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9866028667049039,
+          "TT": 0.9931611011740906,
+          "PP": 0.9907987242967631
+        }
+      ]
+    },
+    "OR": {
+      "queries": 301,
+      "primary": {
+        "AB": 0.968719612022308,
+        "BA": 0.9416278701936743
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.010476687036151,
+          "BA": 0.985597819337355
+        },
+        "PP": {
+          "AB": 1.0075237886705894,
+          "BA": 0.9776921980097772
+        }
+      },
+      "control_log_spread": 0.022560384445301968,
+      "candidate_win_both_beyond_group_controls": true,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9597263818895568,
+          "TT": 1.0086455051725356,
+          "PP": 0.9694634585282446
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9449631760993206,
+          "TT": 0.9884786527135883,
+          "PP": 0.9769198439110128
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9596074796747903,
+          "TT": 1.0046880940463578,
+          "PP": 1.0017229998815693
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9492197978761587,
+          "TT": 0.9864040156015227,
+          "PP": 0.9857298488431192
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9682696197130062,
+          "TT": 1.010292141758407,
+          "PP": 1.00694297452527
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9418459486380064,
+          "TT": 0.9930337270410954,
+          "PP": 0.9824937303026037
+        }
+      ]
+    },
+    "OR_2": {
+      "queries": 198,
+      "primary": {
+        "AB": 0.9845182948025335,
+        "BA": 0.9950065687378125
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0018738082864167,
+          "BA": 0.9982174759705984
+        },
+        "PP": {
+          "AB": 0.9883000021880982,
+          "BA": 0.9949219273251333
+        }
+      },
+      "control_log_spread": 0.011768981385996809,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9802523073236812,
+          "TT": 0.9916705082718954,
+          "PP": 0.9917527801011738
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 1.0047984072091003,
+          "TT": 1.0044980501748813,
+          "PP": 1.0048631823661873
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9904825483648847,
+          "TT": 1.006964995498371,
+          "PP": 0.9749391367253146
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9964957019686622,
+          "TT": 1.0033482834368999,
+          "PP": 0.9889343471947396
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9839635323163711,
+          "TT": 0.9971479489505218,
+          "PP": 0.9927762774957352
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9944981800507173,
+          "TT": 1.0084945290415805,
+          "PP": 0.9898931184326873
+        }
+      ]
+    },
+    "OR_3PLUS": {
+      "queries": 103,
+      "primary": {
+        "AB": 0.9651902682331261,
+        "BA": 0.9298300602280594
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0124553274708348,
+          "BA": 0.9827373054951708
+        },
+        "PP": {
+          "AB": 1.0117945433696296,
+          "BA": 0.9739499377903588
+        }
+      },
+      "control_log_spread": 0.02639537523308078,
+      "candidate_win_both_beyond_group_controls": true,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9553290966973573,
+          "TT": 1.0124689080093807,
+          "PP": 0.9648817888239877
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9319727066132278,
+          "TT": 0.9849041200296668,
+          "PP": 0.970963496432628
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9528040531809546,
+          "TT": 1.004170448825572,
+          "PP": 1.0077174267774391
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9388893392294309,
+          "TT": 0.9825804877720568,
+          "PP": 0.985029750824286
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9648160280691084,
+          "TT": 1.013266564841627,
+          "PP": 1.0100003682296632
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9306265667624279,
+          "TT": 0.9895957382685551,
+          "PP": 0.980923476157953
+        }
+      ]
+    },
+    "AND": {
+      "queries": 300,
+      "primary": {
+        "AB": 1.0203506776170181,
+        "BA": 0.9822289687969428
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0235966154732472,
+          "BA": 0.9875882668834796
+        },
+        "PP": {
+          "AB": 1.0131609826167625,
+          "BA": 0.9751477821793028
+        }
+      },
+      "control_log_spread": 0.025166248004132377,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 1.0168607905476625,
+          "TT": 1.028295500032109,
+          "PP": 1.012464994599918
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.983326649762949,
+          "TT": 0.9873418025757061,
+          "PP": 0.9762505343266632
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 1.0187430118405398,
+          "TT": 1.0162148042869497,
+          "PP": 1.0064875909345223
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9879538236646713,
+          "TT": 0.9951405911812284,
+          "PP": 0.9801669003016988
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 1.0239640856959218,
+          "TT": 1.0149744398253204,
+          "PP": 1.0159629988838397
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9857740436606875,
+          "TT": 0.9796294367811312,
+          "PP": 0.9750522275862867
+        }
+      ]
+    },
+    "TERM": {
+      "queries": 300,
+      "primary": {
+        "AB": 0.9506692329351772,
+        "BA": 0.9663815646456823
+      },
+      "controls": {
+        "TT": {
+          "AB": 0.9807314823872749,
+          "BA": 0.9957190204016604
+        },
+        "PP": {
+          "AB": 0.9873950384296926,
+          "BA": 0.9942474782197737
+        }
+      },
+      "control_log_spread": 0.01945657514411261,
+      "candidate_win_both_beyond_group_controls": true,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.944964296470323,
+          "TT": 0.9914640212452245,
+          "PP": 0.9853464610692426
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9624106158597293,
+          "TT": 0.9983791089248716,
+          "PP": 0.9989466122307178
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9383008004276605,
+          "TT": 0.9786887278078767,
+          "PP": 0.9828124937810273
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.962302185915513,
+          "TT": 0.9912650145615967,
+          "PP": 0.9957041758894694
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9505485372432587,
+          "TT": 0.9866509740656043,
+          "PP": 0.9877352934354043
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.963883193464922,
+          "TT": 0.9989052737889577,
+          "PP": 0.9966019882974285
+        }
+      ]
+    },
+    "PHRASE": {
+      "queries": 300,
+      "primary": {
+        "AB": 1.0079141148579485,
+        "BA": 0.9978345383711302
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.010990549579185,
+          "BA": 1.0059422893289243
+        },
+        "PP": {
+          "AB": 1.0714859181556533,
+          "BA": 1.025780197471114
+        }
+      },
+      "control_log_spread": 0.06904639366655713,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9983660501440288,
+          "TT": 1.0072182730458596,
+          "PP": 1.014036381370437
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9986860144895953,
+          "TT": 1.0048001107526405,
+          "PP": 1.0055472623315114
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 1.00820804724079,
+          "TT": 1.0071812371162756,
+          "PP": 1.0175903523529006
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9990601559829478,
+          "TT": 1.015194007074293,
+          "PP": 1.0670059632225397
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 1.0175755960900659,
+          "TT": 1.0126930016389848,
+          "PP": 1.0884360794398968
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 1.028579723844043,
+          "TT": 1.000052271011676,
+          "PP": 1.0061113643795114
+        }
+      ]
+    }
+  },
+  "regressions_beyond_per_query_controls": [
+    {
+      "id": "289",
+      "kind": "TERM",
+      "terms": "satellite",
+      "T_over_P_AB": "1.128005980811563",
+      "T_over_P_BA": "1.1360003313040958",
+      "control_log_spread": "0.08370416599082087"
+    },
+    {
+      "id": "406",
+      "kind": "AND",
+      "terms": "hempstead new york",
+      "T_over_P_AB": "1.052666326561234",
+      "T_over_P_BA": "1.067438341730876",
+      "control_log_spread": "0.04202156834079498"
+    },
+    {
+      "id": "428",
+      "kind": "AND",
+      "terms": "penny stocks",
+      "T_over_P_AB": "1.0254082624256358",
+      "T_over_P_BA": "1.039045604695929",
+      "control_log_spread": "0.005943234707717201"
+    },
+    {
+      "id": "458",
+      "kind": "AND",
+      "terms": "belcourt castle",
+      "T_over_P_AB": "1.245234727554388",
+      "T_over_P_BA": "1.2420420825465335",
+      "control_log_spread": "0.20266124103107733"
+    },
+    {
+      "id": "519",
+      "kind": "OR",
+      "terms": "hotel del coronado",
+      "T_over_P_AB": "1.044180820110404",
+      "T_over_P_BA": "1.0284622996794361",
+      "control_log_spread": "0.014164477110758378"
+    },
+    {
+      "id": "564",
+      "kind": "AND",
+      "terms": "toxic encephalopathy",
+      "T_over_P_AB": "1.162293488824101",
+      "T_over_P_BA": "1.2037483867347512",
+      "control_log_spread": "0.14302030299322946"
+    },
+    {
+      "id": "816",
+      "kind": "AND",
+      "terms": "centerville high school",
+      "T_over_P_AB": "1.0348757853559694",
+      "T_over_P_BA": "1.0379342637514144",
+      "control_log_spread": "0.02976829416950661"
+    },
+    {
+      "id": "839",
+      "kind": "OR",
+      "terms": "medal of honor",
+      "T_over_P_AB": "1.1970834825839085",
+      "T_over_P_BA": "1.1477405468182047",
+      "control_log_spread": "0.03944222894529212"
+    },
+    {
+      "id": "854",
+      "kind": "AND",
+      "terms": "the british embassy",
+      "T_over_P_AB": "1.024092548273755",
+      "T_over_P_BA": "1.028709863556862",
+      "control_log_spread": "0.016681553160990247"
+    },
+    {
+      "id": "916",
+      "kind": "AND",
+      "terms": "laborers international union of north america",
+      "T_over_P_AB": "1.0434758217663187",
+      "T_over_P_BA": "1.0510427129669488",
+      "control_log_spread": "0.022429206422523683"
+    },
+    {
+      "id": "918",
+      "kind": "AND",
+      "terms": "to be or not to be",
+      "T_over_P_AB": "1.000864470636814",
+      "T_over_P_BA": "1.0010674948530083",
+      "control_log_spread": "0.0005929013084984287"
+    },
+    {
+      "id": "1001",
+      "kind": "PHRASE",
+      "terms": "american south",
+      "T_over_P_AB": "1.018926852733605",
+      "T_over_P_BA": "1.0218031760554669",
+      "control_log_spread": "0.01430788809690686"
+    },
+    {
+      "id": "1055",
+      "kind": "PHRASE",
+      "terms": "sarah fisher",
+      "T_over_P_AB": "1.0924529912098542",
+      "T_over_P_BA": "1.0452063594026015",
+      "control_log_spread": "0.023785903738595005"
+    },
+    {
+      "id": "1063",
+      "kind": "PHRASE",
+      "terms": "mercedes benz",
+      "T_over_P_AB": "1.1386619392631416",
+      "T_over_P_BA": "1.1443412322274882",
+      "control_log_spread": "0.07959141946229874"
+    },
+    {
+      "id": "1068",
+      "kind": "PHRASE",
+      "terms": "big boss man",
+      "T_over_P_AB": "1.0695394701239265",
+      "T_over_P_BA": "1.05623444437133",
+      "control_log_spread": "0.024399147243852563"
+    }
+  ],
+  "efficiency": {
+    "candidate_file_bytes": 4766824,
+    "baseline_file_bytes": 4764240,
+    "candidate_sections": {
+      ".rodata": 458816,
+      ".text": 2599794
+    },
+    "baseline_sections": {
+      ".rodata": 458816,
+      ".text": 2597490
+    },
+    "candidate_binary_sha256": "c4ab444bb759f0bc096d59eb0cfa693552840ef0a040581a1b36d9e92447b5e6",
+    "baseline_binary_sha256": "fe03feaf8f0c822f5b500edab9330a41f7af9956def57d6aced6625802aff117",
+    "index_change": false,
+    "per_region_allocation": false
+  }
+}

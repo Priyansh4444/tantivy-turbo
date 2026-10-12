@@ -1,0 +1,9 @@
+{
+  "parent": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+  "source_sha256": {
+    "src/query/boolean_query/or_maxscore.rs": "590f6a2b0f493fe2c0b6ab7c17a41ab610c95e50a76c8f4a6ff42f44e544806e",
+    "src/query/score_combiner.rs": "2679f2aab4434a4f4b75456185fee01d03506b5d40fb95f519e135664068997e"
+  },
+  "patch_sha256": "4594ba2e4096973b495e1fa019b637bdd1b833b08f540ad62ce9969d140c40e9",
+  "review": "Root read full authentic 259-addition/3-deletion two-file diff, all four independent numeric tests, exact classified cutoff proof and static identities. Original13OR and4numeric tests/helpers unchanged. Only optional predicate representation and immediate callback cache refresh; original factor/sums/cursors/API unchanged. Runtime owned by root."
+}

@@ -1,0 +1,374 @@
+{
+  "seconds": 4.633111072998872,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 121842.36595174263,
+        "baseline_mean_ns": 119870.09383378016,
+        "ratio_mean": 1.016453412647673,
+        "median_ratio": 0.998414271555996
+      },
+      "BA": {
+        "candidate_mean_ns": 126360.89142091153,
+        "baseline_mean_ns": 127566.35522788204,
+        "ratio_mean": 0.9905502998434259,
+        "median_ratio": 0.9920566211186777
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 284971.9417475728,
+        "baseline_mean_ns": 277999.4951456311,
+        "ratio_mean": 1.0250807887197393,
+        "median_ratio": 1.0132288986031668
+      },
+      "BA": {
+        "candidate_mean_ns": 297385.42718446604,
+        "baseline_mean_ns": 297979.46601941745,
+        "ratio_mean": 0.9980064437228278,
+        "median_ratio": 1.0144102437005582
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 40685.792079207924,
+        "baseline_mean_ns": 40993.87128712871,
+        "ratio_mean": 0.9924847495918854,
+        "median_ratio": 0.9906016815127489
+      },
+      "BA": {
+        "candidate_mean_ns": 42222.63118811881,
+        "baseline_mean_ns": 42892.46534653466,
+        "ratio_mean": 0.9843834073652762,
+        "median_ratio": 0.9742308481081692
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 1139,
+      "kind": "PHRASE",
+      "terms": [
+        "business",
+        "consultants"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2452537593984963,
+      "BA": 1.4570919494937382
+    },
+    {
+      "id": 849,
+      "kind": "OR",
+      "terms": [
+        "edith",
+        "head"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.3748030541752514,
+      "BA": 1.1443171034382071
+    },
+    {
+      "id": 371,
+      "kind": "OR",
+      "terms": [
+        "texas",
+        "state",
+        "legislature"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0625091337769508,
+      "BA": 1.105749949869661
+    },
+    {
+      "id": 847,
+      "kind": "OR",
+      "terms": [
+        "old",
+        "photos"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1444901836605446,
+      "BA": 1.0621465241737866
+    },
+    {
+      "id": 859,
+      "kind": "OR",
+      "terms": [
+        "new",
+        "england",
+        "aquarium"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.059796658563877,
+      "BA": 1.1001399160503698
+    },
+    {
+      "id": 351,
+      "kind": "OR",
+      "terms": [
+        "robert",
+        "green",
+        "ingersoll"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0555688268550434,
+      "BA": 1.0590083196629565
+    },
+    {
+      "id": 817,
+      "kind": "OR",
+      "terms": [
+        "centerville",
+        "high",
+        "school"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0815330680310782,
+      "BA": 1.0555013247803653
+    },
+    {
+      "id": 935,
+      "kind": "PHRASE",
+      "terms": [
+        "milwaukee",
+        "newspaper"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0525901122710262,
+      "BA": 1.1588063564678264
+    },
+    {
+      "id": 755,
+      "kind": "OR",
+      "terms": [
+        "ron",
+        "keel"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0522413540802888,
+      "BA": 1.0608224805115998
+    },
+    {
+      "id": 471,
+      "kind": "OR",
+      "terms": [
+        "famous",
+        "quotes"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0898882744611218,
+      "BA": 1.0509004430294777
+    },
+    {
+      "id": 34,
+      "kind": "TERM",
+      "terms": [
+        "helen"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1070352280993454,
+      "BA": 1.0480627306273063
+    },
+    {
+      "id": 759,
+      "kind": "OR",
+      "terms": [
+        "open",
+        "source",
+        "software"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.043891241408491,
+      "BA": 1.0532251889646667
+    },
+    {
+      "id": 357,
+      "kind": "OR",
+      "terms": [
+        "who",
+        "dares",
+        "wins"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.042599225105516,
+      "BA": 1.0838368478421767
+    },
+    {
+      "id": 579,
+      "kind": "OR",
+      "terms": [
+        "john",
+        "wilkes",
+        "booth"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0418602864933368,
+      "BA": 1.0765787776322733
+    },
+    {
+      "id": 519,
+      "kind": "OR",
+      "terms": [
+        "hotel",
+        "del",
+        "coronado"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0404693001299707,
+      "BA": 1.0413511191063212
+    },
+    {
+      "id": 609,
+      "kind": "OR",
+      "terms": [
+        "pump",
+        "it",
+        "up"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.039699688701703,
+      "BA": 1.0440398745729396
+    },
+    {
+      "id": 391,
+      "kind": "OR",
+      "terms": [
+        "people",
+        "having",
+        "sex"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0595933680794187,
+      "BA": 1.039078536093131
+    },
+    {
+      "id": 431,
+      "kind": "OR",
+      "terms": [
+        "cured",
+        "of",
+        "cancer"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0661603863139213,
+      "BA": 1.0380172703824155
+    },
+    {
+      "id": 1037,
+      "kind": "PHRASE",
+      "terms": [
+        "elise",
+        "neal"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0355426258537819,
+      "BA": 1.0700088618812509
+    },
+    {
+      "id": 413,
+      "kind": "OR",
+      "terms": [
+        "freedom",
+        "tower"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0362948030096193,
+      "BA": 1.034587581798813
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791419506.868953,
+      "loadavg": [
+        5.37939453125,
+        5.1005859375,
+        4.2734375
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 306186 ps               100",
+        " 306140 cargo-hawk-driv 99.4",
+        " 306144 python          91.1",
+        " 295713 youtube-raw-sea 56.8",
+        " 193666 helium          45.1",
+        " 240282 t3code          16.6",
+        "   2192 helium          13.2",
+        "  44668 vesktop         10.7",
+        "  44549 vesktop          7.5",
+        " 240292 t3code           7.3",
+        " 303984 claude           6.9",
+        " 240094 t3code           5.4"
+      ]
+    },
+    {
+      "at": 1791419510.1795607,
+      "loadavg": [
+        5.37939453125,
+        5.1005859375,
+        4.2734375
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        " 306140 cargo-hawk-driv 99.6",
+        " 295713 youtube-raw-sea 57.0",
+        " 193666 helium          45.1",
+        " 306144 python          22.9",
+        " 240282 t3code          16.5",
+        "   2192 helium          13.2",
+        "  44668 vesktop         10.7",
+        "  44549 vesktop          7.5",
+        " 240292 t3code           7.3",
+        " 303984 claude           6.7",
+        "   2142 helium           5.4",
+        " 240094 t3code           5.4"
+      ]
+    }
+  ]
+}

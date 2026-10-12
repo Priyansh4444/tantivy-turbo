@@ -1,0 +1,160 @@
+diff --git i/src/query/boolean_query/block_wand_union.rs w/src/query/boolean_query/block_wand_union.rs
+index ebadbcd53..02d8c5164 100644
+--- i/src/query/boolean_query/block_wand_union.rs
++++ w/src/query/boolean_query/block_wand_union.rs
+@@ -30,6 +30,8 @@ pub(crate) fn two_term_or_maxscore(
+         return;
+     }
+ 
++    #[cfg(test)]
++    let mut warm_candidates = 0;
+     for _ in 0..128 {
+         let doc = scorers[0].doc().min(scorers[1].doc());
+         if doc == TERMINATED {
+@@ -45,13 +47,26 @@ pub(crate) fn two_term_or_maxscore(
+         if score > threshold {
+             threshold = callback(doc, score);
+         }
++        #[cfg(test)]
++        {
++            warm_candidates += 1;
++        }
+         if threshold >= max_scores[0] && threshold >= max_scores[1] {
++            #[cfg(test)]
++            record_two_term_warm_exit(&scorers, warm_candidates, 0);
+             block_wand_intersection(scorers, threshold, callback);
+             return;
+         }
++        // The next unprocessed cursors are already coherent. Once either
++        // term cannot win alone, enter the existing essential walk immediately.
++        if threshold >= max_scores[0] || threshold >= max_scores[1] {
++            break;
++        }
+     }
+ 
+     if threshold >= max_scores[0] || threshold >= max_scores[1] {
++        #[cfg(test)]
++        record_two_term_warm_exit(&scorers, warm_candidates, 1);
+         // A document without the essential term cannot exceed the current
+         // threshold. Drive its postings and only look up the optional term
+         // for these candidates.
+@@ -83,9 +98,30 @@ pub(crate) fn two_term_or_maxscore(
+         return;
+     }
+ 
++    #[cfg(test)]
++    record_two_term_warm_exit(&scorers, warm_candidates, 2);
+     two_term_regions(scorers, max_doc, threshold, callback);
+ }
+ 
++#[cfg(test)]
++type TwoTermWarmExit = (usize, DocId, u8);
++
++#[cfg(test)]
++thread_local! {
++    // Opt-in evidence: processed warm candidates, next physical doc, exit kind.
++    static TWO_TERM_WARM_EXIT: std::cell::RefCell<Option<Vec<TwoTermWarmExit>>> =
++        const { std::cell::RefCell::new(None) };
++}
++
++#[cfg(test)]
++fn record_two_term_warm_exit(scorers: &[TermScorer], candidates: usize, kind: u8) {
++    TWO_TERM_WARM_EXIT.with(|exit| {
++        if let Some(exit) = exit.borrow_mut().as_mut() {
++            exit.push((candidates, scorers[0].doc().min(scorers[1].doc()), kind));
++        }
++    });
++}
++
+ // Keep hot metadata separate from the large incoming-order TermScorers. Actual
+ // cursor mutations own the decoded-document mirror; shallow selection does not.
+ struct TwoTermState {
+@@ -763,6 +799,88 @@ mod tests {
+         actual
+     }
+ 
++    #[test]
++    fn two_term_exact_early_warm_handoff_preserves_all_exit_paths() {
++        let norms = vec![1; 320];
++        let dense: Vec<_> = (0..300).map(|doc| (doc, 1)).collect();
++        let observed = |scorers: Vec<TermScorer>, threshold: Score, limit: usize| {
++            super::TWO_TERM_WARM_EXIT.with(|exit| *exit.borrow_mut() = Some(Vec::new()));
++            let accepted = check_two_exact(scorers, 320, threshold, limit, false, &[]);
++            let exit = super::TWO_TERM_WARM_EXIT.with(|exit| exit.borrow_mut().take().unwrap());
++            (accepted, exit)
++        };
++        for reverse in [false, true] {
++            let weak = two_term_fixture(&dense, &norms, 0.1);
++            let weak_max = weak.max_score();
++            let strong = two_term_fixture(&[(0, 1), (250, 1000)], &norms, 1.0);
++            assert!(strong.max_score() > weak_max.next_up());
++            for threshold in [weak_max.next_down(), weak_max, weak_max.next_up()] {
++                let mut scorers = vec![weak.clone(), strong.clone()];
++                if reverse {
++                    scorers.reverse();
++                }
++                let (accepted, exit) = observed(scorers, threshold, 0);
++                assert_eq!(
++                    accepted.iter().map(|&(doc, _)| doc).collect::<Vec<_>>(),
++                    [0, 250]
++                );
++                if threshold < weak_max {
++                    // Neither immutable maximum is certified optional: the
++                    // full warm phase still enters the unchanged local kernel.
++                    assert_eq!(exit, [(128, 128, 2)]);
++                } else {
++                    // Equality is sufficient. Exactly one warm candidate was
++                    // processed; the handoff starts with unprocessed doc 1.
++                    assert_eq!(exit, [(1, 1, 1)]);
++                }
++            }
++
++            // Callback growth crosses the weak global certificate only when
++            // Top-10 fills. The later stronger hit must survive the early exit.
++            let growing: Vec<_> = (0..10).map(|doc| (doc, 1)).chain([(250, 1000)]).collect();
++            let mut scorers = vec![weak, two_term_fixture(&growing, &norms, 1.0)];
++            if reverse {
++                scorers.reverse();
++            }
++            let (accepted, exit) = observed(scorers, 0.0, 10);
++            assert_eq!(accepted.len(), 11);
++            assert_eq!(accepted.last().unwrap().0, 250);
++            assert_eq!(exit, [(10, 10, 1)]);
++
++            // Both-global certification retains precedence over the new break
++            // and takes the existing terminal intersection route after doc 0.
++            let high_first: Vec<_> = (0..300)
++                .map(|doc| (doc, if doc == 0 { 1000 } else { 1 }))
++                .collect();
++            let mut scorers = vec![
++                two_term_fixture(&high_first, &norms, 0.1),
++                two_term_fixture(&high_first, &norms, 0.1),
++            ];
++            if reverse {
++                scorers.reverse();
++            }
++            let (accepted, exit) = observed(scorers, 0.0, 1);
++            assert_eq!(
++                accepted.iter().map(|&(doc, _)| doc).collect::<Vec<_>>(),
++                [0]
++            );
++            assert_eq!(exit, [(1, 1, 0)]);
++
++            // A fixed low threshold never certifies either global maximum;
++            // every equal-score document remains visible in the original route.
++            let mut scorers = vec![
++                two_term_fixture(&dense, &norms, 0.3),
++                two_term_fixture(&dense, &norms, 0.7),
++            ];
++            if reverse {
++                scorers.reverse();
++            }
++            let (accepted, exit) = observed(scorers, 0.0, 0);
++            assert_eq!(accepted.len(), 300);
++            assert_eq!(exit, [(128, 128, 2)]);
++        }
++    }
++
+     #[test]
+     fn two_term_exact_region_roles_reverse_after_shallow_skips() {
+         let norms = vec![1; 800];

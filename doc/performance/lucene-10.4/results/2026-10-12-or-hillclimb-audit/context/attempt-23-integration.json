@@ -1,0 +1,9 @@
+{
+  "parent": "3dff75c5cfddee6dab50c144839b4cec645d9dca",
+  "source_sha256": {
+    "src/query/boolean_query/or_maxscore.rs": "e8936f114df5bb4c09b27960afc126832f07fab73863b061ab9e3d55a6be23bb",
+    "src/query/score_combiner.rs": "67a8070a9abad0d107eaebfc8ef731793b2d0f016e5216afc98d1b6ff3ac93b7"
+  },
+  "patch_sha256": "7f673aea60d7ce7248b06042b098e3c096a175d1d8f3b97ad066f8a4595f4ad2",
+  "review": "Root read the complete authentic two-file diff. Explicit ordered greater handles NaN; short-circuited local at-most preserves array bounds. Same cutoff lifetime/refresh, original multiplication/sums, optional predicate, canonical callbacks/cursors/fallback. All13OR and four original numeric families remain byte-identical; strengthened tests compare both predicates with literal old successor/cast."
+}

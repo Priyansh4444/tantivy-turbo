@@ -1,0 +1,371 @@
+{
+  "seconds": 9.2133648300005,
+  "unchanged": true,
+  "summary": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 241214.00268096515,
+        "baseline_mean_ns": 240653.1983914209,
+        "ratio_mean": 1.0023303421408598,
+        "median_ratio": 1.0032163254072013
+      },
+      "BA": {
+        "candidate_mean_ns": 241819.10589812332,
+        "baseline_mean_ns": 243821.40080428956,
+        "ratio_mean": 0.9917878623469422,
+        "median_ratio": 1.001432332738942
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 560836.0291262136,
+        "baseline_mean_ns": 558135.3300970874,
+        "ratio_mean": 1.0048387888805685,
+        "median_ratio": 1.0130804409074257
+      },
+      "BA": {
+        "candidate_mean_ns": 564229.0970873786,
+        "baseline_mean_ns": 568709.3300970874,
+        "ratio_mean": 0.9921221039068518,
+        "median_ratio": 1.0163827520994704
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 80075.99504950496,
+        "baseline_mean_ns": 80527.14603960396,
+        "ratio_mean": 0.9943975291279151,
+        "median_ratio": 0.996008240891576
+      },
+      "BA": {
+        "candidate_mean_ns": 79886.81435643564,
+        "baseline_mean_ns": 80270.56435643564,
+        "ratio_mean": 0.9952192936093487,
+        "median_ratio": 0.9945055713069471
+      }
+    }
+  ],
+  "worst_regressions": [
+    {
+      "id": 455,
+      "kind": "OR",
+      "terms": [
+        "naomi",
+        "wallace"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2303268544805999,
+      "BA": 1.284893570008102
+    },
+    {
+      "id": 731,
+      "kind": "OR",
+      "terms": [
+        "kidney",
+        "transplant"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1995005141765829,
+      "BA": 1.2272847083631435
+    },
+    {
+      "id": 397,
+      "kind": "OR",
+      "terms": [
+        "ear",
+        "ache"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1963761774849437,
+      "BA": 1.2331840872832072
+    },
+    {
+      "id": 709,
+      "kind": "OR",
+      "terms": [
+        "bass",
+        "fishing"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.181553637484587,
+      "BA": 1.2026019347975223
+    },
+    {
+      "id": 853,
+      "kind": "OR",
+      "terms": [
+        "bladder",
+        "tumor"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1788689338937715,
+      "BA": 1.2138362451880367
+    },
+    {
+      "id": 527,
+      "kind": "OR",
+      "terms": [
+        "false",
+        "prophets"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.2645985401459854,
+      "BA": 1.1480060600136839
+    },
+    {
+      "id": 533,
+      "kind": "OR",
+      "terms": [
+        "missy",
+        "elliott"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1220688508232164,
+      "BA": 1.2797807551766138
+    },
+    {
+      "id": 585,
+      "kind": "OR",
+      "terms": [
+        "jaguar",
+        "x",
+        "type"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0957510815689195,
+      "BA": 1.1196335640146062
+    },
+    {
+      "id": 639,
+      "kind": "OR",
+      "terms": [
+        "chicken",
+        "noodle",
+        "soup"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1169082994105788,
+      "BA": 1.079543004957965
+    },
+    {
+      "id": 705,
+      "kind": "OR",
+      "terms": [
+        "robert",
+        "fuller"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0738085383159885,
+      "BA": 1.0823051739173946
+    },
+    {
+      "id": 459,
+      "kind": "OR",
+      "terms": [
+        "belcourt",
+        "castle"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0836274538400956,
+      "BA": 1.0696093789479004
+    },
+    {
+      "id": 453,
+      "kind": "OR",
+      "terms": [
+        "trans",
+        "siberian",
+        "orchestra"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.066089405560882,
+      "BA": 1.128405424994197
+    },
+    {
+      "id": 365,
+      "kind": "OR",
+      "terms": [
+        "ford",
+        "modeling",
+        "agency"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1664591755374953,
+      "BA": 1.0657136595332528
+    },
+    {
+      "id": 505,
+      "kind": "OR",
+      "terms": [
+        "xena",
+        "warrior",
+        "princess"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.1075608680657119,
+      "BA": 1.0597433136276728
+    },
+    {
+      "id": 1190,
+      "kind": "PHRASE",
+      "terms": [
+        "new",
+        "england",
+        "aquarium"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0577436609366706,
+      "BA": 1.0848096847517943
+    },
+    {
+      "id": 581,
+      "kind": "OR",
+      "terms": [
+        "sesame",
+        "street"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.22334927769632,
+      "BA": 1.0571891968126366
+    },
+    {
+      "id": 399,
+      "kind": "OR",
+      "terms": [
+        "mercury",
+        "insurance"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0559449590832775,
+      "BA": 1.0764287654679494
+    },
+    {
+      "id": 1139,
+      "kind": "PHRASE",
+      "terms": [
+        "business",
+        "consultants"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0550013480722567,
+      "BA": 1.1320164879890542
+    },
+    {
+      "id": 339,
+      "kind": "OR",
+      "terms": [
+        "the",
+        "english",
+        "restoration"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.0509623313969862,
+      "BA": 1.1772220803483824
+    },
+    {
+      "id": 411,
+      "kind": "OR",
+      "terms": [
+        "japan",
+        "airlines"
+      ],
+      "tags": [
+        "port-style"
+      ],
+      "AB": 1.08771570778349,
+      "BA": 1.0498303433447558
+    }
+  ],
+  "loads": [
+    {
+      "at": 1791693707.0832958,
+      "loadavg": [
+        8.181640625,
+        4.900390625,
+        3.7802734375
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        "2553190 zen-bin          110",
+        "2557965 ps               100",
+        "2557936 python          94.4",
+        "2440023 helium          42.0",
+        "2550136 helium          34.1",
+        "2538326 t3code          20.7",
+        "2553817 WebExtensions   16.6",
+        "2538336 t3code          15.0",
+        "   2411 helium          14.9",
+        "2541475 codex           11.4",
+        "2508074 vesktop         10.9",
+        "   2358 helium           6.3"
+      ]
+    },
+    {
+      "at": 1791693713.581547,
+      "loadavg": [
+        7.9267578125,
+        4.90234375,
+        3.787109375
+      ],
+      "processes": [
+        "    PID COMMAND         %CPU",
+        "2558237 ps               200",
+        "2553190 zen-bin          106",
+        "2440023 helium          42.0",
+        "2550136 helium          33.8",
+        "2557936 python          24.0",
+        "2538326 t3code          21.0",
+        "2553817 WebExtensions   15.2",
+        "2538336 t3code          14.9",
+        "   2411 helium          14.9",
+        "2541475 codex           11.4",
+        "2508074 vesktop         10.9",
+        "   2358 helium           6.3"
+      ]
+    }
+  ]
+}

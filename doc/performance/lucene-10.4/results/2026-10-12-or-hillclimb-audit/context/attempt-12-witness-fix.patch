@@ -1,0 +1,61 @@
+--- before/source.rs
++++ after/source.rs
+@@ -861,7 +861,16 @@
+                 .map(|i| {
+                     (
+                         if i == 128 { 382 } else { i * 3 },
+-                        if i == 128 { 20 } else { 1 },
++                        // A partial final block must still exceed the Top1
++                        // threshold raised by the earlier TF20 leaf. Otherwise
++                        // correctly skipping that tail provides no batch witness.
++                        if i + 1 == length && length % 128 != 0 {
++                            30
++                        } else if i == 128 {
++                            20
++                        } else {
++                            1
++                        },
+                     )
+                 })
+                 .collect();
+@@ -887,7 +896,8 @@
+                     CursorProgress::Batch { docs, .. } if !docs.is_empty() && docs.len() < 128
+                 )) || length == 128
+                     || length == 256
+-                    || length == 768
++                    || length == 768,
++                "required competitive partial batch: length={length}"
+             );
+         }
+     }
+@@ -973,7 +983,12 @@
+     fn wider_midpoint_publication_keeps_literal_incoming_order_and_strict_neighbors() {
+         let norms = vec![1; 1200];
+         let weak: Vec<_> = (0..512).map(|doc| (doc, 1)).collect();
+-        let driver: Vec<_> = (0..300).map(|i| (i * 3, 1)).collect();
++        // Preserve doc0's exact midpoint leaf, but require a wider first
++        // certificate even when the initial threshold rejects doc0 itself.
++        // The later stronger leaf lies in the same selected full driver block.
++        let driver: Vec<_> = (0..300)
++            .map(|i| (i * 3, if i == 127 { 2 } else { 1 }))
++            .collect();
+         let leaves = [1.0, 2.0f32.powi(-24), 2.0f32.powi(-53), 2.0f32.powi(-53)];
+         let scorers: Vec<_> = leaves
+             .iter()
+@@ -996,10 +1011,15 @@
+                     let (accepted, evidence) =
+                         check_widening(ordered.clone(), 1200, threshold, limit);
+                     assert!(!evidence.regions.is_empty());
++                    assert!(
++                        accepted.iter().any(|&(doc, _)| doc == 381),
++                        "later competitive full-block leaf: order={order:?} \
++                         threshold={threshold:?} limit={limit}"
++                    );
+                     if threshold < score {
+                         assert_eq!(accepted[0], (0, score.to_bits()));
+                     } else {
+-                        assert!(accepted.is_empty());
++                        assert!(!accepted.iter().any(|&(doc, _)| doc == 0));
+                     }
+                 }
+             }

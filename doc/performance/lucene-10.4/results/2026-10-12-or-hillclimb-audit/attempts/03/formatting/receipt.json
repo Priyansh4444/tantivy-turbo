@@ -1,0 +1,31 @@
+{
+  "command": [
+    "rustfmt",
+    "--check",
+    "--edition",
+    "2021",
+    "--config",
+    "skip_children=true",
+    "../../../tantivy-or-hillclimb-oct07/src/postings/segment_postings.rs",
+    "../../../tantivy-or-hillclimb-oct07/src/query/bm25.rs",
+    "../../../tantivy-or-hillclimb-oct07/src/query/boolean_query/or_maxscore.rs",
+    "../../../tantivy-or-hillclimb-oct07/src/query/term_query/mod.rs",
+    "../../../tantivy-or-hillclimb-oct07/src/query/term_query/term_scorer.rs"
+  ],
+  "returncode": 0,
+  "wall_seconds": 0.36300732099880406,
+  "source_unchanged": true,
+  "compiler": "1.99.0",
+  "rustflags": "-C target-cpu=native",
+  "jobs": 2,
+  "profile": {
+    "opt_level": 0,
+    "lto": false,
+    "overflow_checks": true,
+    "debug_assertions": true,
+    "profile": "test/check; Cargo defaults"
+  },
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "b8e6137fa93201c4381a14788266d8b16d5bc1d88648371e39270cefc41b13f5",
+  "audited_index_unchanged": true
+}

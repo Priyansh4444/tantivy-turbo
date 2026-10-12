@@ -1,0 +1,28 @@
+[
+  {
+    "pair": 0,
+    "A": {
+      "VmSize": "620624 kB",
+      "VmHWM": "313372 kB",
+      "VmRSS": "313372 kB"
+    },
+    "B": {
+      "VmSize": "683272 kB",
+      "VmHWM": "322852 kB",
+      "VmRSS": "322852 kB"
+    }
+  },
+  {
+    "pair": 1,
+    "A": {
+      "VmSize": "683272 kB",
+      "VmHWM": "322312 kB",
+      "VmRSS": "322312 kB"
+    },
+    "B": {
+      "VmSize": "683272 kB",
+      "VmHWM": "322472 kB",
+      "VmRSS": "322472 kB"
+    }
+  }
+]

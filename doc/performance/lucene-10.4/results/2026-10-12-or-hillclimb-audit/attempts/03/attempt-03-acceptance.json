@@ -1,0 +1,16 @@
+{
+  "verdict": "kept_partial_win",
+  "commit": "05835b971452bd5bda75037cec2925b7ba6785bf",
+  "candidate_binary_sha256": "c4ab444bb759f0bc096d59eb0cfa693552840ef0a040581a1b36d9e92447b5e6",
+  "correctness_tests": 1438,
+  "ignored_tests": 7,
+  "exact_profiles": 3,
+  "queries_per_profile": 1227,
+  "longer_or_primary_ratios": {
+    "AB": 0.9651902682331261,
+    "BA": 0.9298300602280594
+  },
+  "control_log_spread": 0.02639537523308078,
+  "target_met": false,
+  "tradeoffs": "2KiB fixed scratch; +2584 binary file bytes;2 longer-OR regressions beyond own controls; no format/index/perregion allocation changes."
+}

@@ -1,0 +1,959 @@
+{
+  "parent": {
+    "binary": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-11/tantivy_worker",
+    "binary_sha256": "e11c4939984690d2c2d781cb6ace40d5e818e3a18a3f9f558d6cbcfd62546e5d",
+    "source_commit": "43f06833a325d2a18c03bd7e4fa65f2f27944292",
+    "compiled_sources": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-11/build-final/after.json",
+    "compiled_sources_sha256": "9972db388f51e23da6de3f586e9a0f16073ce4fa675c0b354d3cf1b052a45e5f",
+    "exact_gate": "/home/pronsh/Coding/playground/search/bench/lucene-rs-or-hillclimb-oct07/attempt-11/verify/receipt.json",
+    "exact_gate_sha256": "35c1fe105532a1d3fe8a699c1d088437b1873793f33b01510f952441ad98a3ed"
+  },
+  "groups": {
+    "ALL": {
+      "queries": 1201,
+      "primary": {
+        "AB": 1.0017959279911859,
+        "BA": 0.88834379786868
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0046012279650824,
+          "BA": 1.0018988513800635
+        },
+        "PP": {
+          "AB": 1.0034194976216955,
+          "BA": 0.9973757979231548
+        }
+      },
+      "control_log_spread": 0.004590674675368054,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 1.126420164034059,
+          "TT": 1.005048955575035,
+          "PP": 1.003924789861542
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9967931600773491,
+          "TT": 0.8898916712188951,
+          "PP": 0.8893249269969075
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.890318289182048,
+          "TT": 1.003356742344783,
+          "PP": 1.0042445788205216
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.8862050225033415,
+          "TT": 1.1267076625564152,
+          "PP": 0.9979133435706529
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 1.0022168953884547,
+          "TT": 1.0061007436158926,
+          "PP": 1.0042054259986466
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9992225881634017,
+          "TT": 1.0096016049388241,
+          "PP": 0.9957849532585676
+        }
+      ]
+    },
+    "OR": {
+      "queries": 301,
+      "primary": {
+        "AB": 0.9760791830367352,
+        "BA": 0.9767223203830334
+      },
+      "controls": {
+        "TT": {
+          "AB": 0.9957573871980683,
+          "BA": 0.9962789936358606
+        },
+        "PP": {
+          "AB": 1.0005216963348689,
+          "BA": 0.997464431073415
+        }
+      },
+      "control_log_spread": 0.004251638220241233,
+      "candidate_win_both_beyond_group_controls": true,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9741385273295812,
+          "TT": 0.9988591249882767,
+          "PP": 1.0018580912115131
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9750404905784217,
+          "TT": 0.9956279184804232,
+          "PP": 0.9989088140474339
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9771440794447784,
+          "TT": 0.9936880308125825,
+          "PP": 0.9994524104424541
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9759704736959653,
+          "TT": 0.9982375073621672,
+          "PP": 0.9951109256376438
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9734389503208362,
+          "TT": 0.9957012024172949,
+          "PP": 1.0002570161473194
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9785464356490143,
+          "TT": 0.9951084019258822,
+          "PP": 0.9981826052964426
+        }
+      ]
+    },
+    "OR_2": {
+      "queries": 198,
+      "primary": {
+        "AB": 0.9902824332895707,
+        "BA": 1.007423300940994
+      },
+      "controls": {
+        "TT": {
+          "AB": 0.9748704781812759,
+          "BA": 0.9807991604415508
+        },
+        "PP": {
+          "AB": 0.9991638436662449,
+          "BA": 1.0015046795850946
+        }
+      },
+      "control_log_spread": 0.025450659699687288,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9790169985561269,
+          "TT": 0.9869489558964359,
+          "PP": 0.9960063077474068
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 1.0020428453038863,
+          "TT": 0.97930611942141,
+          "PP": 1.0094651159886987
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9928254103629779,
+          "TT": 0.9695240559984439,
+          "PP": 1.0012352271696514
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 1.003063787718536,
+          "TT": 0.9840482224316414,
+          "PP": 1.0008641473096958
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9888341127491732,
+          "TT": 0.9716104546275761,
+          "PP": 0.9980711558778789
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 1.010016401950697,
+          "TT": 0.979895980297148,
+          "PP": 0.9990863266539742
+        }
+      ]
+    },
+    "OR_3PLUS": {
+      "queries": 103,
+      "primary": {
+        "AB": 0.9723214264971765,
+        "BA": 0.9686601565813414
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0015823565388713,
+          "BA": 1.0006072316296375
+        },
+        "PP": {
+          "AB": 1.00087953788506,
+          "BA": 0.9963995285106338
+        }
+      },
+      "control_log_spread": 0.003606968787084102,
+      "candidate_win_both_beyond_group_controls": true,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9728609193705885,
+          "TT": 1.0020903964947363,
+          "PP": 1.0033962526049425
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9679021862576277,
+          "TT": 1.0002067350399741,
+          "PP": 0.996138716920905
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9730309989391853,
+          "TT": 1.0003706796634824,
+          "PP": 0.9989869957013376
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9688887860012255,
+          "TT": 1.002139779872947,
+          "PP": 0.993603811882573
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9693668135209342,
+          "TT": 1.0025206359091223,
+          "PP": 1.0008337128968294
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9703589904300834,
+          "TT": 0.9993754479990317,
+          "PP": 0.9979453454653999
+        }
+      ]
+    },
+    "AND": {
+      "queries": 300,
+      "primary": {
+        "AB": 0.999424720742233,
+        "BA": 0.9988291662615634
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.00103428946036,
+          "BA": 0.9962626796041976
+        },
+        "PP": {
+          "AB": 1.008626756336556,
+          "BA": 1.0044024690105746
+        }
+      },
+      "control_log_spread": 0.008589758502708482,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9980781107459787,
+          "TT": 1.0017851927428265,
+          "PP": 1.0082881754920316
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9988351754517731,
+          "TT": 0.9967280351863492,
+          "PP": 1.006271844690998
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 1.0017328224312274,
+          "TT": 1.0035627410735515,
+          "PP": 1.0094413367575914
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9990749164346888,
+          "TT": 0.9974405660185647,
+          "PP": 1.0046506549512404
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 1.0034239549724802,
+          "TT": 1.010938246411662,
+          "PP": 1.013429312680492
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.993578674986933,
+          "TT": 0.9891001431417361,
+          "PP": 0.99573886750309
+        }
+      ]
+    },
+    "TERM": {
+      "queries": 300,
+      "primary": {
+        "AB": 0.9959897094604626,
+        "BA": 0.9914835548627718
+      },
+      "controls": {
+        "TT": {
+          "AB": 0.9976546444279204,
+          "BA": 1.0035944951571223
+        },
+        "PP": {
+          "AB": 1.0077130257676854,
+          "BA": 1.0130327475443
+        }
+      },
+      "control_log_spread": 0.012948552033566747,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 0.9894674364769785,
+          "TT": 0.9956783956646704,
+          "PP": 1.0126074378078243
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 0.9864781396248467,
+          "TT": 1.0018973423766833,
+          "PP": 1.0117097041181466
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.9871657824150889,
+          "TT": 0.9885433816606005,
+          "PP": 1.0119412992567065
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.9933314897592209,
+          "TT": 1.003019253949854,
+          "PP": 1.0089406145743818
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 0.9952789263107553,
+          "TT": 0.994873594644972,
+          "PP": 1.0104055817192577
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 0.9928324407277287,
+          "TT": 1.0028710852836675,
+          "PP": 1.0074957361169532
+        }
+      ]
+    },
+    "PHRASE": {
+      "queries": 300,
+      "primary": {
+        "AB": 1.0222961625843416,
+        "BA": 0.7886787300228878
+      },
+      "controls": {
+        "TT": {
+          "AB": 1.0131363919318386,
+          "BA": 1.0087767292461463
+        },
+        "PP": {
+          "AB": 1.0026215248682295,
+          "BA": 0.9929148740430752
+        }
+      },
+      "control_log_spread": 0.013050857794334401,
+      "candidate_win_both_beyond_group_controls": false,
+      "parent_win_both_beyond_group_controls": false,
+      "rounds": [
+        {
+          "round": 0,
+          "order": "AB",
+          "primary": 1.3124785763595788,
+          "TT": 1.0115905592638632,
+          "PP": 1.0027770625407404
+        },
+        {
+          "round": 0,
+          "order": "BA",
+          "primary": 1.0122608426053927,
+          "TT": 0.7829874452637583,
+          "PP": 0.7740841988519873
+        },
+        {
+          "round": 1,
+          "order": "AB",
+          "primary": 0.7910368485151489,
+          "TT": 1.0109080393836702,
+          "PP": 1.0046974413140655
+        },
+        {
+          "round": 1,
+          "order": "BA",
+          "primary": 0.7848718208295616,
+          "TT": 1.2924251061124723,
+          "PP": 0.9959328630650316
+        },
+        {
+          "round": 2,
+          "order": "AB",
+          "primary": 1.0232290042223342,
+          "TT": 1.0103474138553792,
+          "PP": 1.0019523224172535
+        },
+        {
+          "round": 2,
+          "order": "BA",
+          "primary": 1.0136062534302819,
+          "TT": 1.0310674558415254,
+          "PP": 0.9935082462230945
+        }
+      ]
+    }
+  },
+  "regressions_beyond_per_query_controls": [
+    {
+      "id": "15",
+      "kind": "OR",
+      "terms": "the american",
+      "T_over_P_AB": "1.0477159601355304",
+      "T_over_P_BA": "1.0376383505398326",
+      "control_log_spread": "0.023439568999338065"
+    },
+    {
+      "id": "36",
+      "kind": "TERM",
+      "terms": "angeles",
+      "T_over_P_AB": "1.098712152349637",
+      "T_over_P_BA": "1.0311092342342343",
+      "control_log_spread": "0.02517654509381626"
+    },
+    {
+      "id": "306",
+      "kind": "TERM",
+      "terms": "camp",
+      "T_over_P_AB": "1.0328248138240186",
+      "T_over_P_BA": "1.1153707573683074",
+      "control_log_spread": "0.028328104821029248"
+    },
+    {
+      "id": "378",
+      "kind": "AND",
+      "terms": "texas death row",
+      "T_over_P_AB": "1.0397023007213304",
+      "T_over_P_BA": "1.0331768900808376",
+      "control_log_spread": "0.009620080254270613"
+    },
+    {
+      "id": "698",
+      "kind": "AND",
+      "terms": "chicago teachers union",
+      "T_over_P_AB": "1.074443056423069",
+      "T_over_P_BA": "1.0750309752991403",
+      "control_log_spread": "0.03443828792966887"
+    },
+    {
+      "id": "726",
+      "kind": "AND",
+      "terms": "term life insurance",
+      "T_over_P_AB": "1.0396599623237495",
+      "T_over_P_BA": "1.0666230816217455",
+      "control_log_spread": "0.03112619729069362"
+    },
+    {
+      "id": "782",
+      "kind": "AND",
+      "terms": "abilene tx",
+      "T_over_P_AB": "1.014777618364419",
+      "T_over_P_BA": "1.0170287727539635",
+      "control_log_spread": "0.014095997403170522"
+    },
+    {
+      "id": "906",
+      "kind": "AND",
+      "terms": "united states constitution",
+      "T_over_P_AB": "1.0242134515499388",
+      "T_over_P_BA": "1.0170150405436513",
+      "control_log_spread": "0.014728866279170773"
+    },
+    {
+      "id": "921",
+      "kind": "PHRASE",
+      "terms": "griffith observatory",
+      "T_over_P_AB": "1.0369980711906015",
+      "T_over_P_BA": "1.0363467993980784",
+      "control_log_spread": "0.027250574599299526"
+    },
+    {
+      "id": "927",
+      "kind": "PHRASE",
+      "terms": "american funds",
+      "T_over_P_AB": "1.0183453990981959",
+      "T_over_P_BA": "1.0237240385338306",
+      "control_log_spread": "0.014908159298361846"
+    },
+    {
+      "id": "930",
+      "kind": "PHRASE",
+      "terms": "the english restoration",
+      "T_over_P_AB": "1.0099122340103794",
+      "T_over_P_BA": "1.0118006131527635",
+      "control_log_spread": "0.006538957768633863"
+    },
+    {
+      "id": "932",
+      "kind": "PHRASE",
+      "terms": "french culinary institute",
+      "T_over_P_AB": "1.0308032168387609",
+      "T_over_P_BA": "1.0251946634925357",
+      "control_log_spread": "0.0162950647794271"
+    },
+    {
+      "id": "934",
+      "kind": "PHRASE",
+      "terms": "italian translation",
+      "T_over_P_AB": "1.016646512565307",
+      "T_over_P_BA": "1.0410064585366612",
+      "control_log_spread": "0.01279477187198036"
+    },
+    {
+      "id": "936",
+      "kind": "PHRASE",
+      "terms": "robert green ingersoll",
+      "T_over_P_AB": "1.024637417319012",
+      "T_over_P_BA": "1.020753453837259",
+      "control_log_spread": "0.004427234680096107"
+    },
+    {
+      "id": "945",
+      "kind": "PHRASE",
+      "terms": "personal loan",
+      "T_over_P_AB": "1.027867144436075",
+      "T_over_P_BA": "1.0278255222579473",
+      "control_log_spread": "0.012223688721547863"
+    },
+    {
+      "id": "952",
+      "kind": "PHRASE",
+      "terms": "interest only",
+      "T_over_P_AB": "1.025756969830726",
+      "T_over_P_BA": "1.0247784057380291",
+      "control_log_spread": "0.019745452670701387"
+    },
+    {
+      "id": "956",
+      "kind": "PHRASE",
+      "terms": "people having sex",
+      "T_over_P_AB": "1.0306486333527416",
+      "T_over_P_BA": "1.0215915964650861",
+      "control_log_spread": "0.009851869285955009"
+    },
+    {
+      "id": "958",
+      "kind": "PHRASE",
+      "terms": "most improved player",
+      "T_over_P_AB": "1.0218191799898235",
+      "T_over_P_BA": "1.0360339000489847",
+      "control_log_spread": "0.019552682086767272"
+    },
+    {
+      "id": "959",
+      "kind": "PHRASE",
+      "terms": "ear ache",
+      "T_over_P_AB": "1.0255990474773031",
+      "T_over_P_BA": "1.0268176400476758",
+      "control_log_spread": "0.024111988051364275"
+    },
+    {
+      "id": "962",
+      "kind": "PHRASE",
+      "terms": "secretary of state",
+      "T_over_P_AB": "1.0199963908860374",
+      "T_over_P_BA": "1.0201923241416408",
+      "control_log_spread": "0.011552604724617865"
+    },
+    {
+      "id": "965",
+      "kind": "PHRASE",
+      "terms": "university of washington",
+      "T_over_P_AB": "1.0191034187222938",
+      "T_over_P_BA": "1.0182080496312553",
+      "control_log_spread": "0.014453484503602112"
+    },
+    {
+      "id": "967",
+      "kind": "PHRASE",
+      "terms": "freedom tower",
+      "T_over_P_AB": "1.0470786946379673",
+      "T_over_P_BA": "1.0682183846401372",
+      "control_log_spread": "0.039924406986541795"
+    },
+    {
+      "id": "971",
+      "kind": "PHRASE",
+      "terms": "jesus as a child",
+      "T_over_P_AB": "1.0122703136460809",
+      "T_over_P_BA": "1.0181332947964168",
+      "control_log_spread": "0.009337112878266407"
+    },
+    {
+      "id": "998",
+      "kind": "PHRASE",
+      "terms": "prayer times",
+      "T_over_P_AB": "1.0231508140562706",
+      "T_over_P_BA": "1.0383391604465042",
+      "control_log_spread": "0.02123767816919875"
+    },
+    {
+      "id": "1001",
+      "kind": "PHRASE",
+      "terms": "american south",
+      "T_over_P_AB": "1.0259184464855406",
+      "T_over_P_BA": "1.0261414963929731",
+      "control_log_spread": "0.020200569784658902"
+    },
+    {
+      "id": "1010",
+      "kind": "PHRASE",
+      "terms": "world bank president",
+      "T_over_P_AB": "1.022691792924783",
+      "T_over_P_BA": "1.022932056644618",
+      "control_log_spread": "0.01934071785130552"
+    },
+    {
+      "id": "1014",
+      "kind": "PHRASE",
+      "terms": "time for kids",
+      "T_over_P_AB": "1.0173677781383008",
+      "T_over_P_BA": "1.0176378933057348",
+      "control_log_spread": "0.006427074238462441"
+    },
+    {
+      "id": "1018",
+      "kind": "PHRASE",
+      "terms": "st petersburg high school",
+      "T_over_P_AB": "1.0085167597487281",
+      "T_over_P_BA": "1.0265207435750656",
+      "control_log_spread": "0.0037230831834574956"
+    },
+    {
+      "id": "1020",
+      "kind": "PHRASE",
+      "terms": "hotel del coronado",
+      "T_over_P_AB": "1.0105961085636386",
+      "T_over_P_BA": "1.0157557853274248",
+      "control_log_spread": "0.008718558859469781"
+    },
+    {
+      "id": "1033",
+      "kind": "PHRASE",
+      "terms": "national book award",
+      "T_over_P_AB": "1.025508906102935",
+      "T_over_P_BA": "1.0286910406728735",
+      "control_log_spread": "0.013322295023226143"
+    },
+    {
+      "id": "1046",
+      "kind": "PHRASE",
+      "terms": "lost episode",
+      "T_over_P_AB": "1.031269907535142",
+      "T_over_P_BA": "1.0247821841992997",
+      "control_log_spread": "0.013919698104858548"
+    },
+    {
+      "id": "1069",
+      "kind": "PHRASE",
+      "terms": "gun magazines",
+      "T_over_P_AB": "1.0782787070305697",
+      "T_over_P_BA": "1.1354433325575983",
+      "control_log_spread": "0.04467856871752623"
+    },
+    {
+      "id": "1075",
+      "kind": "PHRASE",
+      "terms": "padre island",
+      "T_over_P_AB": "1.0273034825870646",
+      "T_over_P_BA": "1.070979006781175",
+      "control_log_spread": "0.01592861948379357"
+    },
+    {
+      "id": "1076",
+      "kind": "PHRASE",
+      "terms": "worcester state college",
+      "T_over_P_AB": "1.0419288790889731",
+      "T_over_P_BA": "1.1239125916688935",
+      "control_log_spread": "0.030748716414695336"
+    },
+    {
+      "id": "1081",
+      "kind": "PHRASE",
+      "terms": "music stands",
+      "T_over_P_AB": "1.024005909146867",
+      "T_over_P_BA": "1.027000658775043",
+      "control_log_spread": "0.016360269379755175"
+    },
+    {
+      "id": "1083",
+      "kind": "PHRASE",
+      "terms": "camp claiborne",
+      "T_over_P_AB": "1.0193486590038314",
+      "T_over_P_BA": "1.0348309580111203",
+      "control_log_spread": "0.018891889025115998"
+    },
+    {
+      "id": "1085",
+      "kind": "PHRASE",
+      "terms": "home loan",
+      "T_over_P_AB": "1.0284749366606545",
+      "T_over_P_BA": "1.0307289448361807",
+      "control_log_spread": "0.010206743780124903"
+    },
+    {
+      "id": "1088",
+      "kind": "PHRASE",
+      "terms": "time in denver",
+      "T_over_P_AB": "1.016889372339741",
+      "T_over_P_BA": "1.0145718061729723",
+      "control_log_spread": "0.012161197967579003"
+    },
+    {
+      "id": "1093",
+      "kind": "PHRASE",
+      "terms": "all funds",
+      "T_over_P_AB": "1.0193672765838502",
+      "T_over_P_BA": "1.0181902436662678",
+      "control_log_spread": "0.013949651616269978"
+    },
+    {
+      "id": "1097",
+      "kind": "PHRASE",
+      "terms": "times union",
+      "T_over_P_AB": "1.0307425012135514",
+      "T_over_P_BA": "1.0331976942421686",
+      "control_log_spread": "0.02225259928962658"
+    },
+    {
+      "id": "1100",
+      "kind": "PHRASE",
+      "terms": "care a lot",
+      "T_over_P_AB": "1.0116107761502067",
+      "T_over_P_BA": "1.0105391268741235",
+      "control_log_spread": "0.008134561352373872"
+    },
+    {
+      "id": "1102",
+      "kind": "PHRASE",
+      "terms": "the actors studio",
+      "T_over_P_AB": "1.0113942131332652",
+      "T_over_P_BA": "1.0200945261654764",
+      "control_log_spread": "0.007912147292599063"
+    },
+    {
+      "id": "1105",
+      "kind": "PHRASE",
+      "terms": "bismarck state college",
+      "T_over_P_AB": "1.0152389501581602",
+      "T_over_P_BA": "1.017481316038141",
+      "control_log_spread": "0.013522157678344096"
+    },
+    {
+      "id": "1129",
+      "kind": "PHRASE",
+      "terms": "playa del rey",
+      "T_over_P_AB": "1.0240324852904616",
+      "T_over_P_BA": "1.0136111577886069",
+      "control_log_spread": "0.007537203860067782"
+    },
+    {
+      "id": "1132",
+      "kind": "PHRASE",
+      "terms": "too faced",
+      "T_over_P_AB": "1.019331482900843",
+      "T_over_P_BA": "1.0232497570846146",
+      "control_log_spread": "0.008126407388351386"
+    },
+    {
+      "id": "1151",
+      "kind": "PHRASE",
+      "terms": "little shop of horrors",
+      "T_over_P_AB": "1.0143593472079768",
+      "T_over_P_BA": "1.0090211356017758",
+      "control_log_spread": "0.008445160191079987"
+    },
+    {
+      "id": "1157",
+      "kind": "PHRASE",
+      "terms": "the news journal",
+      "T_over_P_AB": "1.0149035088395617",
+      "T_over_P_BA": "1.0084689560544269",
+      "control_log_spread": "0.003923002201062741"
+    },
+    {
+      "id": "1159",
+      "kind": "PHRASE",
+      "terms": "robert reed",
+      "T_over_P_AB": "1.0543068558823019",
+      "T_over_P_BA": "1.0729351601698187",
+      "control_log_spread": "0.04928724500219542"
+    },
+    {
+      "id": "1160",
+      "kind": "PHRASE",
+      "terms": "interracial love",
+      "T_over_P_AB": "1.0135241081928656",
+      "T_over_P_BA": "1.0494862758723382",
+      "control_log_spread": "0.011743362862816943"
+    },
+    {
+      "id": "1161",
+      "kind": "PHRASE",
+      "terms": "round table",
+      "T_over_P_AB": "1.0308093748089524",
+      "T_over_P_BA": "1.0523145537499359",
+      "control_log_spread": "0.025668841351819918"
+    },
+    {
+      "id": "1165",
+      "kind": "PHRASE",
+      "terms": "city in iran",
+      "T_over_P_AB": "1.017317491433287",
+      "T_over_P_BA": "1.0188856872127052",
+      "control_log_spread": "0.016247152070805668"
+    },
+    {
+      "id": "1167",
+      "kind": "PHRASE",
+      "terms": "becoming a widow",
+      "T_over_P_AB": "1.01552226311108",
+      "T_over_P_BA": "1.0207341098500926",
+      "control_log_spread": "0.012386709617774983"
+    },
+    {
+      "id": "1182",
+      "kind": "PHRASE",
+      "terms": "home business",
+      "T_over_P_AB": "1.022454570721442",
+      "T_over_P_BA": "1.0206207615649443",
+      "control_log_spread": "0.017020653307972953"
+    },
+    {
+      "id": "1183",
+      "kind": "PHRASE",
+      "terms": "perfume bottles",
+      "T_over_P_AB": "1.1972736872420082",
+      "T_over_P_BA": "1.1714725105728565",
+      "control_log_spread": "0.010399044098124194"
+    },
+    {
+      "id": "1184",
+      "kind": "PHRASE",
+      "terms": "old photos",
+      "T_over_P_AB": "1.0386471969445032",
+      "T_over_P_BA": "1.0249948305687384",
+      "control_log_spread": "0.01692325841256789"
+    },
+    {
+      "id": "1191",
+      "kind": "PHRASE",
+      "terms": "the book of life",
+      "T_over_P_AB": "1.0132597928933695",
+      "T_over_P_BA": "1.0067447029878067",
+      "control_log_spread": "0.006640051129235135"
+    },
+    {
+      "id": "1200",
+      "kind": "PHRASE",
+      "terms": "pocket pc",
+      "T_over_P_AB": "1.0819513624377382",
+      "T_over_P_BA": "1.1303557594898992",
+      "control_log_spread": "0.06320822409137108"
+    },
+    {
+      "id": "1201",
+      "kind": "PHRASE",
+      "terms": "chicago public schools",
+      "T_over_P_AB": "1.0223478660943046",
+      "T_over_P_BA": "1.029987593809964",
+      "control_log_spread": "0.016521409073348786"
+    },
+    {
+      "id": "1204",
+      "kind": "PHRASE",
+      "terms": "animal rights",
+      "T_over_P_AB": "1.0392134056343452",
+      "T_over_P_BA": "1.056409485665077",
+      "control_log_spread": "0.0345995446601939"
+    },
+    {
+      "id": "1208",
+      "kind": "PHRASE",
+      "terms": "movie theatres",
+      "T_over_P_AB": "1.2073645970937912",
+      "T_over_P_BA": "1.2281062909592249",
+      "control_log_spread": "0.1762689475310048"
+    }
+  ],
+  "efficiency": {
+    "candidate_file_bytes": 4766376,
+    "baseline_file_bytes": 4765928,
+    "candidate_sections": {
+      ".rodata": 458816,
+      ".text": 2599346
+    },
+    "baseline_sections": {
+      ".rodata": 458816,
+      ".text": 2598898
+    },
+    "candidate_binary_sha256": "005dd61a74e1885cb3e145987fc67399d89fe662bb2409aa00a9c1d174726b84",
+    "baseline_binary_sha256": "e11c4939984690d2c2d781cb6ace40d5e818e3a18a3f9f558d6cbcfd62546e5d",
+    "index_change": false,
+    "per_region_allocation": false
+  }
+}

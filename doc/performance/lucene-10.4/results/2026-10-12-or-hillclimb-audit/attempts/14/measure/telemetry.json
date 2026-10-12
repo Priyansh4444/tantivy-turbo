@@ -1,0 +1,485 @@
+[
+  {
+    "at": 1791505699.4804695,
+    "loadavg": [
+      5.82763671875,
+      5.26708984375,
+      4.8134765625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 319471 ps               100",
+      " 319445 python          94.6",
+      " 235106 helium          11.7",
+      "   2339 vesktop          7.7",
+      "   6068 t3code           2.7",
+      "   2156 vesktop          2.6",
+      "   2423 helium           2.1",
+      "   2373 helium           1.6",
+      "   2269 vesktop          1.4",
+      "   1441 Hyprland         1.4",
+      "   6078 t3code           1.3",
+      "   5874 t3code           1.0"
+    ]
+  },
+  {
+    "at": 1791505725.9283125,
+    "loadavg": [
+      4.599609375,
+      5.02001953125,
+      4.7431640625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 319469 tantivy_worker  42.3",
+      " 319470 tantivy_worker  41.6",
+      " 319445 python          16.5",
+      " 235106 helium          11.2",
+      "   2339 vesktop          7.8",
+      "   6068 t3code           2.7",
+      "   2156 vesktop          2.6",
+      "   2423 helium           2.1",
+      "   2373 helium           1.6",
+      "   2269 vesktop          1.5",
+      "   1441 Hyprland         1.4",
+      "   6078 t3code           1.3"
+    ]
+  },
+  {
+    "at": 1791505741.6675072,
+    "loadavg": [
+      4.60205078125,
+      5.001953125,
+      4.7412109375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 319470 tantivy_worker  42.3",
+      " 319469 tantivy_worker  42.2",
+      " 319445 python          13.3",
+      " 235106 helium          10.9",
+      "   2339 vesktop          7.9",
+      "   6068 t3code           2.7",
+      "   2156 vesktop          2.6",
+      "   2423 helium           2.1",
+      "   2373 helium           1.6",
+      "   2269 vesktop          1.5",
+      "   1441 Hyprland         1.4",
+      "   6078 t3code           1.3"
+    ]
+  },
+  {
+    "at": 1791505757.5650866,
+    "loadavg": [
+      4.4677734375,
+      4.9521484375,
+      4.72900390625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 319469 tantivy_worker  42.2",
+      " 319470 tantivy_worker  42.1",
+      " 319445 python          11.7",
+      " 235106 helium          10.8",
+      " 319670 gh               9.0",
+      "   2339 vesktop          8.0",
+      " 319602 helium           3.0",
+      "   6068 t3code           2.7",
+      "   2156 vesktop          2.6",
+      " 319623 helium           2.6",
+      " 319594 helium           2.6",
+      " 319611 helium           2.2"
+    ]
+  },
+  {
+    "at": 1791505773.2670772,
+    "loadavg": [
+      3.98828125,
+      4.82275390625,
+      4.68994140625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 319470 tantivy_worker  42.4",
+      " 319469 tantivy_worker  42.2",
+      " 319445 python          10.8",
+      " 235106 helium          10.8",
+      "   2339 vesktop          8.1",
+      "   6068 t3code           2.7",
+      "   2156 vesktop          2.7",
+      "   2423 helium           2.1",
+      "   2373 helium           1.6",
+      "   2269 vesktop          1.6",
+      "   1441 Hyprland         1.4",
+      "   6078 t3code           1.3"
+    ]
+  },
+  {
+    "at": 1791505788.9257843,
+    "loadavg": [
+      4.1484375,
+      4.78955078125,
+      4.6806640625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 319470 tantivy_worker  42.3",
+      " 319469 tantivy_worker  42.3",
+      " 235106 helium          10.6",
+      " 319445 python          10.2",
+      "   2339 vesktop          8.2",
+      "   6068 t3code           2.7",
+      "   2156 vesktop          2.7",
+      "   2423 helium           2.1",
+      "   2373 helium           1.6",
+      "   2269 vesktop          1.6",
+      "   1441 Hyprland         1.4",
+      "   6078 t3code           1.3"
+    ]
+  },
+  {
+    "at": 1791505804.6059277,
+    "loadavg": [
+      4.1201171875,
+      4.7509765625,
+      4.66943359375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 319470 tantivy_worker  42.4",
+      " 319469 tantivy_worker  42.2",
+      " 235106 helium          10.3",
+      " 319445 python           9.8",
+      "   2339 vesktop          8.2",
+      "   6068 t3code           2.7",
+      "   2156 vesktop          2.7",
+      "   2423 helium           2.1",
+      "   2269 vesktop          1.6",
+      "   2373 helium           1.6",
+      "   1441 Hyprland         1.4",
+      "   6078 t3code           1.3"
+    ]
+  },
+  {
+    "at": 1791505804.7237332,
+    "loadavg": [
+      4.1201171875,
+      4.7509765625,
+      4.66943359375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 319874 ps               100",
+      " 235106 helium          10.3",
+      " 319445 python           9.9",
+      "   2339 vesktop          8.2",
+      "   6068 t3code           2.7",
+      "   2156 vesktop          2.7",
+      "   2423 helium           2.1",
+      "   2269 vesktop          1.6",
+      "   2373 helium           1.6",
+      "   1441 Hyprland         1.4",
+      "   6078 t3code           1.3",
+      "   5874 t3code           1.0"
+    ]
+  },
+  {
+    "at": 1791505831.4457695,
+    "loadavg": [
+      5.44091796875,
+      4.97314453125,
+      4.74267578125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 319894 helium          63.0",
+      " 319872 tantivy_worker  42.0",
+      " 319873 tantivy_worker  41.0",
+      " 235106 helium          10.0",
+      " 319445 python           9.4",
+      "   2339 vesktop          8.4",
+      "   2156 vesktop          2.7",
+      "   6068 t3code           2.7",
+      "   2423 helium           2.1",
+      "   2373 helium           1.6",
+      "   2269 vesktop          1.6",
+      "   1441 Hyprland         1.4"
+    ]
+  },
+  {
+    "at": 1791505847.466209,
+    "loadavg": [
+      5.84228515625,
+      5.08837890625,
+      4.78466796875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 319894 helium          77.5",
+      " 319873 tantivy_worker  41.8",
+      " 319872 tantivy_worker  41.8",
+      " 235106 helium           9.8",
+      " 319445 python           9.2",
+      "   2339 vesktop          8.5",
+      "   2156 vesktop          2.7",
+      "   6068 t3code           2.7",
+      "   2423 helium           2.1",
+      "   2373 helium           1.6",
+      "   2269 vesktop          1.6",
+      "   1441 Hyprland         1.4"
+    ]
+  },
+  {
+    "at": 1791505863.6021452,
+    "loadavg": [
+      5.42724609375,
+      5.03369140625,
+      4.77197265625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 320156 ps               100",
+      " 319894 helium          76.0",
+      " 319872 tantivy_worker  42.0",
+      " 319873 tantivy_worker  41.6",
+      " 235106 helium           9.6",
+      " 319445 python           9.0",
+      "   2339 vesktop          8.6",
+      "   2156 vesktop          2.7",
+      "   6068 t3code           2.7",
+      "   2423 helium           2.1",
+      "   2373 helium           1.7",
+      "   2269 vesktop          1.6"
+    ]
+  },
+  {
+    "at": 1791505879.5658548,
+    "loadavg": [
+      4.6875,
+      4.8857421875,
+      4.72802734375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 319894 helium          75.2",
+      " 319873 tantivy_worker  41.9",
+      " 319872 tantivy_worker  41.8",
+      " 235106 helium           9.5",
+      " 319445 python           8.9",
+      "   2339 vesktop          8.8",
+      "   2156 vesktop          2.7",
+      "   6068 t3code           2.7",
+      "   2423 helium           2.2",
+      "   2373 helium           1.7",
+      "   2269 vesktop          1.6",
+      "   1441 Hyprland         1.4"
+    ]
+  },
+  {
+    "at": 1791505895.313378,
+    "loadavg": [
+      5.49609375,
+      5.041015625,
+      4.78076171875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 320280 ps               100",
+      " 319894 helium          62.5",
+      " 319872 tantivy_worker  42.1",
+      " 319873 tantivy_worker  41.9",
+      " 235106 helium           9.3",
+      "   2339 vesktop          8.9",
+      " 319445 python           8.8",
+      "   2156 vesktop          2.7",
+      "   6068 t3code           2.7",
+      "   2423 helium           2.2",
+      "   2373 helium           1.7",
+      "   2269 vesktop          1.6"
+    ]
+  },
+  {
+    "at": 1791505911.1891923,
+    "loadavg": [
+      5.08984375,
+      4.97265625,
+      4.7626953125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 319894 helium          52.3",
+      " 319873 tantivy_worker  42.1",
+      " 319872 tantivy_worker  42.1",
+      " 235106 helium           9.1",
+      "   2339 vesktop          9.1",
+      " 319445 python           8.7",
+      "   2156 vesktop          2.7",
+      "   6068 t3code           2.7",
+      "   2423 helium           2.2",
+      "   2373 helium           1.7",
+      "   2269 vesktop          1.6",
+      "   1441 Hyprland         1.4"
+    ]
+  },
+  {
+    "at": 1791505911.3021834,
+    "loadavg": [
+      5.08984375,
+      4.97265625,
+      4.7626953125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 320376 ps               100",
+      " 319894 helium          52.2",
+      " 235106 helium           9.1",
+      "   2339 vesktop          9.1",
+      " 319445 python           8.7",
+      "   2156 vesktop          2.7",
+      "   6068 t3code           2.7",
+      "   2423 helium           2.2",
+      "   2373 helium           1.7",
+      "   2269 vesktop          1.6",
+      "   1441 Hyprland         1.4",
+      "   6078 t3code           1.3"
+    ]
+  },
+  {
+    "at": 1791505938.1737967,
+    "loadavg": [
+      4.69970703125,
+      4.89306640625,
+      4.74169921875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 320478 ps               200",
+      " 320374 tantivy_worker  42.1",
+      " 320375 tantivy_worker  41.3",
+      "   2339 vesktop          9.4",
+      " 235106 helium           8.9",
+      " 319445 python           8.6",
+      " 320410 helium           3.3",
+      " 320417 helium           3.0",
+      "   2156 vesktop          2.7",
+      "   6068 t3code           2.7",
+      "   2423 helium           2.2",
+      " 320427 helium           1.8"
+    ]
+  },
+  {
+    "at": 1791505954.1805022,
+    "loadavg": [
+      4.9716796875,
+      4.94775390625,
+      4.76318359375
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 320479 helium          73.9",
+      " 320375 tantivy_worker  42.0",
+      " 320374 tantivy_worker  42.0",
+      "   2339 vesktop          9.5",
+      " 235106 helium           8.7",
+      " 319445 python           8.5",
+      "   2156 vesktop          2.7",
+      "   6068 t3code           2.7",
+      "   2423 helium           2.2",
+      "   2373 helium           1.7",
+      "   2269 vesktop          1.7",
+      "   1441 Hyprland         1.4"
+    ]
+  },
+  {
+    "at": 1791505970.2201555,
+    "loadavg": [
+      5.5693359375,
+      5.08154296875,
+      4.810546875
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 320479 helium          61.8",
+      " 320374 tantivy_worker  42.2",
+      " 320375 tantivy_worker  41.9",
+      "   2339 vesktop          9.7",
+      " 235106 helium           8.6",
+      " 319445 python           8.5",
+      "   2156 vesktop          2.8",
+      "   6068 t3code           2.7",
+      "   2423 helium           2.2",
+      "   2373 helium           1.7",
+      "   2269 vesktop          1.7",
+      "   1441 Hyprland         1.4"
+    ]
+  },
+  {
+    "at": 1791505985.776004,
+    "loadavg": [
+      6.0224609375,
+      5.220703125,
+      4.861328125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 320479 helium          53.0",
+      " 320375 tantivy_worker  42.3",
+      " 320374 tantivy_worker  42.2",
+      "   2339 vesktop          9.8",
+      " 235106 helium           8.5",
+      " 319445 python           8.4",
+      "   2156 vesktop          2.8",
+      "   6068 t3code           2.7",
+      "   2423 helium           2.2",
+      "   2373 helium           1.8",
+      "   2269 vesktop          1.7",
+      "   1441 Hyprland         1.5"
+    ]
+  },
+  {
+    "at": 1791506001.9680822,
+    "loadavg": [
+      5.7783203125,
+      5.20849609375,
+      4.86376953125
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 320762 helium          56.6",
+      " 320374 tantivy_worker  42.3",
+      " 320375 tantivy_worker  42.2",
+      " 320479 helium          40.9",
+      "   2339 vesktop          9.9",
+      " 235106 helium           8.4",
+      " 319445 python           8.3",
+      "   2156 vesktop          2.8",
+      "   6068 t3code           2.7",
+      "   2423 helium           2.2",
+      "   2373 helium           1.8",
+      " 320809 helium           1.7"
+    ]
+  },
+  {
+    "at": 1791506017.2697322,
+    "loadavg": [
+      4.99609375,
+      5.06591796875,
+      4.822265625
+    ],
+    "processes": [
+      "    PID COMMAND         %CPU",
+      " 320375 tantivy_worker  42.4",
+      " 320374 tantivy_worker  42.3",
+      " 320479 helium          32.9",
+      " 320762 helium          28.9",
+      "   2339 vesktop         10.0",
+      " 319445 python           8.3",
+      " 235106 helium           8.2",
+      "   2156 vesktop          2.8",
+      "   6068 t3code           2.7",
+      "   2423 helium           2.2",
+      "   2373 helium           1.8",
+      "   2269 vesktop          1.7"
+    ]
+  }
+]

@@ -1,0 +1,59 @@
+{
+  "verdict": "reverted",
+  "parent": "a674aaf2f6187f3010a135dc25fdacf9cab27e53",
+  "reason": "No reliable pilot gain: longer OR +2.51% AB and -0.20% BA, with median per-query ratios >1 in both orders. Full controlled sampler and broad tests not run.",
+  "pilot": [
+    {
+      "set": "all",
+      "queries": 373,
+      "AB": {
+        "candidate_mean_ns": 121842.36595174263,
+        "baseline_mean_ns": 119870.09383378016,
+        "ratio_mean": 1.016453412647673,
+        "median_ratio": 0.998414271555996
+      },
+      "BA": {
+        "candidate_mean_ns": 126360.89142091153,
+        "baseline_mean_ns": 127566.35522788204,
+        "ratio_mean": 0.9905502998434259,
+        "median_ratio": 0.9920566211186777
+      }
+    },
+    {
+      "set": "or3plus",
+      "queries": 103,
+      "AB": {
+        "candidate_mean_ns": 284971.9417475728,
+        "baseline_mean_ns": 277999.4951456311,
+        "ratio_mean": 1.0250807887197393,
+        "median_ratio": 1.0132288986031668
+      },
+      "BA": {
+        "candidate_mean_ns": 297385.42718446604,
+        "baseline_mean_ns": 297979.46601941745,
+        "ratio_mean": 0.9980064437228278,
+        "median_ratio": 1.0144102437005582
+      }
+    },
+    {
+      "set": "or2",
+      "queries": 202,
+      "AB": {
+        "candidate_mean_ns": 40685.792079207924,
+        "baseline_mean_ns": 40993.87128712871,
+        "ratio_mean": 0.9924847495918854,
+        "median_ratio": 0.9906016815127489
+      },
+      "BA": {
+        "candidate_mean_ns": 42222.63118811881,
+        "baseline_mean_ns": 42892.46534653466,
+        "ratio_mean": 0.9843834073652762,
+        "median_ratio": 0.9742308481081692
+      }
+    }
+  ],
+  "targeted_tests": 12,
+  "exact_profiles": 3,
+  "queries_per_profile": 1227,
+  "candidate_binary_sha256": "140f57666ef8f57dfd3f9c5e4e7b5d93530833b8bdcf492ce561a29705782d81"
+}
