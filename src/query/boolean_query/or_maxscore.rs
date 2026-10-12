@@ -1,4 +1,4 @@
-use crate::query::score_combiner::{SmallScoreSumUpperBound, SumCombiner};
+use crate::query::score_combiner::{ScoreSumThresholdCutoff, SmallScoreSumUpperBound, SumCombiner};
 use crate::query::term_query::{ScoredTermBatch, TermScorer};
 use crate::query::weight::for_each_pruning_scorer;
 use crate::query::{BufferedUnionScorer, Scorer};
@@ -97,6 +97,7 @@ pub(crate) fn or_maxscore(
     // prefix/probe sum contains at most the admitted number of original terms.
     let upper_bound =
         SmallScoreSumUpperBound::new(num_terms).expect("admitted 3..=32-term score sum");
+    let mut optional_cutoff = ScoreSumThresholdCutoff::new(threshold);
     let mut clauses: Vec<ClauseState> = scorers
         .iter()
         .enumerate()
@@ -342,7 +343,11 @@ pub(crate) fn or_maxscore(
             }
             let mut competitive = true;
             for rank in (0..first_essential).rev() {
-                if upper_bound.score(known + prefix[rank + 1]) <= threshold {
+                let optional_sum = known + prefix[rank + 1];
+                let rejected = upper_bound.score_is_at_most(optional_sum, &optional_cutoff);
+                #[cfg(test)]
+                debug_assert_eq!(rejected, upper_bound.score(optional_sum) <= threshold);
+                if rejected {
                     competitive = false;
                     break;
                 }
@@ -367,6 +372,7 @@ pub(crate) fn or_maxscore(
                     let next_threshold = callback(doc, score);
                     debug_assert!(next_threshold >= threshold);
                     threshold = next_threshold;
+                    optional_cutoff = ScoreSumThresholdCutoff::new(threshold);
                 }
             }
             if single_essential {
