@@ -38,6 +38,8 @@ pub struct TermScorer {
     block_bounds: TermBlockBounds,
     use_alternate_mask: bool,
     range_bounds: Option<Box<RangeMaxScores>>,
+    // Last coarse group end; 0 means none yet (a full block never ends at 0).
+    coarse_end: DocId,
 }
 
 #[derive(Clone)]
@@ -51,6 +53,9 @@ enum TermBlockBounds {
 // Score ownership is the immutable query weight and provenance policy of this
 // TermScorer. Nodes are lazy: a covered block is resolved once, and overlapping
 // ranges reuse its ancestors. NaN is an uncomputed marker, never an absent bound.
+/// Full blocks (128 postings each) one optional clause may let a region span.
+pub(crate) const COARSE_GROUP_BLOCKS: usize = 32;
+
 #[derive(Clone)]
 struct RangeMaxScores {
     tree: Vec<Score>,
@@ -166,6 +171,7 @@ impl TermScorer {
             block_bounds: TermBlockBounds::Global,
             use_alternate_mask,
             range_bounds: None,
+            coarse_end: 0,
         }
     }
 
@@ -287,6 +293,20 @@ impl TermScorer {
             &self.similarity_weight,
             false,
         )
+    }
+
+    /// Last document of the aligned group of `COARSE_GROUP_BLOCKS` full blocks
+    /// containing `target`, or `TERMINATED` inside the tail. Targets must not
+    /// decrease between calls.
+    pub(crate) fn coarse_block_end(&mut self, target: DocId) -> DocId {
+        if self.coarse_end != 0 && target <= self.coarse_end {
+            return self.coarse_end;
+        }
+        let directory = &self.postings.block_cursor.skip_directory;
+        let block = directory.block_at(target);
+        let last = (block / COARSE_GROUP_BLOCKS + 1) * COARSE_GROUP_BLOCKS - 1;
+        self.coarse_end = directory.end(last.min(directory.full_blocks().saturating_sub(1)).max(block));
+        self.coarse_end
     }
 
     /// Cover a half-open document interval using only existing skip metadata.

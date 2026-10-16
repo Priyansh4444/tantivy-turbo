@@ -193,6 +193,10 @@ impl SkipDirectory {
         }
     }
 
+    pub(crate) fn full_blocks(&self) -> usize {
+        self.blocks
+    }
+
     pub(crate) fn len(&self) -> usize {
         self.blocks + usize::from(self.has_tail)
     }

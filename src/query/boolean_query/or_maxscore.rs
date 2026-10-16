@@ -68,10 +68,6 @@ thread_local! {
         const { std::cell::RefCell::new(None) };
 }
 
-/// Widest region one covering range bound may certify, as in Lucene's
-/// MaxScore window.
-const MAX_REGION_SPAN: DocId = 4096;
-
 /// Merge only clauses whose local score bounds can exceed the optional prefix.
 /// Scorers stay in incoming order: the preference order is for pruning only,
 /// while published scores replay the original f32 leaves in f64.
@@ -248,9 +244,16 @@ pub(crate) fn or_maxscore(
             }
             hi = hi.max(lo.saturating_add(min_span).min(max_doc));
         }
-        // A sparse lead (e.g. a tail block with no skip end) would otherwise
-        // stretch one region, and every optional range bound, across the segment.
-        hi = hi.min(lo.saturating_add(MAX_REGION_SPAN).min(max_doc));
+        // An optional clause's covering bound stays within one aligned group of
+        // its blocks, so a sparse lead cannot loosen a dense clause's bound
+        // across the segment, yet sparse clauses still allow wide regions.
+        for clause in &clauses[globally_optional..lead] {
+            if clause.doc == TERMINATED || clause.doc >= hi {
+                continue;
+            }
+            let end = scorers[clause.ordinal].coarse_block_end(lo.max(clause.doc));
+            hi = hi.min(end.min(max_doc - 1) + 1);
+        }
         let mut first_essential;
         loop {
             debug_assert!(hi > lo);
