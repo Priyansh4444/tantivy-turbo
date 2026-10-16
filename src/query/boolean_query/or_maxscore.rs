@@ -68,6 +68,10 @@ thread_local! {
         const { std::cell::RefCell::new(None) };
 }
 
+/// Widest region one covering range bound may certify, as in Lucene's
+/// MaxScore window.
+const MAX_REGION_SPAN: DocId = 4096;
+
 /// Merge only clauses whose local score bounds can exceed the optional prefix.
 /// Scorers stay in incoming order: the preference order is for pruning only,
 /// while published scores replay the original f32 leaves in f64.
@@ -244,6 +248,9 @@ pub(crate) fn or_maxscore(
             }
             hi = hi.max(lo.saturating_add(min_span).min(max_doc));
         }
+        // A sparse lead (e.g. a tail block with no skip end) would otherwise
+        // stretch one region, and every optional range bound, across the segment.
+        hi = hi.min(lo.saturating_add(MAX_REGION_SPAN).min(max_doc));
         let mut first_essential;
         loop {
             debug_assert!(hi > lo);
