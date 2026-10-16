@@ -68,6 +68,10 @@ thread_local! {
         const { std::cell::RefCell::new(None) };
 }
 
+/// Regions on the fine (every clause's block) geometry before a query may
+/// switch to coarse covering bounds.
+const COARSE_PROBE_REGIONS: u64 = 32;
+
 /// Merge only clauses whose local score bounds can exceed the optional prefix.
 /// Scorers stay in incoming order: the preference order is for pruning only,
 /// while published scores replay the original f32 leaves in f64.
@@ -138,6 +142,9 @@ pub(crate) fn or_maxscore(
     let mut global_appends = 0;
 
     let mut previous_essential = 0;
+    let mut coarse = false;
+    let mut fine_regions = 0u64;
+    let mut hi;
     let mut min_span = 1u32;
     let mut region_count = 0u64;
     let mut candidate_count = 0u64;
@@ -223,77 +230,143 @@ pub(crate) fn or_maxscore(
                 choices.push((lo, certified, globally_optional, observed_remaining_cost));
             }
         });
-        // Only the previous essential leads end a region; optional clauses are
-        // covered by one range bound instead of capping it with their blocks.
-        let mut lead = previous_essential.min(num_terms - 1).max(globally_optional);
-        let mut hi = max_doc;
-        for clause in &clauses[lead..] {
-            if clause.doc == TERMINATED {
-                continue;
-            }
-            let scorer = &mut scorers[clause.ordinal];
-            scorer.seek_block(lo.max(clause.doc));
-            hi = hi.min(scorer.last_doc_in_block().min(max_doc - 1) + 1);
+        if !coarse && fine_regions >= COARSE_PROBE_REGIONS && candidate_count < fine_regions * num_terms as u64 {
+            // Region bookkeeping (O(terms) per region) outweighs candidate work.
+            coarse = true;
         }
-        region_count += 1;
-        if num_terms - lead > 1 {
-            if candidate_count < region_count * 32 * num_terms as u64 {
-                min_span = (min_span * 2).min(4096);
-            } else {
-                min_span = 1;
-            }
-            hi = hi.max(lo.saturating_add(min_span).min(max_doc));
-        }
-        // An optional clause's covering bound stays within one aligned group of
-        // its blocks, so a sparse lead cannot loosen a dense clause's bound
-        // across the segment, yet sparse clauses still allow wide regions.
-        for clause in &clauses[globally_optional..lead] {
-            if clause.doc == TERMINATED || clause.doc >= hi {
-                continue;
-            }
-            let end = scorers[clause.ordinal].coarse_block_end(lo.max(clause.doc));
-            hi = hi.min(end.min(max_doc - 1) + 1);
-        }
-        let mut first_essential;
-        loop {
-            debug_assert!(hi > lo);
-            for (rank, clause) in clauses.iter_mut().enumerate() {
-                // A real loaded position beyond the interval cannot contribute.
-                // A stale position below lo does not justify a zero bound.
-                clause.local_max = if clause.doc >= hi {
-                    0.0
-                } else if rank < globally_optional {
-                    clause.global_max
-                } else {
-                    scorers[clause.ordinal].range_max_score(lo, hi)
-                };
-                prefix[rank + 1] = prefix[rank] + f64::from(clause.local_max);
-            }
-            first_essential = 0;
-            while first_essential < num_terms
-                && upper_bound.score(prefix[first_essential + 1]) <= threshold
-            {
-                first_essential += 1;
-            }
-            if first_essential >= lead {
-                break;
-            }
-            // Looser covering bounds promoted clauses to essential. Let their
-            // current blocks end the region too, then repartition.
-            let mut capped = hi;
-            for clause in &clauses[first_essential..lead] {
-                if clause.doc == TERMINATED || clause.doc >= hi {
+        let first_essential;
+        if coarse {
+            // Only the previous essential leads end a region; optional clauses are
+            // covered by one range bound instead of capping it with their blocks.
+            let mut lead = previous_essential.min(num_terms - 1).max(globally_optional);
+            hi = max_doc;
+            for clause in &clauses[lead..] {
+                if clause.doc == TERMINATED {
                     continue;
                 }
                 let scorer = &mut scorers[clause.ordinal];
                 scorer.seek_block(lo.max(clause.doc));
-                capped = capped.min(scorer.last_doc_in_block().min(max_doc - 1) + 1);
+                hi = hi.min(scorer.last_doc_in_block().min(max_doc - 1) + 1);
             }
-            lead = first_essential;
-            if capped >= hi {
-                break;
+            region_count += 1;
+            if num_terms - lead > 1 {
+                if candidate_count < region_count * 32 * num_terms as u64 {
+                    min_span = (min_span * 2).min(4096);
+                } else {
+                    min_span = 1;
+                }
+                hi = hi.max(lo.saturating_add(min_span).min(max_doc));
             }
-            hi = capped;
+            // An optional clause's covering bound stays within one aligned group of
+            // its blocks, so a sparse lead cannot loosen a dense clause's bound
+            // across the segment, yet sparse clauses still allow wide regions.
+            for clause in &clauses[globally_optional..lead] {
+                if clause.doc == TERMINATED || clause.doc >= hi {
+                    continue;
+                }
+                let end = scorers[clause.ordinal].coarse_block_end(lo.max(clause.doc));
+                hi = hi.min(end.min(max_doc - 1) + 1);
+            }
+            let mut first_essential_coarse;
+            loop {
+                debug_assert!(hi > lo);
+                for (rank, clause) in clauses.iter_mut().enumerate() {
+                    // A real loaded position beyond the interval cannot contribute.
+                    // A stale position below lo does not justify a zero bound.
+                    clause.local_max = if clause.doc >= hi {
+                        0.0
+                    } else if rank < globally_optional {
+                        clause.global_max
+                    } else {
+                        scorers[clause.ordinal].range_max_score(lo, hi)
+                    };
+                    prefix[rank + 1] = prefix[rank] + f64::from(clause.local_max);
+                }
+                first_essential_coarse = 0;
+                while first_essential_coarse < num_terms
+                    && upper_bound.score(prefix[first_essential_coarse + 1]) <= threshold
+                {
+                    first_essential_coarse += 1;
+                }
+                if first_essential_coarse >= lead {
+                    break;
+                }
+                // Looser covering bounds promoted clauses to essential. Let their
+                // current blocks end the region too, then repartition.
+                let mut capped = hi;
+                for clause in &clauses[first_essential_coarse..lead] {
+                    if clause.doc == TERMINATED || clause.doc >= hi {
+                        continue;
+                    }
+                    let scorer = &mut scorers[clause.ordinal];
+                    scorer.seek_block(lo.max(clause.doc));
+                    capped = capped.min(scorer.last_doc_in_block().min(max_doc - 1) + 1);
+                }
+                lead = first_essential_coarse;
+                if capped >= hi {
+                    break;
+                }
+                hi = capped;
+            }
+            first_essential = first_essential_coarse;
+        } else {
+            fine_regions += 1;
+            let mut hi_fine = max_doc;
+            for (rank, clause) in clauses.iter_mut().enumerate() {
+                clause.local_max = 0.0;
+                // These maxima certify the entire physical range. Dense optional
+                // terms need neither shallow selection nor a region boundary at
+                // each of their blocks when only sparse essentials drive candidates.
+                if rank < globally_optional {
+                    clause.local_max = clause.global_max;
+                    continue;
+                }
+                if clause.doc == TERMINATED {
+                    continue;
+                }
+                clause.assert_coherent(&scorers);
+                scorers[clause.ordinal].seek_block(lo.max(clause.doc));
+                clause.assert_coherent(&scorers);
+                let last_doc = scorers[clause.ordinal].last_doc_in_block();
+                // Shallow selection can leave doc() in an old decoded block. A
+                // selected tail has no finite end, so reconcile it at the floor;
+                // remaining_docs alone does not prove there is a doc after lo.
+                if last_doc == TERMINATED && clause.doc < lo {
+                    clause.seek(&mut scorers, lo);
+                }
+                if clause.doc == TERMINATED {
+                    continue;
+                }
+                // Keep the previously selected last_doc after tail reconciliation.
+                // The cap makes both a tail and TERMINATED overflow harmless and
+                // uses the physical address range, including deleted documents.
+                hi_fine = hi_fine.min(last_doc.min(max_doc - 1) + 1);
+                let bound = scorers[clause.ordinal].block_max_score();
+                clause.assert_coherent(&scorers);
+                clause.local_max = if bound.is_finite() && bound >= 0.0 {
+                    bound
+                } else {
+                    clause.global_max
+                };
+            }
+            hi = hi_fine;
+            debug_assert!(hi > lo);
+            for (rank, clause) in clauses.iter_mut().enumerate() {
+                // A real loaded position beyond the interval cannot contribute.
+                // A stale position below lo does not justify a zero bound. Cleanup
+                // and prefix construction share the same sequential record pass.
+                if clause.doc >= hi {
+                    clause.local_max = 0.0;
+                }
+                prefix[rank + 1] = prefix[rank] + f64::from(clause.local_max);
+            }
+            let mut first_essential_fine = 0;
+            while first_essential_fine < num_terms
+                && upper_bound.score(prefix[first_essential_fine + 1]) <= threshold
+            {
+                first_essential_fine += 1;
+            }
+            first_essential = first_essential_fine;
         }
         previous_essential = first_essential;
         if first_essential == num_terms {
