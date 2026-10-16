@@ -168,6 +168,71 @@ pub(crate) struct SelectedInputPair {
     pub(crate) selected_tf_ceiling: NonZeroU32,
 }
 
+/// Immutable view of the existing fixed-width skip records. A query may inspect
+/// arbitrary complete blocks without changing its live postings/positions owner.
+#[derive(Clone)]
+pub(crate) struct SkipDirectory {
+    data: OwnedBytes,
+    blocks: usize,
+    stride: usize,
+    has_tail: bool,
+}
+
+impl SkipDirectory {
+    pub(crate) fn new(data: OwnedBytes, doc_freq: u32, option: IndexRecordOption) -> Self {
+        let stride = match option {
+            IndexRecordOption::Basic => 5,
+            IndexRecordOption::WithFreqs => 8,
+            IndexRecordOption::WithFreqsAndPositions => 12,
+        };
+        Self {
+            data,
+            blocks: doc_freq as usize / COMPRESSION_BLOCK_SIZE,
+            stride,
+            has_tail: doc_freq as usize % COMPRESSION_BLOCK_SIZE != 0,
+        }
+    }
+
+    pub(crate) fn len(&self) -> usize {
+        self.blocks + usize::from(self.has_tail)
+    }
+
+    pub(crate) fn end(&self, block: usize) -> DocId {
+        if block >= self.blocks {
+            TERMINATED
+        } else {
+            read_u32(&self.data[block * self.stride..])
+        }
+    }
+
+    pub(crate) fn block_at(&self, doc: DocId) -> usize {
+        let mut left = 0;
+        let mut right = self.blocks;
+        while left < right {
+            let mid = left + (right - left) / 2;
+            if self.end(mid) < doc {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        left
+    }
+
+    pub(crate) fn pair(&self, block: usize) -> Option<SelectedInputPair> {
+        if block >= self.blocks || self.stride == 5 {
+            return None;
+        }
+        let offset = (block + 1) * self.stride - 2;
+        NonZeroU32::new(decode_block_wand_max_tf(self.data[offset + 1])).map(
+            |selected_tf_ceiling| SelectedInputPair {
+                norm: self.data[offset],
+                selected_tf_ceiling,
+            },
+        )
+    }
+}
+
 impl Default for BlockInfo {
     fn default() -> Self {
         BlockInfo::VInt { num_docs: 0u32 }
@@ -175,6 +240,10 @@ impl Default for BlockInfo {
 }
 
 impl SkipReader {
+    pub(crate) fn record_option(&self) -> IndexRecordOption {
+        self.skip_info
+    }
+
     pub(crate) fn selected_input_pair(&self) -> Option<SelectedInputPair> {
         match self.block_info {
             BlockInfo::BitPacked {

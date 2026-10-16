@@ -5,7 +5,7 @@ use common::VInt;
 use crate::directory::{FileSlice, OwnedBytes};
 use crate::fieldnorm::FieldNormReader;
 use crate::postings::compression::{BlockDecoder, VIntDecoder, COMPRESSION_BLOCK_SIZE};
-use crate::postings::{BlockInfo, FreqReadingOption, SkipReader};
+use crate::postings::{BlockInfo, FreqReadingOption, SkipDirectory, SkipReader};
 use crate::query::{Bm25Weight, NativeInputEnvelope};
 use crate::schema::IndexRecordOption;
 use crate::{DocId, Score, TERMINATED};
@@ -38,6 +38,7 @@ pub struct BlockSegmentPostings {
     doc_freq: u32,
     data: OwnedBytes,
     skip_reader: SkipReader,
+    pub(crate) skip_directory: SkipDirectory,
 }
 
 fn decode_bitpacked_block(
@@ -120,6 +121,7 @@ impl BlockSegmentPostings {
     ) -> io::Result<BlockSegmentPostings> {
         let bytes = data.read_bytes()?;
         let (skip_data_opt, postings_data) = split_into_skips_and_postings(doc_freq, bytes)?;
+        let mut directory_data = OwnedBytes::empty();
         let skip_reader = match skip_data_opt {
             Some(skip_data) => {
                 let block_count = doc_freq as usize / COMPRESSION_BLOCK_SIZE;
@@ -132,6 +134,7 @@ impl BlockSegmentPostings {
                     // - numerical terms are encoded without term freqs.
                     record_option = IndexRecordOption::Basic;
                 }
+                directory_data = skip_data.clone();
                 SkipReader::new(skip_data, doc_freq, record_option)
             }
             None => SkipReader::new(OwnedBytes::empty(), doc_freq, record_option),
@@ -152,6 +155,7 @@ impl BlockSegmentPostings {
             doc_freq,
             data: postings_data,
             skip_reader,
+            skip_directory: SkipDirectory::new(directory_data, doc_freq, record_option),
         };
         block_segment_postings.load_block();
         Ok(block_segment_postings)
@@ -286,6 +290,11 @@ impl BlockSegmentPostings {
         self.data = postings_data;
         self.block_max_score_cache = None;
         self.block_loaded = false;
+        self.skip_directory = SkipDirectory::new(
+            skip_data_opt.clone().unwrap_or_else(OwnedBytes::empty),
+            doc_freq,
+            self.skip_reader.record_option(),
+        );
         if let Some(skip_data) = skip_data_opt {
             self.skip_reader.reset(skip_data, doc_freq);
         } else {
@@ -515,6 +524,7 @@ impl BlockSegmentPostings {
             doc_freq: 0,
             data: OwnedBytes::empty(),
             skip_reader: SkipReader::new(OwnedBytes::empty(), 0, IndexRecordOption::Basic),
+            skip_directory: SkipDirectory::new(OwnedBytes::empty(), 0, IndexRecordOption::Basic),
         }
     }
 

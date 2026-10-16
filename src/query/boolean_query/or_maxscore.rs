@@ -137,6 +137,10 @@ pub(crate) fn or_maxscore(
     #[cfg(test)]
     let mut global_appends = 0;
 
+    let mut previous_essential = 0;
+    let mut min_span = 1u32;
+    let mut region_count = 0u64;
+    let mut candidate_count = 0u64;
     while lo < max_doc {
         debug_assert!(clauses
             .iter()
@@ -220,41 +224,31 @@ pub(crate) fn or_maxscore(
             }
         });
         let mut hi = max_doc;
-        for (rank, clause) in clauses.iter_mut().enumerate() {
-            clause.local_max = 0.0;
-            // These maxima certify the entire physical range. Dense optional
-            // terms need neither shallow selection nor a region boundary at
-            // each of their blocks when only sparse essentials drive candidates.
-            if rank < globally_optional {
-                clause.local_max = clause.global_max;
-                continue;
-            }
+        let lead = previous_essential.min(num_terms - 1).max(globally_optional);
+        for clause in &clauses[lead..] {
             if clause.doc == TERMINATED {
                 continue;
             }
-            clause.assert_coherent(&scorers);
-            scorers[clause.ordinal].seek_block(lo.max(clause.doc));
-            clause.assert_coherent(&scorers);
-            let last_doc = scorers[clause.ordinal].last_doc_in_block();
-            // Shallow selection can leave doc() in an old decoded block. A
-            // selected tail has no finite end, so reconcile it at the floor;
-            // remaining_docs alone does not prove there is a doc after lo.
-            if last_doc == TERMINATED && clause.doc < lo {
-                clause.seek(&mut scorers, lo);
-            }
-            if clause.doc == TERMINATED {
-                continue;
-            }
-            // Keep the previously selected last_doc after tail reconciliation.
-            // The cap makes both a tail and TERMINATED overflow harmless and
-            // uses the physical address range, including deleted documents.
-            hi = hi.min(last_doc.min(max_doc - 1) + 1);
-            let bound = scorers[clause.ordinal].block_max_score();
-            clause.assert_coherent(&scorers);
-            clause.local_max = if bound.is_finite() && bound >= 0.0 {
-                bound
+            let scorer = &mut scorers[clause.ordinal];
+            scorer.seek_block(lo.max(clause.doc));
+            hi = hi.min(scorer.last_doc_in_block().min(max_doc - 1) + 1);
+        }
+        region_count += 1;
+        if num_terms - lead > 1 {
+            if candidate_count < region_count * 32 * num_terms as u64 {
+                min_span = (min_span * 2).min(4096);
             } else {
+                min_span = 1;
+            }
+            hi = hi.max(lo.saturating_add(min_span).min(max_doc));
+        }
+        for (rank, clause) in clauses.iter_mut().enumerate() {
+            clause.local_max = if clause.doc >= hi {
+                0.0
+            } else if rank < globally_optional {
                 clause.global_max
+            } else {
+                scorers[clause.ordinal].range_max_score(lo, hi)
             };
         }
         debug_assert!(hi > lo);
@@ -273,6 +267,7 @@ pub(crate) fn or_maxscore(
         {
             first_essential += 1;
         }
+        previous_essential = first_essential;
         if first_essential == num_terms {
             debug_assert!(clauses
                 .iter()
@@ -324,6 +319,7 @@ pub(crate) fn or_maxscore(
             if doc >= hi {
                 break;
             }
+            candidate_count += 1;
             contributions.fill(0.0);
             let mut known = 0.0f64;
             if single_essential {

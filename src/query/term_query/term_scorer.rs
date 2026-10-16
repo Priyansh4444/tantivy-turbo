@@ -37,6 +37,7 @@ pub struct TermScorer {
     similarity_weight: Bm25Weight,
     block_bounds: TermBlockBounds,
     use_alternate_mask: bool,
+    range_bounds: Option<Box<RangeMaxScores>>,
 }
 
 #[derive(Clone)]
@@ -45,6 +46,85 @@ enum TermBlockBounds {
     StoredDefault,
     PendingNative(NativeSelectionContext),
     NativeTransform(Arc<NativeInputEnvelope>),
+}
+
+// Score ownership is the immutable query weight and provenance policy of this
+// TermScorer. Nodes are lazy: a covered block is resolved once, and overlapping
+// ranges reuse its ancestors. NaN is an uncomputed marker, never an absent bound.
+#[derive(Clone)]
+struct RangeMaxScores {
+    tree: Vec<Score>,
+    leaves: usize,
+    floor: DocId,
+    end: DocId,
+    bound: Score,
+}
+
+impl RangeMaxScores {
+    fn new(len: usize) -> Self {
+        let leaves = len.max(1).next_power_of_two();
+        Self {
+            tree: vec![Score::NAN; 2 * leaves],
+            leaves,
+            floor: 0,
+            end: 0,
+            bound: Score::NAN,
+        }
+    }
+
+    fn node(
+        &mut self,
+        node: usize,
+        left: usize,
+        right: usize,
+        resolve: &impl Fn(usize) -> Score,
+    ) -> Score {
+        let cached = self.tree[node];
+        if !cached.is_nan() {
+            return cached;
+        }
+        let bound = if right - left == 1 {
+            resolve(left)
+        } else {
+            let mid = left + (right - left) / 2;
+            self.node(node * 2, left, mid, resolve).max(self.node(
+                node * 2 + 1,
+                mid,
+                right,
+                resolve,
+            ))
+        };
+        self.tree[node] = bound;
+        bound
+    }
+
+    fn range(
+        &mut self,
+        mut left: usize,
+        mut right: usize,
+        resolve: impl Fn(usize) -> Score,
+    ) -> Score {
+        let mut bound = 0.0_f32;
+        let mut width = 1;
+        left += self.leaves;
+        right += self.leaves;
+        while left < right {
+            if left & 1 != 0 {
+                let start = (left * width) - self.leaves;
+                bound = bound.max(self.node(left, start, start + width, &resolve));
+                left += 1;
+            }
+            if right & 1 != 0 {
+                right -= 1;
+                let start = (right * width) - self.leaves;
+                bound = bound.max(self.node(right, start, start + width, &resolve));
+            }
+            left /= 2;
+            right /= 2;
+            width *= 2;
+        }
+        bound
+    }
 }
 
 impl TermScorer {
@@ -85,6 +165,7 @@ impl TermScorer {
             similarity_weight,
             block_bounds: TermBlockBounds::Global,
             use_alternate_mask,
+            range_bounds: None,
         }
     }
 
@@ -206,6 +287,83 @@ impl TermScorer {
             &self.similarity_weight,
             false,
         )
+    }
+
+    /// Cover a half-open document interval using only existing skip metadata.
+    /// The live skip/decoded cursor, positions and current-block cache are untouched.
+    pub(crate) fn range_max_score(&mut self, lo: DocId, hi: DocId) -> Score {
+        let lo = lo.max(self.doc());
+        if lo >= hi {
+            return 0.0;
+        }
+        let global = self.max_score();
+        if !self.similarity_weight.has_safe_score_bounds() {
+            return global;
+        }
+        if let TermBlockBounds::PendingNative(context) = self.block_bounds {
+            self.block_bounds = self
+                .similarity_weight
+                .native_input_envelope(context)
+                .map(|envelope| TermBlockBounds::NativeTransform(Arc::new(envelope)))
+                .unwrap_or(TermBlockBounds::Global);
+        }
+        if matches!(self.block_bounds, TermBlockBounds::Global) {
+            return global;
+        }
+        let directory = &self.postings.block_cursor.skip_directory;
+        let cache = self
+            .range_bounds
+            .get_or_insert_with(|| Box::new(RangeMaxScores::new(directory.len())));
+        if !cache.bound.is_nan() && cache.floor <= lo && hi - 1 <= cache.end {
+            return cache.bound;
+        }
+        let first = directory.block_at(lo);
+        let last = directory
+            .block_at(hi - 1)
+            .min(directory.len().saturating_sub(1));
+        if first >= directory.len() {
+            return 0.0; // Complete metadata proves there is no nonempty tail.
+        }
+        let weight = &self.similarity_weight;
+        let policy = &self.block_bounds;
+        let bound = cache.range(first, last + 1, |block| {
+            let Some(pair) = directory.pair(block) else {
+                return global;
+            };
+            let bound = match policy {
+                TermBlockBounds::StoredDefault => {
+                    let freq = pair.selected_tf_ceiling.get();
+                    if freq == u32::MAX && !weight.supports_frequency_ceiling() {
+                        return global;
+                    }
+                    weight.score(pair.norm, freq)
+                }
+                TermBlockBounds::NativeTransform(envelope) => {
+                    let Some(upper) = envelope.input_upper(pair.norm, pair.selected_tf_ceiling)
+                    else {
+                        return global;
+                    };
+                    if !upper.is_finite() {
+                        return global;
+                    }
+                    weight.score_from_native_input_upper(upper)
+                }
+                _ => return global,
+            };
+            if bound.is_finite() && bound >= 0.0 {
+                bound
+            } else {
+                global
+            }
+        });
+        cache.floor = if first == 0 {
+            0
+        } else {
+            directory.end(first - 1) + 1
+        };
+        cache.end = directory.end(last);
+        cache.bound = bound;
+        bound
     }
 
     pub fn term_freq(&self) -> u32 {
