@@ -462,10 +462,7 @@ struct CoarseContinuation {
 /// The rest of `or_maxscore` on coarse regions, out of line so the fine loop
 /// keeps its accepted code generation.
 #[inline(never)]
-fn or_maxscore_coarse(
-    state: CoarseContinuation,
-    callback: &mut dyn FnMut(DocId, Score) -> Score,
-) {
+fn or_maxscore_coarse(state: CoarseContinuation, callback: &mut dyn FnMut(DocId, Score) -> Score) {
     let CoarseContinuation {
         mut scorers,
         mut clauses,
@@ -705,7 +702,6 @@ fn or_maxscore_coarse(
         lo = hi;
     }
 }
-
 
 /// Coarse region setup, kept out of line so the fine (accepted) region loop
 /// keeps its code layout. Returns the region end and the first essential rank.

@@ -189,7 +189,7 @@ impl SkipDirectory {
             data,
             blocks: doc_freq as usize / COMPRESSION_BLOCK_SIZE,
             stride,
-            has_tail: doc_freq as usize % COMPRESSION_BLOCK_SIZE != 0,
+            has_tail: !(doc_freq as usize).is_multiple_of(COMPRESSION_BLOCK_SIZE),
         }
     }
 

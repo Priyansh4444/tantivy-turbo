@@ -305,7 +305,10 @@ impl TermScorer {
         let directory = &self.postings.block_cursor.skip_directory;
         let block = directory.block_at(target);
         let last = (block / COARSE_GROUP_BLOCKS + 1) * COARSE_GROUP_BLOCKS - 1;
-        self.coarse_end = directory.end(last.min(directory.full_blocks().saturating_sub(1)).max(block));
+        self.coarse_end = directory.end(
+            last.min(directory.full_blocks().saturating_sub(1))
+                .max(block),
+        );
         self.coarse_end
     }
 
