@@ -54,7 +54,7 @@ enum TermBlockBounds {
 // TermScorer. Nodes are lazy: a covered block is resolved once, and overlapping
 // ranges reuse its ancestors. NaN is an uncomputed marker, never an absent bound.
 /// Full blocks (128 postings each) one optional clause may let a region span.
-pub(crate) const COARSE_GROUP_BLOCKS: usize = 256;
+pub(crate) const COARSE_GROUP_BLOCKS: usize = 4096;
 
 #[derive(Clone)]
 struct RangeMaxScores {
