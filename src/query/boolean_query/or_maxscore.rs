@@ -142,18 +142,351 @@ pub(crate) fn or_maxscore(
     let mut certified_global_sum = 0.0f64;
     #[cfg(test)]
     let mut global_appends = 0;
-
+    // Fine regions follow every clause's block, as before. Once the observed
+    // region bookkeeping (O(terms) per region) outweighs candidate work, the
+    // rest of the segment continues on coarse covering-bound regions.
     let mut previous_essential = 0;
-    let mut coarse = false;
-    #[cfg(test)]
-    {
-        coarse = FORCE_COARSE.with(|force| force.get());
-    }
     let mut fine_regions = 0u64;
-    let mut hi;
+    let mut candidate_count = 0u64;
+    #[cfg(test)]
+    let force_coarse = FORCE_COARSE.with(|force| force.get());
+    #[cfg(not(test))]
+    let force_coarse = false;
+
+    while lo < max_doc {
+        if force_coarse
+            || (fine_regions >= COARSE_PROBE_REGIONS
+                && candidate_count < fine_regions * num_terms as u64)
+        {
+            return or_maxscore_coarse(
+                CoarseContinuation {
+                    scorers,
+                    clauses,
+                    prefix,
+                    contributions,
+                    batch,
+                    lo,
+                    max_doc,
+                    threshold,
+                    optional_cutoff,
+                    certified_global,
+                    certified_global_sum,
+                    #[cfg(test)]
+                    global_appends,
+                    previous_essential,
+                    candidate_count,
+                    upper_bound,
+                },
+                callback,
+            );
+        }
+        fine_regions += 1;
+        debug_assert!(clauses
+            .iter()
+            .all(|clause| clause.doc == scorers[clause.ordinal].doc()));
+        while certified_global < num_terms {
+            let next_sum = certified_global_sum + f64::from(clauses[certified_global].global_max);
+            if upper_bound.score(next_sum) > threshold {
+                break;
+            }
+            certified_global_sum = next_sum;
+            certified_global += 1;
+            #[cfg(test)]
+            {
+                global_appends += 1;
+            }
+        }
+        #[cfg(test)]
+        {
+            // Independent old from-zero computation also uses the generic
+            // bound helper, rather than relying on the cached sum or count.
+            let naive_bound = crate::query::score_combiner::ScoreSumUpperBound::new(num_terms);
+            let mut naive_count = 0;
+            let mut naive_sum = 0.0f64;
+            for clause in &clauses {
+                let next_sum = naive_sum + f64::from(clause.global_max);
+                if naive_bound.score(next_sum) > threshold {
+                    break;
+                }
+                naive_sum = next_sum;
+                naive_count += 1;
+            }
+            assert_eq!(certified_global, naive_count);
+            assert_eq!(certified_global_sum.to_bits(), naive_sum.to_bits());
+            assert_eq!(global_appends, certified_global);
+            assert!(global_appends <= num_terms);
+            GLOBAL_PREFIX_STATES.with(|states| {
+                if let Some(states) = states.borrow_mut().as_mut() {
+                    states.push((
+                        lo,
+                        threshold.to_bits(),
+                        certified_global,
+                        certified_global_sum.to_bits(),
+                        global_appends,
+                    ));
+                }
+            });
+        }
+        if certified_global == num_terms {
+            return;
+        }
+        let mut globally_optional = certified_global;
+        #[cfg(test)]
+        let certified = certified_global;
+        #[cfg(test)]
+        let mut observed_remaining_cost = 0;
+        if globally_optional > 0 {
+            let remaining_cost = clauses[globally_optional..]
+                .iter()
+                .filter(|clause| clause.doc != TERMINATED)
+                .map(|clause| u64::from(clause.cost))
+                .max()
+                .unwrap_or(0);
+            #[cfg(test)]
+            {
+                observed_remaining_cost = remaining_cost;
+            }
+            // A looser global certificate is useful when it leaves a much
+            // sparser candidate driver. For comparable-density clauses, keep
+            // tight local bounds so another dense term need not be essential.
+            let sparse_remainder = clauses[..globally_optional]
+                .iter()
+                .all(|clause| u64::from(clause.cost) >= 2 * remaining_cost);
+            if !sparse_remainder {
+                globally_optional = 0;
+            }
+        }
+        #[cfg(test)]
+        GLOBAL_CHOICES.with(|choices| {
+            if let Some(choices) = choices.borrow_mut().as_mut() {
+                choices.push((lo, certified, globally_optional, observed_remaining_cost));
+            }
+        });
+        let mut hi = max_doc;
+        for (rank, clause) in clauses.iter_mut().enumerate() {
+            clause.local_max = 0.0;
+            // These maxima certify the entire physical range. Dense optional
+            // terms need neither shallow selection nor a region boundary at
+            // each of their blocks when only sparse essentials drive candidates.
+            if rank < globally_optional {
+                clause.local_max = clause.global_max;
+                continue;
+            }
+            if clause.doc == TERMINATED {
+                continue;
+            }
+            clause.assert_coherent(&scorers);
+            scorers[clause.ordinal].seek_block(lo.max(clause.doc));
+            clause.assert_coherent(&scorers);
+            let last_doc = scorers[clause.ordinal].last_doc_in_block();
+            // Shallow selection can leave doc() in an old decoded block. A
+            // selected tail has no finite end, so reconcile it at the floor;
+            // remaining_docs alone does not prove there is a doc after lo.
+            if last_doc == TERMINATED && clause.doc < lo {
+                clause.seek(&mut scorers, lo);
+            }
+            if clause.doc == TERMINATED {
+                continue;
+            }
+            // Keep the previously selected last_doc after tail reconciliation.
+            // The cap makes both a tail and TERMINATED overflow harmless and
+            // uses the physical address range, including deleted documents.
+            hi = hi.min(last_doc.min(max_doc - 1) + 1);
+            let bound = scorers[clause.ordinal].block_max_score();
+            clause.assert_coherent(&scorers);
+            clause.local_max = if bound.is_finite() && bound >= 0.0 {
+                bound
+            } else {
+                clause.global_max
+            };
+        }
+        debug_assert!(hi > lo);
+        for (rank, clause) in clauses.iter_mut().enumerate() {
+            // A real loaded position beyond the interval cannot contribute.
+            // A stale position below lo does not justify a zero bound. Cleanup
+            // and prefix construction share the same sequential record pass.
+            if clause.doc >= hi {
+                clause.local_max = 0.0;
+            }
+            prefix[rank + 1] = prefix[rank] + f64::from(clause.local_max);
+        }
+        let mut first_essential = 0;
+        while first_essential < num_terms
+            && upper_bound.score(prefix[first_essential + 1]) <= threshold
+        {
+            first_essential += 1;
+        }
+        previous_essential = first_essential;
+        if first_essential == num_terms {
+            debug_assert!(clauses
+                .iter()
+                .all(|clause| clause.doc == scorers[clause.ordinal].doc()));
+            lo = hi;
+            continue;
+        }
+
+        for clause in &mut clauses[first_essential..] {
+            if clause.doc < lo {
+                // If shallow selection moved, every old decoded doc is below
+                // lo. seek(lo) therefore cannot take an old-doc shortcut.
+                clause.seek(&mut scorers, lo);
+            }
+        }
+        // The buffered phase retains the current certified partition. Cursor
+        // docs always mean first unread; batch docs own the replay candidates.
+        let single_essential = num_terms - first_essential == 1;
+        let mut batch_len = 0;
+        let mut batch_index = 0;
+        loop {
+            let doc = if single_essential {
+                if batch_index == batch_len {
+                    batch_len = clauses[first_essential].fill_scored_batch(
+                        &mut scorers,
+                        lo,
+                        hi,
+                        &mut batch,
+                    );
+                    batch_index = 0;
+                    #[cfg(test)]
+                    BATCH_LENGTHS.with(|lengths| {
+                        if let Some(lengths) = lengths.borrow_mut().as_mut() {
+                            lengths.push(batch_len);
+                        }
+                    });
+                    if batch_len == 0 {
+                        break;
+                    }
+                }
+                batch.docs[batch_index]
+            } else {
+                clauses[first_essential..]
+                    .iter()
+                    .map(|clause| clause.doc)
+                    .min()
+                    .unwrap_or(TERMINATED)
+            };
+            if doc >= hi {
+                break;
+            }
+            candidate_count += 1;
+            contributions.fill(0.0);
+            let mut known = 0.0f64;
+            if single_essential {
+                let leaf = batch.scores[batch_index];
+                contributions[clauses[first_essential].ordinal] = leaf;
+                known = f64::from(leaf);
+            } else {
+                for clause in &clauses[first_essential..] {
+                    if clause.doc == doc {
+                        clause.assert_coherent(&scorers);
+                        let leaf = scorers[clause.ordinal].score();
+                        clause.assert_coherent(&scorers);
+                        contributions[clause.ordinal] = leaf;
+                        known += f64::from(leaf);
+                    }
+                }
+            }
+            let mut competitive = true;
+            for rank in (0..first_essential).rev() {
+                let optional_sum = known + prefix[rank + 1];
+                let rejected = upper_bound.score_is_at_most(optional_sum, &optional_cutoff);
+                #[cfg(test)]
+                debug_assert_eq!(rejected, upper_bound.score(optional_sum) <= threshold);
+                if rejected {
+                    competitive = false;
+                    break;
+                }
+                let clause = &mut clauses[rank];
+                if clause.doc < doc {
+                    clause.seek(&mut scorers, doc);
+                }
+                if clause.doc == doc {
+                    clause.assert_coherent(&scorers);
+                    let leaf = scorers[clause.ordinal].score();
+                    clause.assert_coherent(&scorers);
+                    contributions[clause.ordinal] = leaf;
+                    known += f64::from(leaf);
+                }
+            }
+            if competitive {
+                let score = contributions
+                    .iter()
+                    .map(|&leaf| f64::from(leaf))
+                    .sum::<f64>() as Score;
+                if score > threshold {
+                    let next_threshold = callback(doc, score);
+                    debug_assert!(next_threshold >= threshold);
+                    threshold = next_threshold;
+                    optional_cutoff = ScoreSumThresholdCutoff::new(threshold);
+                }
+            }
+            if single_essential {
+                batch_index += 1;
+            } else {
+                for clause in &mut clauses[first_essential..] {
+                    if clause.doc == doc {
+                        clause.advance(&mut scorers);
+                    }
+                }
+            }
+        }
+        debug_assert!(clauses
+            .iter()
+            .all(|clause| clause.doc == scorers[clause.ordinal].doc()));
+        // Discard every local certificate before entering another region.
+        // Optional clauses remain alive and may become essential there.
+        lo = hi;
+    }
+}
+
+/// Query state at the switch from fine to coarse regions, moved by value.
+struct CoarseContinuation {
+    scorers: Vec<TermScorer>,
+    clauses: Vec<ClauseState>,
+    prefix: Vec<f64>,
+    contributions: Vec<Score>,
+    batch: ScoredTermBatch,
+    lo: DocId,
+    max_doc: DocId,
+    threshold: Score,
+    optional_cutoff: ScoreSumThresholdCutoff,
+    certified_global: usize,
+    certified_global_sum: f64,
+    #[cfg(test)]
+    global_appends: usize,
+    previous_essential: usize,
+    candidate_count: u64,
+    upper_bound: SmallScoreSumUpperBound,
+}
+
+/// The rest of `or_maxscore` on coarse regions, out of line so the fine loop
+/// keeps its accepted code generation.
+#[inline(never)]
+fn or_maxscore_coarse(
+    state: CoarseContinuation,
+    callback: &mut dyn FnMut(DocId, Score) -> Score,
+) {
+    let CoarseContinuation {
+        mut scorers,
+        mut clauses,
+        mut prefix,
+        mut contributions,
+        mut batch,
+        mut lo,
+        max_doc,
+        mut threshold,
+        mut optional_cutoff,
+        mut certified_global,
+        mut certified_global_sum,
+        #[cfg(test)]
+        mut global_appends,
+        mut previous_essential,
+        mut candidate_count,
+        upper_bound,
+    } = state;
+    let num_terms = scorers.len();
     let mut min_span = 1u32;
     let mut region_count = 0u64;
-    let mut candidate_count = 0u64;
     while lo < max_doc {
         debug_assert!(clauses
             .iter()
@@ -236,85 +569,20 @@ pub(crate) fn or_maxscore(
                 choices.push((lo, certified, globally_optional, observed_remaining_cost));
             }
         });
-        if !coarse && fine_regions >= COARSE_PROBE_REGIONS && candidate_count < fine_regions * num_terms as u64 {
-            // Region bookkeeping (O(terms) per region) outweighs candidate work.
-            coarse = true;
-        }
-        let first_essential;
-        if coarse {
-            (hi, first_essential) = coarse_region(
-                &mut clauses,
-                &mut scorers,
-                &mut prefix,
-                lo,
-                max_doc,
-                globally_optional,
-                previous_essential,
-                &mut min_span,
-                &mut region_count,
-                candidate_count,
-                &upper_bound,
-                threshold,
-            );
-        } else {
-            fine_regions += 1;
-            let mut hi_fine = max_doc;
-            for (rank, clause) in clauses.iter_mut().enumerate() {
-                clause.local_max = 0.0;
-                // These maxima certify the entire physical range. Dense optional
-                // terms need neither shallow selection nor a region boundary at
-                // each of their blocks when only sparse essentials drive candidates.
-                if rank < globally_optional {
-                    clause.local_max = clause.global_max;
-                    continue;
-                }
-                if clause.doc == TERMINATED {
-                    continue;
-                }
-                clause.assert_coherent(&scorers);
-                scorers[clause.ordinal].seek_block(lo.max(clause.doc));
-                clause.assert_coherent(&scorers);
-                let last_doc = scorers[clause.ordinal].last_doc_in_block();
-                // Shallow selection can leave doc() in an old decoded block. A
-                // selected tail has no finite end, so reconcile it at the floor;
-                // remaining_docs alone does not prove there is a doc after lo.
-                if last_doc == TERMINATED && clause.doc < lo {
-                    clause.seek(&mut scorers, lo);
-                }
-                if clause.doc == TERMINATED {
-                    continue;
-                }
-                // Keep the previously selected last_doc after tail reconciliation.
-                // The cap makes both a tail and TERMINATED overflow harmless and
-                // uses the physical address range, including deleted documents.
-                hi_fine = hi_fine.min(last_doc.min(max_doc - 1) + 1);
-                let bound = scorers[clause.ordinal].block_max_score();
-                clause.assert_coherent(&scorers);
-                clause.local_max = if bound.is_finite() && bound >= 0.0 {
-                    bound
-                } else {
-                    clause.global_max
-                };
-            }
-            hi = hi_fine;
-            debug_assert!(hi > lo);
-            for (rank, clause) in clauses.iter_mut().enumerate() {
-                // A real loaded position beyond the interval cannot contribute.
-                // A stale position below lo does not justify a zero bound. Cleanup
-                // and prefix construction share the same sequential record pass.
-                if clause.doc >= hi {
-                    clause.local_max = 0.0;
-                }
-                prefix[rank + 1] = prefix[rank] + f64::from(clause.local_max);
-            }
-            let mut first_essential_fine = 0;
-            while first_essential_fine < num_terms
-                && upper_bound.score(prefix[first_essential_fine + 1]) <= threshold
-            {
-                first_essential_fine += 1;
-            }
-            first_essential = first_essential_fine;
-        }
+        let (hi, first_essential) = coarse_region(
+            &mut clauses,
+            &mut scorers,
+            &mut prefix,
+            lo,
+            max_doc,
+            globally_optional,
+            previous_essential,
+            &mut min_span,
+            &mut region_count,
+            candidate_count,
+            &upper_bound,
+            threshold,
+        );
         previous_essential = first_essential;
         if first_essential == num_terms {
             debug_assert!(clauses
