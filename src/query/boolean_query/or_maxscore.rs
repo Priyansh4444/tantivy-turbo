@@ -66,6 +66,8 @@ thread_local! {
         const { std::cell::RefCell::new(None) };
     static BATCH_LENGTHS: std::cell::RefCell<Option<Vec<usize>>> =
         const { std::cell::RefCell::new(None) };
+    // Start every query on coarse regions so fixtures exercise that path.
+    static FORCE_COARSE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
 }
 
 /// Regions on the fine (every clause's block) geometry before a query may
@@ -143,6 +145,10 @@ pub(crate) fn or_maxscore(
 
     let mut previous_essential = 0;
     let mut coarse = false;
+    #[cfg(test)]
+    {
+        coarse = FORCE_COARSE.with(|force| force.get());
+    }
     let mut fine_regions = 0u64;
     let mut hi;
     let mut min_span = 1u32;
@@ -1062,5 +1068,57 @@ mod tests {
             );
         }
         assert!(check(vec![positive; 3], 300, Score::NAN, 0).is_empty());
+    }
+
+    #[test]
+    fn coarse_regions_match_exhaustive_union_on_every_fixture() {
+        // The three region-trace tests assert fine geometry and are excluded.
+        FORCE_COARSE.with(|force| force.set(true));
+        single_driver_batches_replay_every_dynamic_threshold_exactly();
+        exact_traces_at_full_block_and_tail_boundaries();
+        deferred_optional_clause_becomes_essential_after_shallow_full_blocks();
+        globally_optional_dense_terms_cover_sparse_essential_gaps_and_tails();
+        threshold_growth_promotes_local_optionals_to_global_certificates();
+        similar_density_terms_keep_local_certificates_until_both_are_optional();
+        exact_midpoint_leaves_preserve_incoming_order_and_strict_ties();
+        duplicates_disparate_boosts_exhaustion_and_sparse_regions();
+        exact_growing_threshold_traces_for_mixed_dense_and_sparse_terms();
+        unsafe_domains_use_exhaustive_canonical_sum_before_any_seek();
+        FORCE_COARSE.with(|force| force.set(false));
+    }
+
+    #[test]
+    fn many_mixed_density_terms_match_exhaustive_union_in_both_geometries() {
+        // Twelve terms from dense to sparse over many full blocks, with varied
+        // frequencies and norms, so coarse groups, tails and shrinks all occur.
+        let max_doc = 40_000;
+        let mut state = 0x9E37_79B9u32;
+        let mut next = move || {
+            state ^= state << 13;
+            state ^= state >> 17;
+            state ^= state << 5;
+            state
+        };
+        let norms: Vec<u32> = (0..max_doc).map(|_| 1 + next() % 40).collect();
+        let scorers: Vec<_> = (0..12u32)
+            .map(|term| {
+                let stride = [2, 3, 5, 9, 17, 33, 65, 129, 300, 700, 2000, 9000][term as usize];
+                let mut postings = Vec::new();
+                for doc in 0..max_doc {
+                    if next() % stride == 0 {
+                        postings.push((doc, 1 + next() % 6));
+                    }
+                }
+                fixture(&postings, &norms, 0.5 + term as Score * 0.25)
+            })
+            .collect();
+        for force in [false, true] {
+            FORCE_COARSE.with(|cell| cell.set(force));
+            for limit in [1, 10, 100] {
+                check(scorers.clone(), max_doc, -Score::INFINITY, limit);
+                check(scorers.iter().rev().cloned().collect(), max_doc, 0.0, limit);
+            }
+        }
+        FORCE_COARSE.with(|cell| cell.set(false));
     }
 }
