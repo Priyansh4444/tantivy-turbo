@@ -1,144 +1,130 @@
-[![Docs](https://docs.rs/tantivy/badge.svg)](https://docs.rs/crate/tantivy/)
-[![Build Status](https://github.com/quickwit-oss/tantivy/actions/workflows/test.yml/badge.svg)](https://github.com/quickwit-oss/tantivy/actions/workflows/test.yml)
-[![codecov](https://codecov.io/gh/quickwit-oss/tantivy/branch/main/graph/badge.svg)](https://codecov.io/gh/quickwit-oss/tantivy)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/quickwit-oss/tantivy/badge)](https://scorecard.dev/viewer/?uri=github.com/quickwit-oss/tantivy)
-[![Join the chat at https://discord.gg/MT27AG5EVE](https://shields.io/discord/908281611840282624?label=chat%20on%20discord)](https://discord.gg/MT27AG5EVE)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Crates.io](https://img.shields.io/crates/v/tantivy.svg)](https://crates.io/crates/tantivy)
+# tantivy-turbo
 
-<img src="https://tantivy-search.github.io/logo/tantivy-logo.png" alt="Tantivy, the fastest full-text search engine library written in Rust" height="250">
+**A faster [Tantivy](https://github.com/quickwit-oss/tantivy). Same API, same results, Lucene-equivalent scoring.**
 
-## Fast full-text search engine library written in Rust
+[![tantivy-turbo demo: 2x faster OR queries](demo/poster.png)](demo/tantivy-turbo-demo.mp4)
 
-**If you are looking for an alternative to Elasticsearch or Apache Solr, check out [Quickwit](https://github.com/quickwit-oss/quickwit), our distributed search engine built on top of Tantivy.**
+<sub>32-second demo ([MP4](demo/tantivy-turbo-demo.mp4)), rendered from Rust with [fframes](https://github.com/dmtrKovalenko/fframes); its source is in [`demo/`](demo).</sub>
 
-Tantivy is closer to [Apache Lucene](https://lucene.apache.org/) than to [Elasticsearch](https://www.elastic.co/products/elasticsearch) or [Apache Solr](https://lucene.apache.org/solr/) in the sense it is not
-an off-the-shelf search engine server, but rather a crate that can be used to build such a search engine.
+tantivy-turbo is a fork of Tantivy 0.27 focused on query speed. It:
 
-Tantivy is, in fact, strongly inspired by Lucene's design.
+- **Runs OR queries about 2x faster than Tantivy 0.27.** MaxScore pruning covers 2–32 terms, and adaptive coarse regions are used where per-region bookkeeping would dominate.
+- **Speeds up COUNT queries** with lane-based counting for medium-density terms and exact position streaming for phrase counts.
+- **Scores like Apache Lucene 10.** It uses native Lucene BM25 arithmetic, overlap-discounted norms, exact field statistics and BM25 parameters you can configure. Raw scores match Lucene bit for bit on the benchmark corpus.
+- **Keeps the Tantivy API.** The library is still imported as `tantivy`, so existing code compiles unchanged.
 
-## Benchmark
-
-The following [benchmark](https://tantivy-search.github.io/bench/) breaks down the
-performance for different types of queries/collections.
-
-Your mileage WILL vary depending on the nature of queries and their load.
-
-Details about the benchmark can be found at this [repository](https://github.com/quickwit-oss/search-benchmark-game).
-
-## Features
-
-- Full-text search
-- Configurable tokenizer (stemming available for 17 Latin languages) with third party support for Chinese ([tantivy-jieba](https://crates.io/crates/tantivy-jieba) and [cang-jie](https://crates.io/crates/cang-jie)), Japanese ([lindera](https://github.com/lindera-morphology/lindera-tantivy), [Vaporetto](https://crates.io/crates/vaporetto_tantivy), and [tantivy-tokenizer-tiny-segmenter](https://crates.io/crates/tantivy-tokenizer-tiny-segmenter)) and Korean ([lindera](https://github.com/lindera-morphology/lindera-tantivy) + [lindera-ko-dic-builder](https://github.com/lindera-morphology/lindera-ko-dic-builder))
-- Fast (check out the :racehorse: :sparkles: [benchmark](https://tantivy-search.github.io/bench/) :sparkles: :racehorse:)
-- Tiny startup time (<10ms), perfect for command-line tools
-- BM25 scoring (the same as Lucene)
-- Natural query language (e.g. `(michael AND jackson) OR "king of pop"`)
-- Phrase queries search (e.g. `"michael jackson"`)
-- Incremental indexing
-- Multithreaded indexing (indexing English Wikipedia takes < 3 minutes on my desktop)
-- Mmap directory
-- SIMD integer compression when the platform/CPU includes the SSE2 instruction set
-- Single valued and multivalued u64, i64, and f64 fast fields (equivalent of doc values in Lucene)
-- `&[u8]` fast fields
-- Text, i64, u64, f64, dates, ip, bool, and hierarchical facet fields
-- Compressed document store (LZ4, Zstd, None)
-- Range queries
-- Faceted search
-- Configurable indexing (optional term frequency and position indexing)
-- JSON Field
-- Aggregation Collector: histogram, range buckets, average, and stats metrics
-- LogMergePolicy with deletes
-- Searcher Warmer API
-- Cheesy logo with a horse
-
-### Non-features
-
-Distributed search is out of the scope of Tantivy, but if you are looking for this feature, check out [Quickwit](https://github.com/quickwit-oss/quickwit/).
-
-## Getting started
-
-Tantivy works on stable Rust and supports Linux, macOS, and Windows.
-
-- [Tantivy's simple search example](https://tantivy-search.github.io/examples/basic_search.html)
-- [tantivy-cli and its tutorial](https://github.com/quickwit-oss/tantivy-cli) - `tantivy-cli` is an actual command-line interface that makes it easy for you to create a search engine,
-index documents, and search via the CLI or a small server with a REST API.
-It walks you through getting a Wikipedia search engine up and running in a few minutes.
-- [Reference doc for the last released version](https://docs.rs/tantivy/)
-
-## How can I support this project?
-
-There are many ways to support this project.
-
-- Use Tantivy and tell us about your experience on [Discord](https://discord.gg/MT27AG5EVE) or by email (paul.masurel@gmail.com)
-- Report bugs
-- Write a blog post
-- Help with documentation by asking questions or submitting PRs
-- Contribute code (you can join [our Discord server](https://discord.gg/MT27AG5EVE))
-- Talk about Tantivy around you
-
-## Contributing code
-
-We use the GitHub Pull Request workflow: reference a GitHub ticket and/or include a comprehensive commit message when opening a PR.
-Feel free to update CHANGELOG.md with your contribution.
-
-### Tokenizer
-
-When implementing a tokenizer for tantivy depend on the `tantivy-tokenizer-api` crate.
-
-### Clone and build locally
-
-Tantivy compiles on stable Rust.
-To check out and run tests, you can simply run:
-
-```bash
-git clone https://github.com/quickwit-oss/tantivy.git
-cd tantivy
-cargo test
+```toml
+[dependencies]
+tantivy = { package = "tantivy-turbo", git = "https://github.com/Priyansh4444/tantivy-turbo" }
 ```
 
-## Companies Using Tantivy
+## Benchmarks
 
-<p align="left">
-<img align="center" src="doc/assets/images/etsy.png" alt="Etsy" height="25" width="auto" /> &nbsp;
-<img align="center" src="doc/assets/images/paradedb.png" alt="ParadeDB" height="25" width="auto" /> &nbsp;
-<img align="center" src="doc/assets/images/Nuclia.png#gh-light-mode-only" alt="Nuclia" height="25" width="auto" /> &nbsp;
-<img align="center" src="doc/assets/images/humanfirst.png#gh-light-mode-only" alt="Humanfirst.ai" height="30" width="auto" />
-<img align="center" src="doc/assets/images/element.io.svg#gh-light-mode-only" alt="Element.io" height="25" width="auto" />
-<img align="center" src="doc/assets/images/nuclia-dark-theme.png#gh-dark-mode-only" alt="Nuclia" height="35" width="auto" /> &nbsp;
-<img align="center" src="doc/assets/images/humanfirst.ai-dark-theme.png#gh-dark-mode-only" alt="Humanfirst.ai" height="25" width="auto" />&nbsp; &nbsp;
-<img align="center" src="doc/assets/images/element-dark-theme.png#gh-dark-mode-only" alt="Element.io" height="25" width="auto" />
-</p>
+### vs Tantivy 0.27
 
-## FAQ
+![tantivy-turbo vs Tantivy 0.27](assets/turbo-vs-tantivy.svg)
 
-### Can I use Tantivy in other languages?
+Setup:
+- **Data:** the same 1M English Wikipedia documents, indexed by each engine as one segment.
+- **Queries:** 1,201 queries, the [lucene-rs](https://github.com/pc-style/lucene-rs) port-style suite: 300 term, 300 AND, 301 OR and 300 phrase. Plus the 20 search-benchmark-game Wikipedia queries.
+- **Execution:** both engines run warm and serially on one pinned core of the same machine (Intel Core Ultra 7 255H, on AC power).
+- **Sampling:** each query is measured in rounds of 12 iterations, in both A/B and B/A order.
+- **Match counts:** identical for all 1,227 queries.
 
-- Python → [tantivy-py](https://github.com/quickwit-oss/tantivy-py)
-- Ruby → [tantiny](https://github.com/baygeldin/tantiny)
+Ratios are tantivy-turbo time ÷ Tantivy 0.27 time on summed per-query medians, so **below 1 means faster**. Each cell shows the A/B order first, then B/A. "Queries faster" counts per-query wins in each order.
 
-You can also find other bindings on [GitHub](https://github.com/search?q=tantivy) but they may be less maintained.
+| TOP-10 | Queries | turbo mean | 0.27 mean | Time ratio | Queries faster |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| OR, 3+ terms | 103 | 271 µs | 550 µs | **0.49 / 0.50** | 101 / 101 |
+| OR, 2 terms | 198 | 50 µs | 112 µs | **0.45 / 0.47** | 195 / 198 |
+| Phrase | 300 | 251 µs | 315 µs | 0.80 / 0.77 | 127 / 114 |
+| Single term | 300 | 10.0 µs | 9.2 µs | 1.08 / 1.04 | 108 / 108 |
+| AND | 300 | 105 µs | 75 µs | **1.41 / 1.40** | 13 / 15 |
+| **All 1,201** | 1,201 | 123 µs | 165 µs | **0.74 / 0.73** | 544 / 536 |
+| Wikipedia 20 (total time) | 20 | 160 µs | 847 µs | 0.19 / 0.20 | 9 / 9 |
 
-### What are some examples of Tantivy use?
+| COUNT | Queries | turbo mean | 0.27 mean | Time ratio | Queries faster |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| OR, 3+ terms | 103 | 172 µs | 612 µs | **0.28 / 0.28** | 75 / 79 |
+| OR, 2 terms | 198 | 37 µs | 59 µs | 0.62 / 0.66 | 90 / 63 |
+| AND | 300 | 73 µs | 83 µs | 0.88 / 0.85 | 100 / 124 |
+| Phrase | 300 | 326 µs | 309 µs | 1.06 / 1.06 | 91 / 112 |
+| Single term | 300 | 0.4 µs | 0.3 µs | 1.06 / 0.94 | 36 / 81 |
+| **All 1,201** | 1,201 | 121 µs | 160 µs | **0.75 / 0.71** | 392 / 459 |
 
-- [seshat](https://github.com/matrix-org/seshat/): A matrix message database/indexer
-- [tantiny](https://github.com/baygeldin/tantiny): Tiny full-text search for Ruby
-- [lnx](https://github.com/lnx-search/lnx): adaptable, typo tolerant search engine with a REST API
-- [Bichon](https://github.com/rustmailer/bichon): A lightweight, high-performance Rust email archiver with WebUI
-- and [more](https://github.com/search?q=tantivy)!
+On the Wikipedia 20 set the total-time win comes from a few heavy queries: per query, turbo is faster on 9 of 20 (geometric mean 1.28×).
 
-### On average, how much faster is Tantivy compared to Lucene?
+Cost and compatibility:
+- **Index size:** 598 MB, against 661 MB for Tantivy 0.27.
+- **Peak RSS** after the full run: 186 MB, against 198 MB.
+- **Reading 0.27 indexes:** tantivy-turbo reads indexes written by Tantivy 0.27.
+- **Not the reverse:** Tantivy 0.27 cannot read indexes written by tantivy-turbo, because they carry extra statistics and block-bound metadata.
 
-- According to our [search latency benchmark](https://tantivy-search.github.io/bench/), Tantivy is approximately 2x faster than Lucene.
+**Known regression:** conjunctive (AND) top-10 queries are about 1.4× slower than in Tantivy 0.27. This is the next optimization target.
 
-### Does tantivy support incremental indexing?
+Raw data and scripts are in [`bench-results/turbo-vs-tantivy-0.27`](bench-results/turbo-vs-tantivy-0.27): [`summary.json`](bench-results/turbo-vs-tantivy-0.27/summary.json), the driver [`compare.py`](bench-results/turbo-vs-tantivy-0.27/compare.py), and the upstream worker and indexer in [`upstream-harness/`](bench-results/turbo-vs-tantivy-0.27/upstream-harness).
 
-- Yes.
+### vs Apache Lucene 10.4
 
-### How can I edit documents?
+![Fork vs Apache Lucene 10.4](assets/turbo-vs-lucene.svg)
 
-- Data in tantivy is immutable. To edit a document, the document needs to be deleted and reindexed.
+This uses the frozen search-benchmark-game Wikipedia 1M corpus and its 20 queries, with **native BM25 (k1 1.2, b 0.75) and matching collection statistics on both engines**:
+- **Speed:** the fork has the lower median latency on **20/20 queries for both TOP-10 and COUNT, in both process orders**. The geometric-mean speedup is **1.82–2.09× for TOP-10** and **1.27–1.30× for COUNT**.
+- **Memory:** a warmed query process uses **about 15 MiB resident, against about 617 MiB for Lucene with the default JVM heap.** That figure includes mapped index pages.
 
-### When will my documents be searchable during indexing?
+These numbers were measured on 2026-10-04, before the OR work above, so they understate the current build. Full reports, including correctness gates and raw samples:
+- [native comparison](doc/performance/lucene-10.4/results/2026-10-04-native/README.md)
+- [COUNT, storage and memory](doc/performance/lucene-10.4/results/2026-10-03-followup/README.md)
 
-- Documents will be searchable after a `commit` is called on an `IndexWriter`. Existing `IndexReader`s will also need to be reloaded in order to reflect the changes. Finally, changes are only visible to newly acquired `Searcher`.
+### vs lucene-rs (a Rust port of Lucene 10)
+
+Ratios are tantivy-turbo time ÷ lucene-rs time on summed top-10 time, for the same 1,201 queries. Below 1 means turbo is faster.
+
+| Term | Phrase | OR, 2 terms | OR, 3+ terms | AND | All |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| **0.69** | **0.87** | 0.99–1.00 | 1.51–1.53 | 1.30–1.32 | 1.06 |
+
+- **Typical query:** across the whole suite, the per-query geometric mean is **0.835**, so tantivy-turbo is faster on the typical query.
+- **Where lucene-rs still leads:** long OR and AND queries.
+- **Progress on long OR:** the gap on long OR queries narrowed from 1.71× to about 1.5× in this release. This lane ran with the laptop in power-saver mode; ratios are interleaved, but absolute times are not representative.
+- **Detail:** the full investigation, with every accepted and rejected attempt, is in [`doc/performance/lucene-10.4/results`](doc/performance/lucene-10.4/results).
+
+## What changed from Tantivy 0.27
+
+- **OR queries:**
+  - MaxScore pruning for 3–32-term disjunctions: compact clause state, certified global prefixes, an exact cached threshold cutoff, and batched single-essential leaves.
+  - Two-term OR pruned by its essential term.
+  - Adaptive coarse MaxScore regions: queries whose per-region bookkeeping outweighs candidate work switch to wide regions. These are bounded by cached range maxima over the skip data the index already stores. q920, a 21-term query, goes from 30,242 regions to 362 and runs 2× faster.
+- **Lucene-equivalent scoring:**
+  - native Lucene BM25 arithmetic, with f64 accumulation in clause order;
+  - overlap-discounted norms;
+  - exact persisted field statistics;
+  - BM25 parameters configurable per searcher;
+  - Lucene-correct sloppy phrase scoring.
+- **COUNT and storage:**
+  - independent mask lanes for medium-density terms;
+  - amortized lane horizon checks;
+  - PFOR term-frequency exceptions;
+  - streamed exact positions for phrase counts.
+- **Correctness hardening:**
+  - Block maxima are trusted only when their BM25 statistics match.
+  - Saturated-frequency bounds are fixed, and absent terms are handled in block bounds.
+
+## Correctness
+
+- **Results:** every optimization is bit-exact. Top-10 document IDs and f32 score bits match the previous accepted build on three 1,227-query gates. Two of those gates use BM25 configurations other than the default.
+- **Tests:** the full suite passes, 1,448 tests with 7 ignored. That includes exhaustive-equality fixtures that force the new coarse-region path.
+- **Audit trail:** each step was kept or rejected by a frozen benchmark ruler, and the trail is published under [`doc/performance`](doc/performance).
+
+## Building the demo video
+
+```bash
+cd demo
+cargo run --release -- render -o demo.mkv   # 1080p VP9; then e.g. ffmpeg -i demo.mkv demo.mp4
+```
+
+See [`demo/README.md`](demo/README.md) for the fframes commands: preview, frames and contact sheets.
+
+## Credits and license
+
+tantivy-turbo is a fork of [Tantivy](https://github.com/quickwit-oss/tantivy) by Paul Masurel and the Quickwit team and contributors, with all history preserved; see [AUTHORS](AUTHORS) and [README.tantivy.md](README.tantivy.md) for the upstream documentation. Like Tantivy, it is MIT licensed ([LICENSE](LICENSE)). It is not affiliated with or endorsed by the Tantivy or Lucene projects.

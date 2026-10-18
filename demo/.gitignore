@@ -1,0 +1,7 @@
+target/
+frames/
+test_render/
+strip*.png
+onion.png
+*.mkv
+*.webm

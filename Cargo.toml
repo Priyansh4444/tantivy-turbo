@@ -1,18 +1,22 @@
 [package]
-name = "tantivy"
+name = "tantivy-turbo"
 version = "0.27.0"
 authors = ["Paul Masurel <paul.masurel@gmail.com>"]
 license = "MIT"
 categories = ["database-implementations", "data-structures"]
-description = """Search engine library"""
-documentation = "https://docs.rs/tantivy/"
-homepage = "https://github.com/quickwit-oss/tantivy"
-repository = "https://github.com/quickwit-oss/tantivy"
+description = """Tantivy fork with Lucene-10-equivalent BM25 scoring and faster top-k query execution. Drop-in: the library is still imported as `tantivy`."""
+documentation = "https://github.com/Priyansh4444/tantivy-turbo"
+homepage = "https://github.com/Priyansh4444/tantivy-turbo"
+repository = "https://github.com/Priyansh4444/tantivy-turbo"
 readme = "README.md"
 keywords = ["search", "information", "retrieval"]
 edition = "2021"
 rust-version = "1.87"
-exclude = ["benches/*.json", "benches/*.txt"]
+exclude = ["benches/*.json", "benches/*.txt", "doc/performance/*", "demo/*"]
+
+[lib]
+# Keep the original crate name so `use tantivy::...` code works unchanged.
+name = "tantivy"
 
 [dependencies]
 oneshot = "0.1.13"
