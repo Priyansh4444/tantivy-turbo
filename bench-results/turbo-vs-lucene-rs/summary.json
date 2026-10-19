@@ -1,0 +1,252 @@
+{
+ "top10/ALL": {
+  "queries": 1201,
+  "AB": {
+   "turbo_mean_us": 91.78169275603663,
+   "port_mean_us": 89.86048875936719,
+   "sum_ratio": 1.0213798525157607,
+   "geomean_ratio": 0.8205135987046077,
+   "turbo_faster": 907
+  },
+  "BA": {
+   "turbo_mean_us": 93.1193884263114,
+   "port_mean_us": 89.0116415487094,
+   "sum_ratio": 1.0461484229043696,
+   "geomean_ratio": 0.8270770730878417,
+   "turbo_faster": 889
+  }
+ },
+ "top10/TERM": {
+  "queries": 300,
+  "AB": {
+   "turbo_mean_us": 7.7066099999999995,
+   "port_mean_us": 11.258568333333333,
+   "sum_ratio": 0.6845106564022868,
+   "geomean_ratio": 0.7063746514547337,
+   "turbo_faster": 290
+  },
+  "BA": {
+   "turbo_mean_us": 7.908158333333334,
+   "port_mean_us": 11.412293333333333,
+   "sum_ratio": 0.6929508471566335,
+   "geomean_ratio": 0.70001855191996,
+   "turbo_faster": 283
+  }
+ },
+ "top10/AND": {
+  "queries": 300,
+  "AB": {
+   "turbo_mean_us": 87.60493166666667,
+   "port_mean_us": 68.037375,
+   "sum_ratio": 1.2876001119482736,
+   "geomean_ratio": 1.0113826068137348,
+   "turbo_faster": 181
+  },
+  "BA": {
+   "turbo_mean_us": 88.22164333333333,
+   "port_mean_us": 68.78812333333333,
+   "sum_ratio": 1.28251272252085,
+   "geomean_ratio": 1.0233005899061456,
+   "turbo_faster": 182
+  }
+ },
+ "top10/OR2": {
+  "queries": 198,
+  "AB": {
+   "turbo_mean_us": 38.31738383838384,
+   "port_mean_us": 40.242252525252525,
+   "sum_ratio": 0.9521679685882194,
+   "geomean_ratio": 0.7149251599324472,
+   "turbo_faster": 149
+  },
+  "BA": {
+   "turbo_mean_us": 39.13688131313131,
+   "port_mean_us": 40.34527777777778,
+   "sum_ratio": 0.9700486269718522,
+   "geomean_ratio": 0.719323478008664,
+   "turbo_faster": 143
+  }
+ },
+ "top10/OR3+": {
+  "queries": 103,
+  "AB": {
+   "turbo_mean_us": 233.59746601941748,
+   "port_mean_us": 160.57601941747572,
+   "sum_ratio": 1.454746897244326,
+   "geomean_ratio": 1.1641196993791048,
+   "turbo_faster": 33
+  },
+  "BA": {
+   "turbo_mean_us": 239.14028640776698,
+   "port_mean_us": 161.79756796116504,
+   "sum_ratio": 1.4780215142984465,
+   "geomean_ratio": 1.1947400145975042,
+   "turbo_faster": 30
+  }
+ },
+ "top10/PHRASE": {
+  "queries": 300,
+  "AB": {
+   "turbo_mean_us": 166.62989833333336,
+   "port_mean_us": 198.75456,
+   "sum_ratio": 0.8383701905170544,
+   "geomean_ratio": 0.7509914499799023,
+   "turbo_faster": 254
+  },
+  "BA": {
+   "turbo_mean_us": 168.72297666666665,
+   "port_mean_us": 193.96447333333333,
+   "sum_ratio": 0.8698653612546435,
+   "geomean_ratio": 0.7633009008908371,
+   "turbo_faster": 251
+  }
+ },
+ "top10/wiki20": {
+  "queries": 20,
+  "AB": {
+   "turbo_mean_us": 126.031275,
+   "port_mean_us": 115.304,
+   "sum_ratio": 1.093034716922223,
+   "geomean_ratio": 0.8095835837151333,
+   "turbo_faster": 13
+  },
+  "BA": {
+   "turbo_mean_us": 129.630075,
+   "port_mean_us": 117.09365,
+   "sum_ratio": 1.1070632352821865,
+   "geomean_ratio": 0.8171247389208354,
+   "turbo_faster": 13
+  }
+ },
+ "count/ALL": {
+  "queries": 1201,
+  "AB": {
+   "turbo_mean_us": 90.49157743547045,
+   "port_mean_us": 530.0146427976686,
+   "sum_ratio": 0.17073410832163616,
+   "geomean_ratio": 0.17258413774642717,
+   "turbo_faster": 1090
+  },
+  "BA": {
+   "turbo_mean_us": 90.06762198168194,
+   "port_mean_us": 538.2048251457119,
+   "sum_ratio": 0.16734822464160798,
+   "geomean_ratio": 0.17528866237999285,
+   "turbo_faster": 1086
+  }
+ },
+ "count/TERM": {
+  "queries": 300,
+  "AB": {
+   "turbo_mean_us": 0.3018633333333333,
+   "port_mean_us": 100.89072333333333,
+   "sum_ratio": 0.002991983042246666,
+   "geomean_ratio": 0.017966474951516855,
+   "turbo_faster": 300
+  },
+  "BA": {
+   "turbo_mean_us": 0.321885,
+   "port_mean_us": 102.64434333333334,
+   "sum_ratio": 0.0031359253666292312,
+   "geomean_ratio": 0.019410609502164878,
+   "turbo_faster": 300
+  }
+ },
+ "count/AND": {
+  "queries": 300,
+  "AB": {
+   "turbo_mean_us": 63.11257,
+   "port_mean_us": 87.2553,
+   "sum_ratio": 0.7233093004092588,
+   "geomean_ratio": 0.6651040370121954,
+   "turbo_faster": 254
+  },
+  "BA": {
+   "turbo_mean_us": 63.75066333333333,
+   "port_mean_us": 88.58614999999999,
+   "sum_ratio": 0.7196459416436242,
+   "geomean_ratio": 0.6657519115888305,
+   "turbo_faster": 250
+  }
+ },
+ "count/OR2": {
+  "queries": 198,
+  "AB": {
+   "turbo_mean_us": 30.247992424242423,
+   "port_mean_us": 411.9576919191919,
+   "sum_ratio": 0.07342499731786961,
+   "geomean_ratio": 0.12718693131775224,
+   "turbo_faster": 197
+  },
+  "BA": {
+   "turbo_mean_us": 30.224848484848483,
+   "port_mean_us": 416.3409772727273,
+   "sum_ratio": 0.07259638165534081,
+   "geomean_ratio": 0.127442991630582,
+   "turbo_faster": 197
+  }
+ },
+ "count/OR3+": {
+  "queries": 103,
+  "AB": {
+   "turbo_mean_us": 141.1105291262136,
+   "port_mean_us": 4198.231422330097,
+   "sum_ratio": 0.03361189866181665,
+   "geomean_ratio": 0.049596656290043714,
+   "turbo_faster": 103
+  },
+  "BA": {
+   "turbo_mean_us": 142.98075242718446,
+   "port_mean_us": 4277.667611650486,
+   "sum_ratio": 0.033424932792292646,
+   "geomean_ratio": 0.04882749185563077,
+   "turbo_faster": 103
+  }
+ },
+ "count/PHRASE": {
+  "queries": 300,
+  "AB": {
+   "turbo_mean_us": 230.44189166666666,
+   "port_mean_us": 220.39439833333336,
+   "sum_ratio": 1.0455886964882706,
+   "geomean_ratio": 0.8073658053488401,
+   "turbo_faster": 236
+  },
+  "BA": {
+   "turbo_mean_us": 227.45970666666668,
+   "port_mean_us": 219.93189833333335,
+   "sum_ratio": 1.0342279059580708,
+   "geomean_ratio": 0.7977367096256051,
+   "turbo_faster": 236
+  }
+ },
+ "count/wiki20": {
+  "queries": 20,
+  "AB": {
+   "turbo_mean_us": 262.682275,
+   "port_mean_us": 1865.606575,
+   "sum_ratio": 0.14080261000366598,
+   "geomean_ratio": 0.01978799029801033,
+   "turbo_faster": 20
+  },
+  "BA": {
+   "turbo_mean_us": 285.249425,
+   "port_mean_us": 2069.1381499999998,
+   "sum_ratio": 0.13785905257220257,
+   "geomean_ratio": 0.021352158259760147,
+   "turbo_faster": 20
+  }
+ },
+ "rss": {
+  "tantivy": {
+   "VmSize": "621036 kB",
+   "VmHWM": "177652 kB",
+   "VmRSS": "177652 kB"
+  },
+  "port": {
+   "VmSize": "683268 kB",
+   "VmHWM": "188440 kB",
+   "VmRSS": "188440 kB"
+  }
+ }
+}
