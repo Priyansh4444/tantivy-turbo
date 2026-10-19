@@ -237,7 +237,7 @@ def banner(theme, stats):
     # Dithered gradient strip: coverage steps left to right.
     cols = 36
     for i in range(cols):
-        lvl = LEVELS[min(3, i * 4 // cols)]
+        lvl = LEVELS[1 + min(2, i * 3 // cols)]  # denser levels only: the sparsest reads as crosses
         s.add(f'<rect x="{36 + i*(w-72)/cols:.1f}" y="24" width="{(w-72)/cols - 3:.1f}" height="6" rx="1" fill="url(#fast{lvl})"/>')
     s.text(36, 92, "tantivy-turbo", 44, weight=700)
     s.text(36, 124, "A faster Tantivy. Same API, same results, Lucene-equivalent scoring.", 16, t["muted"])
