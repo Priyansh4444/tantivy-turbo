@@ -110,6 +110,11 @@ impl ScoreSumUpperBound {
         Self { factor }
     }
 
+    /// Multiplier applied to a sum before rounding (1.0 for up to two terms).
+    pub(crate) fn factor(&self) -> f64 {
+        self.factor
+    }
+
     #[inline]
     pub(crate) fn score(&self, sum: f64) -> Score {
         if !sum.is_finite() || sum < 0.0 {

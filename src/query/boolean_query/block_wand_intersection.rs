@@ -4,6 +4,84 @@ use crate::query::term_query::TermScorer;
 use crate::query::Scorer;
 use crate::{DocId, DocSet, Score, TERMINATED};
 
+/// Per-window form of the candidate filter
+/// `upper_bound.score(f64::from(leader.max(0.0)) + sum) > threshold`.
+///
+/// The predicate is monotone in the leader score and, up to rounding, means
+/// `leader > threshold / factor - sum`. Two f32 cuts bracket that point with a
+/// margin of 1e-5 relative to the operands (about 100x any rounding error of
+/// the f64 sum, the bound factor and the f32 casts): at or above `sure` the
+/// predicate certainly holds, below `maybe` it certainly does not. The posting
+/// loop counts leaders at or above each cut; if the counts differ, some leader
+/// fell in `[maybe, sure)` and the window is filtered again with the predicate. Both cuts are
+/// O(1) per window, and the loop stays pure f32 arithmetic.
+struct LeaderBand {
+    sure: Score,
+    maybe: Score,
+    /// Every leader is admitted (the predicate holds even at 0).
+    all: bool,
+    /// Thresholds or sums outside the regular domain: always filter exactly.
+    exact: bool,
+}
+
+impl LeaderBand {
+    /// `inv_factor` is `1 / upper_bound.factor()`, computed once per query.
+    #[inline]
+    fn new(upper_bound: &ScoreSumUpperBound, inv_factor: f64, sum: f64, threshold: Score) -> Self {
+        let regular = threshold.is_finite()
+            && threshold > 0.0
+            && sum.is_finite()
+            && sum >= 0.0
+            && inv_factor > 0.0
+            && upper_bound.factor() >= 1.0;
+        if !regular {
+            return Self {
+                sure: Score::INFINITY,
+                maybe: Score::NEG_INFINITY,
+                all: false,
+                exact: true,
+            };
+        }
+        let t = f64::from(threshold);
+        let margin = 1e-5 * (t + sum) + f64::from(Score::MIN_POSITIVE);
+        let hi = t - sum + margin;
+        if hi <= 0.0 {
+            return Self {
+                sure: Score::NEG_INFINITY,
+                maybe: Score::NEG_INFINITY,
+                all: true,
+                exact: false,
+            };
+        }
+        // Casting to f32 errs by at most ~1.2e-7 * (t + sum) (and `inv_factor`
+        // by far less), well inside half the margin, so the cuts stay
+        // conservative without rounding fixups.
+        Self {
+            sure: hi as Score,
+            maybe: (t * inv_factor - sum - margin) as Score,
+            all: false,
+            exact: false,
+        }
+    }
+
+    // Both checks use `max(leader, 0)` like the predicate (this also maps NaN to 0).
+    #[inline]
+    fn surely(&self, leader: Score) -> bool {
+        self.all | (leader.max(0.0) >= self.sure)
+    }
+
+    /// Not certainly rejected; `sure <= maybe` never holds, so `surely` implies this.
+    #[inline]
+    fn maybe(&self, leader: Score) -> bool {
+        self.all | (leader.max(0.0) >= self.maybe)
+    }
+
+    #[cfg(test)]
+    fn undecided(&self, leader: Score) -> bool {
+        self.exact | (self.maybe(leader) & !self.surely(leader))
+    }
+}
+
 /// Iterate the rare term directly when the other term covers most of the segment.
 /// In this case the dense term usually matches, so per-block bounds and candidate
 /// buffers cost more than the membership checks they avoid.
@@ -59,6 +137,7 @@ pub(crate) fn block_wand_intersection(
 ) {
     assert!(scorers.len() >= 2);
     let upper_bound = ScoreSumUpperBound::new(scorers.len());
+    let inv_factor = 1.0 / upper_bound.factor();
 
     // Sort by cost (ascending). scorers[0] becomes the "leader" (rarest term).
     scorers.sort_by_key(TermScorer::size_hint);
@@ -147,9 +226,19 @@ pub(crate) fn block_wand_intersection(
         // The trick: always write to the buffer at `num_candidates`, then
         // conditionally advance the count. The compiler can turn this into
         // a cmov instead of a branch, avoiding misprediction costs.
+        // The same decision as `upper_bound.score(max(leader, 0) + sum) > threshold`,
+        // The filter is `upper_bound.score(max(leader, 0) + sum) > threshold`
+        // (the rounded forward bound; subtracting the suffix from the threshold
+        // could round upward and discard a winning final score). `LeaderBand`
+        // decides it with f32 cuts and sends rare undecided windows to the
+        // exact predicate below.
+        let band = LeaderBand::new(&upper_bound, inv_factor, secondary_block_max_sum, threshold);
         let mut candidate_doc_ids = [0u32; COMPRESSION_BLOCK_SIZE];
         let mut candidate_scores = [0.0f32; COMPRESSION_BLOCK_SIZE];
         let mut num_candidates = 0usize;
+        // Postings at or above `maybe`; more than `num_candidates` means some
+        // leader fell in the undecided band.
+        let mut num_maybe = 0usize;
 
         for (candidate_doc, term_freq) in
             block_docs.iter().copied().zip(block_freqs.iter().copied())
@@ -158,11 +247,22 @@ pub(crate) fn block_wand_intersection(
             let leader_score = bm25_weight.score(fieldnorm_id, term_freq);
             candidate_doc_ids[num_candidates] = candidate_doc;
             candidate_scores[num_candidates] = leader_score;
-            // Compare the rounded forward bound. Subtracting the suffix from
-            // threshold can round upward and discard a winning final score.
-            num_candidates += (upper_bound
-                .score(f64::from(leader_score.max(0.0)) + secondary_block_max_sum)
-                > threshold) as usize;
+            num_candidates += band.surely(leader_score) as usize;
+            num_maybe += band.maybe(leader_score) as usize;
+        }
+        if band.exact || num_maybe != num_candidates {
+            num_candidates = 0;
+            for (candidate_doc, term_freq) in
+                block_docs.iter().copied().zip(block_freqs.iter().copied())
+            {
+                let fieldnorm_id = fieldnorm_reader.fieldnorm_id(candidate_doc);
+                let leader_score = bm25_weight.score(fieldnorm_id, term_freq);
+                candidate_doc_ids[num_candidates] = candidate_doc;
+                candidate_scores[num_candidates] = leader_score;
+                num_candidates += (upper_bound
+                    .score(f64::from(leader_score.max(0.0)) + secondary_block_max_sum)
+                    > threshold) as usize;
+            }
         }
 
         // Precompute suffix sums: suffix[i] = sum of block_max for secondaries[i+1..].
@@ -346,6 +446,77 @@ mod tests {
             {
                 assert_eq!(doc, expected_doc);
                 assert!(nearly_equals(*score, *expected_score));
+            }
+        }
+    }
+
+    #[test]
+    fn leader_cut_matches_the_direct_predicate() {
+        use crate::query::score_combiner::ScoreSumUpperBound;
+        let mut state = 0x2545_f491u64;
+        let mut next = move || {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            state
+        };
+        let specials = [
+            0.0f32,
+            -0.0,
+            -1.0,
+            1e-30,
+            0.5,
+            1.0,
+            3.25,
+            17.0,
+            1e30,
+            f32::MAX,
+            f32::INFINITY,
+            f32::NAN,
+        ];
+        for terms in [2usize, 3, 7, 32] {
+            let upper_bound = ScoreSumUpperBound::new(terms);
+            for _ in 0..400 {
+                let sum =
+                    f64::from(f32::from_bits((next() as u32) & 0x41ff_ffff)) * (next() % 3) as f64;
+                let threshold = match next() % 5 {
+                    0 => f32::NEG_INFINITY,
+                    1 => -1.0,
+                    _ => f32::from_bits((next() as u32) & 0x42ff_ffff),
+                };
+                let band = super::LeaderBand::new(
+                    &upper_bound,
+                    1.0 / upper_bound.factor(),
+                    sum,
+                    threshold,
+                );
+                let mut leaders: Vec<f32> = specials.to_vec();
+                leaders.extend((0..64).map(|_| f32::from_bits((next() as u32) & 0x42ff_ffff)));
+                // Values at and around the exact decision point and the computed cut.
+                let t = f64::from(threshold);
+                for centre in [t - sum, f64::from(band.sure), f64::from(band.maybe)] {
+                    if centre.is_finite() && centre > 0.0 && centre < f64::from(f32::MAX) {
+                        let c = centre as f32;
+                        leaders.extend([
+                            c,
+                            c.next_down(),
+                            c.next_up(),
+                            c.next_down().next_down(),
+                            c.next_up().next_up(),
+                        ]);
+                    }
+                }
+                for leader in leaders {
+                    let direct = upper_bound.score(f64::from(leader.max(0.0)) + sum) > threshold;
+                    // Undecided leaders go to the exact predicate; decided ones must agree with it.
+                    if !band.undecided(leader) {
+                        assert_eq!(
+                            band.surely(leader),
+                            direct,
+                            "terms={terms} sum={sum} threshold={threshold} leader={leader}"
+                        );
+                    }
+                }
             }
         }
     }
