@@ -138,6 +138,8 @@ pub(crate) fn block_wand_intersection(
     assert!(scorers.len() >= 2);
     let upper_bound = ScoreSumUpperBound::new(scorers.len());
     let inv_factor = 1.0 / upper_bound.factor();
+    // `upper_bound.score(sum) <= threshold`, precomputed; refreshed with the threshold.
+    let mut cutoff = upper_bound.cutoff(threshold);
 
     // Sort by cost (ascending). scorers[0] becomes the "leader" (rarest term).
     scorers.sort_by_key(TermScorer::size_hint);
@@ -150,7 +152,11 @@ pub(crate) fn block_wand_intersection(
         secondaries.iter().map(|s| f64::from(s.max_score())).sum();
 
     // Early exit: no document can possibly beat the threshold.
-    if upper_bound.score(f64::from(leader_max_score) + secondaries_global_max_sum) <= threshold {
+    if upper_bound.is_at_most(
+        f64::from(leader_max_score) + secondaries_global_max_sum,
+        threshold,
+        &cutoff,
+    ) {
         return;
     }
 
@@ -195,7 +201,11 @@ pub(crate) fn block_wand_intersection(
             secondary_block_max_sum += f64::from(bms);
         }
 
-        if upper_bound.score(f64::from(leader_block_max) + secondary_block_max_sum) <= threshold {
+        if upper_bound.is_at_most(
+            f64::from(leader_block_max) + secondary_block_max_sum,
+            threshold,
+            &cutoff,
+        ) {
             // The entire window cannot beat the threshold. Skip past it.
             doc = window_end + 1;
             continue;
@@ -226,7 +236,6 @@ pub(crate) fn block_wand_intersection(
         // The trick: always write to the buffer at `num_candidates`, then
         // conditionally advance the count. The compiler can turn this into
         // a cmov instead of a branch, avoiding misprediction costs.
-        // The same decision as `upper_bound.score(max(leader, 0) + sum) > threshold`,
         // The filter is `upper_bound.score(max(leader, 0) + sum) > threshold`
         // (the rounded forward bound; subtracting the suffix from the threshold
         // could round upward and discard a winning final score). `LeaderBand`
@@ -307,9 +316,11 @@ pub(crate) fn block_wand_intersection(
 
                 // Prune: even if all remaining secondaries score at their block max,
                 // can we still beat the threshold?
-                if upper_bound.score(positive_score + secondary_suffix_block_max[secondary_idx])
-                    <= threshold
-                {
+                if upper_bound.is_at_most(
+                    positive_score + secondary_suffix_block_max[secondary_idx],
+                    threshold,
+                    &cutoff,
+                ) {
                     continue 'next_candidate;
                 }
             }
@@ -318,10 +329,13 @@ pub(crate) fn block_wand_intersection(
             let total_score = total_score as Score;
             if total_score > threshold {
                 threshold = callback(candidate_doc, total_score);
+                cutoff = upper_bound.cutoff(threshold);
 
-                if upper_bound.score(f64::from(leader_max_score) + secondaries_global_max_sum)
-                    <= threshold
-                {
+                if upper_bound.is_at_most(
+                    f64::from(leader_max_score) + secondaries_global_max_sum,
+                    threshold,
+                    &cutoff,
+                ) {
                     return;
                 }
             }

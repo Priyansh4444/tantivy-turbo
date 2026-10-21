@@ -115,6 +115,32 @@ impl ScoreSumUpperBound {
         self.factor
     }
 
+    /// Precomputed form of `self.score(sum) <= threshold` for finite nonnegative
+    /// sums; recompute it whenever the threshold changes.
+    pub(crate) fn cutoff(&self, threshold: Score) -> ScoreSumThresholdCutoff {
+        if self.factor == 1.0 {
+            // `score` is then the plain f32 rounding of the sum (no successor).
+            ScoreSumThresholdCutoff::for_rounding(threshold)
+        } else {
+            ScoreSumThresholdCutoff::new(threshold)
+        }
+    }
+
+    /// Exactly `self.score(sum) <= threshold` for the threshold of `cutoff`.
+    #[inline]
+    pub(crate) fn is_at_most(
+        &self,
+        sum: f64,
+        threshold: Score,
+        cutoff: &ScoreSumThresholdCutoff,
+    ) -> bool {
+        if !(sum.is_finite() && sum >= 0.0) || self.factor.is_infinite() {
+            return self.score(sum) <= threshold;
+        }
+        // sum == 0 scores 0 in both modes; 0 * factor = 0 compares the same way.
+        sum * self.factor <= cutoff.0
+    }
+
     #[inline]
     pub(crate) fn score(&self, sum: f64) -> Score {
         if !sum.is_finite() || sum < 0.0 {
@@ -164,6 +190,30 @@ impl ScoreSumThresholdCutoff {
         let midpoint = (f64::from(Score::from_bits(bits)) + upper) * 0.5;
         Self(f64::from_bits(midpoint.to_bits() - 1 - u64::from(bits & 1)))
     }
+
+    /// Exact cutoff for `(x as Score) <= threshold` with nonnegative `x`: the
+    /// same midpoint tie rule as `new`, without its f64 successor step.
+    pub(crate) fn for_rounding(threshold: Score) -> Self {
+        if threshold < 0.0 {
+            return Self(f64::NEG_INFINITY);
+        }
+        if threshold == Score::INFINITY {
+            return Self(f64::INFINITY);
+        }
+        if threshold.is_nan() {
+            return Self(f64::NAN);
+        }
+        let bits = threshold.to_bits() & 0x7fff_ffff;
+        let upper = if bits == Score::MAX.to_bits() {
+            f64::from_bits(0x47f0_0000_0000_0000)
+        } else {
+            f64::from(Score::from_bits(bits + 1))
+        };
+        let midpoint = (f64::from(Score::from_bits(bits)) + upper) * 0.5;
+        // At the midpoint, round-to-nearest-even keeps `threshold` when its
+        // significand is even.
+        Self(f64::from_bits(midpoint.to_bits() - u64::from(bits & 1)))
+    }
 }
 
 impl SmallScoreSumUpperBound {
@@ -194,6 +244,84 @@ impl SmallScoreSumUpperBound {
     pub(crate) fn score_is_at_most(&self, sum: f64, cutoff: &ScoreSumThresholdCutoff) -> bool {
         debug_assert!(sum.is_finite() && sum >= 0.0 && sum <= 32.0 * f64::from(Score::MAX));
         (sum * self.factor) <= cutoff.0
+    }
+}
+
+#[cfg(test)]
+mod cutoff_tests {
+    use super::*;
+
+    #[test]
+    fn is_at_most_matches_score_comparison() {
+        let mut state = 0x9e37_79b9_7f4a_7c15u64;
+        let mut next = move || {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            state
+        };
+        let special_t = [
+            0.0f32,
+            -0.0,
+            -1.0,
+            f32::MIN_POSITIVE,
+            1e-40,
+            1.0,
+            3.5,
+            f32::MAX,
+            f32::INFINITY,
+            f32::NEG_INFINITY,
+            f32::NAN,
+        ];
+        for terms in [1usize, 2, 3, 5, 32] {
+            let bound = ScoreSumUpperBound::new(terms);
+            for round in 0..3000 {
+                let threshold = if round < special_t.len() {
+                    special_t[round]
+                } else {
+                    f32::from_bits(next() as u32 & 0x7fff_ffff)
+                };
+                if threshold.is_nan() && round >= special_t.len() {
+                    continue;
+                }
+                let cutoff = bound.cutoff(threshold);
+                let t = f64::from(threshold);
+                let mut sums = vec![
+                    0.0f64,
+                    -0.0,
+                    -1.0,
+                    f64::INFINITY,
+                    f64::NAN,
+                    f64::from(f32::MAX) * 2.0,
+                ];
+                if t.is_finite() {
+                    for c in [t, t / bound.factor()] {
+                        let mut x = c;
+                        for _ in 0..6 {
+                            sums.push(x);
+                            x = x.next_down();
+                        }
+                        let mut x = c;
+                        for _ in 0..6 {
+                            sums.push(x);
+                            x = x.next_up();
+                        }
+                        // Midpoints to the neighbouring f32 values, where ties round.
+                        let up = f64::from(threshold.next_up());
+                        let mid = (t + up) * 0.5;
+                        sums.extend([mid, mid.next_down(), mid.next_up()]);
+                    }
+                }
+                sums.push(f64::from_bits(next() >> 2));
+                for sum in sums {
+                    assert_eq!(
+                        bound.is_at_most(sum, threshold, &cutoff),
+                        bound.score(sum) <= threshold,
+                        "terms={terms} threshold={threshold:e} sum={sum:e}"
+                    );
+                }
+            }
+        }
     }
 }
 
