@@ -612,6 +612,30 @@ impl Bm25Weight {
         }
     }
 
+    /// Whether `score` uses the native Lucene expression (otherwise the legacy one).
+    pub(crate) fn is_native_lucene(&self) -> bool {
+        self.scoring == Bm25Scoring::NativeLucene
+    }
+
+    /// `score` for a weight with native Lucene scoring: the same expression and
+    /// bits, without the per-call scoring-mode dispatch.
+    #[inline(always)]
+    pub(crate) fn score_native_lucene(&self, fieldnorm_id: u8, term_freq: u32) -> Score {
+        debug_assert_eq!(self.scoring, Bm25Scoring::NativeLucene);
+        let frequency = term_freq as Score;
+        let norm = self.cache[fieldnorm_id as usize];
+        self.weight - self.weight / (1.0 + frequency * norm)
+    }
+
+    /// `score` for a weight with legacy scoring, without the dispatch.
+    #[inline(always)]
+    pub(crate) fn score_legacy_classic(&self, fieldnorm_id: u8, term_freq: u32) -> Score {
+        debug_assert_eq!(self.scoring, Bm25Scoring::LegacyClassic);
+        let frequency = term_freq as Score;
+        let norm = self.cache[fieldnorm_id as usize];
+        self.weight * (frequency / (frequency + norm))
+    }
+
     /// Whether this term frequency could produce a score above `threshold`.
     ///
     /// Most documents can be rejected without the division in `score`. The

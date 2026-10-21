@@ -1,8 +1,40 @@
+use crate::fieldnorm::FieldNormReader;
 use crate::postings::compression::COMPRESSION_BLOCK_SIZE;
 use crate::query::score_combiner::ScoreSumUpperBound;
 use crate::query::term_query::TermScorer;
 use crate::query::Scorer;
 use crate::{DocId, DocSet, Score, TERMINATED};
+
+/// Pass 1 over a leader window: score each posting with `score`, append it to
+/// the candidate buffers, and count leaders at or above `band.sure` (admitted)
+/// and `band.maybe` (not certainly rejected). Monomorphized per scoring mode and
+/// by `NONNEG`: when every leaf is known to be >= 0, `max(leader, 0)` is the
+/// leader itself (`-0.0` compares like `0.0`), so the clamp is skipped.
+#[inline(always)]
+fn filter_leader_window<S: Fn(u8, u32) -> Score, const NONNEG: bool>(
+    score: S,
+    fieldnorm_reader: &FieldNormReader,
+    docs: &[DocId],
+    freqs: &[u32],
+    band: &LeaderBand,
+    candidate_doc_ids: &mut [DocId; COMPRESSION_BLOCK_SIZE],
+    candidate_scores: &mut [Score; COMPRESSION_BLOCK_SIZE],
+) -> (usize, usize) {
+    let (mut num_candidates, mut num_maybe) = (0usize, 0usize);
+    for (&doc, &term_freq) in docs.iter().zip(freqs) {
+        let leader_score = score(fieldnorm_reader.fieldnorm_id(doc), term_freq);
+        candidate_doc_ids[num_candidates] = doc;
+        candidate_scores[num_candidates] = leader_score;
+        let clamped = if NONNEG {
+            leader_score
+        } else {
+            leader_score.max(0.0)
+        };
+        num_candidates += (band.all | (clamped >= band.sure)) as usize;
+        num_maybe += (band.all | (clamped >= band.maybe)) as usize;
+    }
+    (num_candidates, num_maybe)
+}
 
 /// Per-window form of the candidate filter
 /// `upper_bound.score(f64::from(leader.max(0.0)) + sum) > threshold`.
@@ -64,14 +96,15 @@ impl LeaderBand {
         }
     }
 
-    // Both checks use `max(leader, 0)` like the predicate (this also maps NaN to 0).
-    #[inline]
+    // Reference forms of the checks in `filter_leader_window`, for tests. Both
+    // use `max(leader, 0)` like the predicate (this also maps NaN to 0).
+    #[cfg(test)]
     fn surely(&self, leader: Score) -> bool {
         self.all | (leader.max(0.0) >= self.sure)
     }
 
     /// Not certainly rejected; `sure <= maybe` never holds, so `surely` implies this.
-    #[inline]
+    #[cfg(test)]
     fn maybe(&self, leader: Score) -> bool {
         self.all | (leader.max(0.0) >= self.maybe)
     }
@@ -143,6 +176,13 @@ pub(crate) fn block_wand_intersection(
 
     // Sort by cost (ascending). scorers[0] becomes the "leader" (rarest term).
     scorers.sort_by_key(TermScorer::size_hint);
+
+    // As in `or_maxscore`: safe bounds and a finite positive maximum certify
+    // finite nonnegative leaf scores.
+    let nonnegative_leaves = scorers.iter().all(|scorer| {
+        let maximum = scorer.max_score();
+        scorer.bm25_weight().has_safe_score_bounds() && maximum.is_finite() && maximum > 0.0
+    });
 
     let (leader, secondaries) = scorers.split_first_mut().unwrap();
 
@@ -244,21 +284,55 @@ pub(crate) fn block_wand_intersection(
         let band = LeaderBand::new(&upper_bound, inv_factor, secondary_block_max_sum, threshold);
         let mut candidate_doc_ids = [0u32; COMPRESSION_BLOCK_SIZE];
         let mut candidate_scores = [0.0f32; COMPRESSION_BLOCK_SIZE];
-        let mut num_candidates = 0usize;
-        // Postings at or above `maybe`; more than `num_candidates` means some
-        // leader fell in the undecided band.
-        let mut num_maybe = 0usize;
-
-        for (candidate_doc, term_freq) in
-            block_docs.iter().copied().zip(block_freqs.iter().copied())
-        {
-            let fieldnorm_id = fieldnorm_reader.fieldnorm_id(candidate_doc);
-            let leader_score = bm25_weight.score(fieldnorm_id, term_freq);
-            candidate_doc_ids[num_candidates] = candidate_doc;
-            candidate_scores[num_candidates] = leader_score;
-            num_candidates += band.surely(leader_score) as usize;
-            num_maybe += band.maybe(leader_score) as usize;
-        }
+        let native = bm25_weight.is_native_lucene();
+        let (fr, d, f, b, cd, cs) = (
+            &fieldnorm_reader,
+            block_docs,
+            block_freqs,
+            &band,
+            &mut candidate_doc_ids,
+            &mut candidate_scores,
+        );
+        // `num_maybe` counts leaders at or above `maybe`; more than
+        // `num_candidates` means some leader fell in the undecided band.
+        let (mut num_candidates, num_maybe) = match (native, nonnegative_leaves) {
+            (true, true) => filter_leader_window::<_, true>(
+                |id, tf| bm25_weight.score_native_lucene(id, tf),
+                fr,
+                d,
+                f,
+                b,
+                cd,
+                cs,
+            ),
+            (true, false) => filter_leader_window::<_, false>(
+                |id, tf| bm25_weight.score_native_lucene(id, tf),
+                fr,
+                d,
+                f,
+                b,
+                cd,
+                cs,
+            ),
+            (false, true) => filter_leader_window::<_, true>(
+                |id, tf| bm25_weight.score_legacy_classic(id, tf),
+                fr,
+                d,
+                f,
+                b,
+                cd,
+                cs,
+            ),
+            (false, false) => filter_leader_window::<_, false>(
+                |id, tf| bm25_weight.score_legacy_classic(id, tf),
+                fr,
+                d,
+                f,
+                b,
+                cd,
+                cs,
+            ),
+        };
         if band.exact || num_maybe != num_candidates {
             num_candidates = 0;
             for (candidate_doc, term_freq) in
