@@ -1043,6 +1043,9 @@ fn score_essential_windows(
     let num_essential = clauses.len() - first_essential;
     debug_assert!(num_essential > 1);
     let mut optional_hits = [(0usize, 0.0 as Score); 32];
+    // `known <= first_floor` exactly when the first test below rejects.
+    let mut first_floor =
+        upper_bound.max_rejected_sum(prefix[first_essential], &state.optional_cutoff);
     loop {
         let start = clauses[first_essential..]
             .iter()
@@ -1089,6 +1092,9 @@ fn score_essential_windows(
                 let doc = start + offset as DocId;
                 let mut known = std::mem::take(&mut window.sums[offset]);
                 state.candidate_count += 1;
+                if known <= first_floor {
+                    continue;
+                }
                 let mut num_hits = 0;
                 let mut competitive = true;
                 for rank in (0..first_essential).rev() {
@@ -1142,6 +1148,8 @@ fn score_essential_windows(
                     debug_assert!(next_threshold >= state.threshold);
                     state.threshold = next_threshold;
                     state.optional_cutoff = ScoreSumThresholdCutoff::new(state.threshold);
+                    first_floor = upper_bound
+                        .max_rejected_sum(prefix[first_essential], &state.optional_cutoff);
                 }
             }
         }

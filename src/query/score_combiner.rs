@@ -247,6 +247,64 @@ impl SmallScoreSumUpperBound {
         (sum * self.factor) <= cutoff.0
     }
 
+    /// The largest `x >= 0` with `score_is_at_most(x + rest, cutoff)`, or -1
+    /// when there is none: by monotonicity, a nonnegative sum `known`
+    /// satisfies `score_is_at_most(known + rest, cutoff)` exactly when
+    /// `known <= max_rejected_sum(rest, cutoff)`. The same domain as
+    /// `score_is_at_most` applies to `x + rest` up to `32 * f32::MAX`.
+    pub(crate) fn max_rejected_sum(&self, rest: f64, cutoff: &ScoreSumThresholdCutoff) -> f64 {
+        let limit = 32.0 * f64::from(Score::MAX);
+        let rejected = |bits: u64| self.score_is_at_most(f64::from_bits(bits) + rest, cutoff);
+        let max_bits = limit.to_bits();
+        if !rejected(0) {
+            return -1.0;
+        }
+        if rejected(max_bits) {
+            return limit;
+        }
+        let estimate = cutoff.0 / self.factor - rest;
+        let guess = if estimate.is_finite() && estimate > 0.0 {
+            estimate.to_bits().min(max_bits - 1)
+        } else {
+            0
+        };
+        let (mut low, mut high);
+        if rejected(guess) {
+            low = guess;
+            let mut step = 1u64;
+            loop {
+                let probe = low.saturating_add(step).min(max_bits);
+                if !rejected(probe) {
+                    high = probe;
+                    break;
+                }
+                low = probe;
+                step = step.saturating_mul(2);
+            }
+        } else {
+            high = guess;
+            let mut step = 1u64;
+            loop {
+                let probe = high.saturating_sub(step);
+                if rejected(probe) {
+                    low = probe;
+                    break;
+                }
+                high = probe;
+                step = step.saturating_mul(2);
+            }
+        }
+        while high - low > 1 {
+            let middle = low + (high - low) / 2;
+            if rejected(middle) {
+                low = middle;
+            } else {
+                high = middle;
+            }
+        }
+        f64::from_bits(low)
+    }
+
     /// The largest finite leaf `x >= 0` with
     /// `score_is_at_most(f64::from(x) + rest, cutoff)`, or -1 when no leaf
     /// qualifies. The f64 conversion is exact and rounded addition and
@@ -313,6 +371,53 @@ impl SmallScoreSumUpperBound {
 #[cfg(test)]
 mod cutoff_tests {
     use super::*;
+
+    #[test]
+    fn max_rejected_sum_splits_the_sum_predicate() {
+        let mut state = 0x9e37_79b9_7f4a_7c15u64;
+        let mut next = move || {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            state
+        };
+        for terms in [3usize, 6, 32] {
+            let bound = SmallScoreSumUpperBound::new(terms).unwrap();
+            for round in 0..4000 {
+                let threshold = match round {
+                    0 => -1.0,
+                    1 => 0.0,
+                    2 => f32::MAX,
+                    _ => f32::from_bits(next() as u32 % 0x4400_0000),
+                };
+                let rest = if round % 5 == 0 {
+                    0.0
+                } else {
+                    f64::from(f32::from_bits(next() as u32 % 0x4300_0000)) * (next() % 4) as f64
+                };
+                let cutoff = ScoreSumThresholdCutoff::new(threshold);
+                let rejected = |x: f64| bound.score_is_at_most(x + rest, &cutoff);
+                let floor = bound.max_rejected_sum(rest, &cutoff);
+                if floor < 0.0 {
+                    assert!(!rejected(0.0));
+                    continue;
+                }
+                assert!(rejected(floor));
+                assert!(!rejected(f64::from_bits(floor.to_bits() + 1)));
+                for _ in 0..8 {
+                    let near = f64::from_bits(
+                        floor.to_bits().wrapping_add(next() % 9).wrapping_sub(4),
+                    );
+                    let far = f64::from(f32::from_bits(next() as u32 % 0x4400_0000));
+                    for known in [near, far] {
+                        if known >= 0.0 && known < 1e39 {
+                            assert_eq!(rejected(known), known <= floor);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     #[test]
     fn max_rejected_leaf_splits_the_leaf_predicate() {
