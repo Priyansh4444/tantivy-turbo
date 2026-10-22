@@ -339,7 +339,9 @@ pub(crate) fn or_maxscore(
                 clause.seek(&mut scorers, lo);
             }
         }
-        if num_terms - first_essential > 1 {
+        if num_terms - first_essential > 1
+            && dense_essential_windows(&clauses[first_essential..], max_doc)
+        {
             let mut state = Pruning {
                 threshold,
                 optional_cutoff,
@@ -648,7 +650,9 @@ fn or_maxscore_coarse(state: CoarseContinuation, callback: &mut dyn FnMut(DocId,
                 clause.seek(&mut scorers, lo);
             }
         }
-        if num_terms - first_essential > 1 {
+        if num_terms - first_essential > 1
+            && dense_essential_windows(&clauses[first_essential..], max_doc)
+        {
             let mut state = Pruning {
                 threshold,
                 optional_cutoff,
@@ -890,6 +894,17 @@ fn coarse_region(
 /// Doc IDs covered by one multiple-essential window, as in Lucene's
 /// `MaxScoreBulkScorer`.
 const ESSENTIAL_WINDOW: u32 = 4096;
+
+/// Expected essential postings per window below which a doc-at-a-time merge
+/// beats per-window batch setup and the bitmap scan.
+const MIN_WINDOW_POSTINGS: u64 = 32;
+
+/// Whether the essential clauses' average density fills a window enough to
+/// amortize its fixed costs.
+fn dense_essential_windows(essential: &[ClauseState], max_doc: DocId) -> bool {
+    let postings: u64 = essential.iter().map(|clause| u64::from(clause.cost)).sum();
+    postings * u64::from(ESSENTIAL_WINDOW) >= MIN_WINDOW_POSTINGS * u64::from(max_doc)
+}
 
 /// Reusable scratch for `score_essential_windows`. Between windows every
 /// bit and sum is zero.
