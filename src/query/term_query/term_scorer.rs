@@ -20,6 +20,20 @@ pub(crate) struct ScoredTermBatch {
 }
 
 impl ScoredTermBatch {
+    /// Keeps, in order, the first `len` entries whose score exceeds `floor`.
+    /// Returns the number kept.
+    #[inline]
+    pub(crate) fn retain_scores_above(&mut self, len: usize, floor: Score) -> usize {
+        let mut kept = 0;
+        for index in 0..len {
+            let score = self.scores[index];
+            self.docs[kept] = self.docs[index];
+            self.scores[kept] = score;
+            kept += usize::from(score > floor);
+        }
+        kept
+    }
+
     pub(crate) fn new() -> Self {
         Self {
             docs: [0; crate::postings::compression::COMPRESSION_BLOCK_SIZE],

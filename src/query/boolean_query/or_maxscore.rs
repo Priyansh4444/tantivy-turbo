@@ -361,6 +361,16 @@ pub(crate) fn or_maxscore(
                     if batch_len == 0 {
                         break;
                     }
+                    // Drop leaves the first optional test below rejects; the
+                    // threshold only rises, so survivors are retested there.
+                    let floor = upper_bound
+                        .max_rejected_leaf(prefix[first_essential], &optional_cutoff);
+                    let kept = batch.retain_scores_above(batch_len, floor);
+                    candidate_count += (batch_len - kept) as u64;
+                    batch_len = kept;
+                    if batch_len == 0 {
+                        continue;
+                    }
                 }
                 batch.docs[batch_index]
             } else {
@@ -629,6 +639,16 @@ fn or_maxscore_coarse(state: CoarseContinuation, callback: &mut dyn FnMut(DocId,
                     });
                     if batch_len == 0 {
                         break;
+                    }
+                    // Drop leaves the first optional test below rejects; the
+                    // threshold only rises, so survivors are retested there.
+                    let floor = upper_bound
+                        .max_rejected_leaf(prefix[first_essential], &optional_cutoff);
+                    let kept = batch.retain_scores_above(batch_len, floor);
+                    candidate_count += (batch_len - kept) as u64;
+                    batch_len = kept;
+                    if batch_len == 0 {
+                        continue;
                     }
                 }
                 batch.docs[batch_index]

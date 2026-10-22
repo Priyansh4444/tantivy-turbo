@@ -245,11 +245,119 @@ impl SmallScoreSumUpperBound {
         debug_assert!(sum.is_finite() && sum >= 0.0 && sum <= 32.0 * f64::from(Score::MAX));
         (sum * self.factor) <= cutoff.0
     }
+
+    /// The largest finite leaf `x >= 0` with
+    /// `score_is_at_most(f64::from(x) + rest, cutoff)`, or -1 when no leaf
+    /// qualifies. The f64 conversion is exact and rounded addition and
+    /// multiplication are monotone, so the predicate holds exactly for the
+    /// leaves at most the result; nonnegative f32 bits order like values.
+    /// `rest` must be a finite nonnegative sum of at most `num_terms - 1`
+    /// admitted f32 values.
+    pub(crate) fn max_rejected_leaf(&self, rest: f64, cutoff: &ScoreSumThresholdCutoff) -> Score {
+        let rejected = |bits: u32| self.score_is_at_most(f64::from(Score::from_bits(bits)) + rest, cutoff);
+        let max_bits = Score::MAX.to_bits();
+        if !rejected(0) {
+            return -1.0;
+        }
+        if rejected(max_bits) {
+            return Score::MAX;
+        }
+        // Invariant: rejected(low) and !rejected(high). Start from the
+        // unrounded solution and widen geometrically; it is usually within
+        // a few bits of the answer.
+        let estimate = (cutoff.0 / self.factor - rest) as Score;
+        let guess = if estimate.is_finite() && estimate > 0.0 {
+            estimate.to_bits().min(max_bits - 1)
+        } else {
+            0
+        };
+        let (mut low, mut high);
+        if rejected(guess) {
+            low = guess;
+            let mut step = 1u32;
+            loop {
+                let probe = low.saturating_add(step).min(max_bits);
+                if !rejected(probe) {
+                    high = probe;
+                    break;
+                }
+                low = probe;
+                step = step.saturating_mul(2);
+            }
+        } else {
+            high = guess;
+            let mut step = 1u32;
+            loop {
+                let probe = high.saturating_sub(step);
+                if rejected(probe) {
+                    low = probe;
+                    break;
+                }
+                high = probe;
+                step = step.saturating_mul(2);
+            }
+        }
+        while high - low > 1 {
+            let middle = low + (high - low) / 2;
+            if rejected(middle) {
+                low = middle;
+            } else {
+                high = middle;
+            }
+        }
+        Score::from_bits(low)
+    }
 }
 
 #[cfg(test)]
 mod cutoff_tests {
     use super::*;
+
+    #[test]
+    fn max_rejected_leaf_splits_the_leaf_predicate() {
+        let mut state = 0x2545_f491_4f6c_dd1du64;
+        let mut next = move || {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            state
+        };
+        let thresholds = [0.0f32, -1.0, 1e-40, f32::MIN_POSITIVE, 1.0, 7.25, f32::MAX];
+        let rests = [0.0f64, 1e-40, 0.5, 3.0, 1e30];
+        for terms in [3usize, 4, 17, 32] {
+            let bound = SmallScoreSumUpperBound::new(terms).unwrap();
+            for round in 0..4000 {
+                let threshold = if round < thresholds.len() {
+                    thresholds[round]
+                } else {
+                    f32::from_bits(next() as u32 % 0x4400_0000)
+                };
+                let rest = if round < rests.len() {
+                    rests[round]
+                } else {
+                    let count = (next() % terms as u64) as usize;
+                    (0..count)
+                        .map(|_| f64::from(f32::from_bits(next() as u32 % 0x4200_0000)))
+                        .sum::<f64>()
+                };
+                let cutoff = ScoreSumThresholdCutoff::new(threshold);
+                let rejected = |x: f32| bound.score_is_at_most(f64::from(x) + rest, &cutoff);
+                let floor = bound.max_rejected_leaf(rest, &cutoff);
+                if floor < 0.0 {
+                    assert!(!rejected(0.0));
+                } else {
+                    assert!(rejected(floor));
+                    if floor < f32::MAX {
+                        assert!(!rejected(f32::from_bits(floor.to_bits() + 1)));
+                    }
+                }
+                for _ in 0..8 {
+                    let leaf = f32::from_bits(next() as u32 % 0x4400_0000);
+                    assert_eq!(rejected(leaf), leaf <= floor, "{terms} {threshold} {rest} {leaf}");
+                }
+            }
+        }
+    }
 
     #[test]
     fn is_at_most_matches_score_comparison() {
