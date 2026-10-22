@@ -182,6 +182,14 @@ impl BlockSegmentPostings {
             .unwrap_or_else(|| bm25_weight.max_score())
     }
 
+    /// The bound the owning `TermScorer` already computed for the current block.
+    /// Only that scorer (fixed weight and bound policy) populates this cache,
+    /// and only after its safety checks pass; it is cleared on every block change.
+    #[inline]
+    pub(crate) fn cached_block_max_score(&self) -> Option<Score> {
+        self.block_max_score_cache
+    }
+
     pub(crate) fn block_max_score_with_stored_max(
         &mut self,
         fieldnorm_reader: &FieldNormReader,

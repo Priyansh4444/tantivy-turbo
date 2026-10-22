@@ -249,7 +249,19 @@ impl TermScorer {
     /// Exact DEFAULT pairs require matching selection statistics. Eligible
     /// nondefault native queries conservatively enclose the stored DEFAULT input;
     /// unsupported domains retain the global bound and the existing tail policy.
+    #[inline]
     pub fn block_max_score(&mut self) -> Score {
+        // Every path below returns the per-block cache once it is set: the
+        // weight's safety is fixed, and a block's pair (hence the bound policy
+        // transition) is settled by the first call, before anything is cached.
+        if let Some(score) = self.postings.block_cursor.cached_block_max_score() {
+            return score;
+        }
+        self.block_max_score_uncached()
+    }
+
+    #[inline(never)]
+    fn block_max_score_uncached(&mut self) -> Score {
         // DEFAULT remains the first branch, without cold envelope construction.
         if matches!(self.block_bounds, TermBlockBounds::StoredDefault) {
             return self.postings.block_cursor.block_max_score_with_stored_max(
