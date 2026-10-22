@@ -1065,8 +1065,13 @@ fn score_essential_windows(
                     let offset = (doc - start) as usize;
                     window.matches[offset / 64] |= 1u64 << (offset % 64);
                     window.sums[offset] += f64::from(leaf);
-                    window.postings.push((doc, leaf));
                 }
+                window.postings.extend(
+                    batch.docs[..len]
+                        .iter()
+                        .copied()
+                        .zip(batch.scores[..len].iter().copied()),
+                );
             }
             window.ends.push(window.postings.len());
         }

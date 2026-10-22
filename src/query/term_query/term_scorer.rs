@@ -21,15 +21,27 @@ pub(crate) struct ScoredTermBatch {
 
 impl ScoredTermBatch {
     /// Keeps, in order, the first `len` entries whose score exceeds `floor`.
-    /// Returns the number kept.
+    /// Returns the number kept. Survivors are expected to be rare: a
+    /// fixed-width comparison builds each 64-entry mask, then only set bits
+    /// are copied.
     #[inline]
     pub(crate) fn retain_scores_above(&mut self, len: usize, floor: Score) -> usize {
         let mut kept = 0;
-        for index in 0..len {
-            let score = self.scores[index];
-            self.docs[kept] = self.docs[index];
-            self.scores[kept] = score;
-            kept += usize::from(score > floor);
+        for base in (0..len).step_by(64) {
+            let mut mask = 0u64;
+            for (bit, &score) in self.scores[base..base + 64].iter().enumerate() {
+                mask |= u64::from(score > floor) << bit;
+            }
+            if len - base < 64 {
+                mask &= (1u64 << (len - base)) - 1;
+            }
+            while mask != 0 {
+                let index = base + mask.trailing_zeros() as usize;
+                mask &= mask - 1;
+                self.docs[kept] = self.docs[index];
+                self.scores[kept] = self.scores[index];
+                kept += 1;
+            }
         }
         kept
     }
