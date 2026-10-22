@@ -223,6 +223,42 @@ impl SkipDirectory {
         left
     }
 
+    /// `block_at(doc)`, galloping forward from the hint `from`. Any hint is
+    /// correct; one at or below the answer is fast.
+    pub(crate) fn block_at_from(&self, doc: DocId, from: usize) -> usize {
+        let mut left = from.min(self.blocks);
+        if left > 0 && self.end(left - 1) >= doc {
+            return self.block_at(doc);
+        }
+        // Every block before `left` ends before `doc`.
+        let mut step = 1;
+        let mut right = loop {
+            if left >= self.blocks || self.end(left) >= doc {
+                return left;
+            }
+            let probe = left + step;
+            if probe >= self.blocks {
+                break self.blocks;
+            }
+            if self.end(probe) >= doc {
+                break probe;
+            }
+            left = probe + 1;
+            step *= 2;
+        };
+        // end(left) < doc, and right is a block ending at or after doc (or
+        // the count): the answer lies in (left, right].
+        while left < right {
+            let mid = left + (right - left) / 2;
+            if self.end(mid) < doc {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        left
+    }
+
     pub(crate) fn pair(&self, block: usize) -> Option<SelectedInputPair> {
         if block >= self.blocks || self.stride == 5 {
             return None;
@@ -524,6 +560,28 @@ mod tests {
     };
     use crate::directory::OwnedBytes;
     use crate::postings::compression::COMPRESSION_BLOCK_SIZE;
+
+    #[test]
+    fn block_at_from_matches_block_at_for_every_hint() {
+        let ends: Vec<u32> = (0..37u32).map(|block| 3 + block * 7 + block * block).collect();
+        let mut data = Vec::new();
+        for end in &ends {
+            data.extend_from_slice(&end.to_le_bytes());
+            data.push(0);
+        }
+        let directory = super::SkipDirectory::new(
+            OwnedBytes::new(data),
+            ends.len() as u32 * COMPRESSION_BLOCK_SIZE as u32 + 5,
+            IndexRecordOption::Basic,
+        );
+        assert!(directory.block_at(0) == 0 && directory.block_at(ends[36] + 1) == 37);
+        for doc in 0..ends[36] + 3 {
+            let expected = directory.block_at(doc);
+            for hint in 0..40 {
+                assert_eq!(directory.block_at_from(doc, hint), expected, "{doc} {hint}");
+            }
+        }
+    }
 
     #[test]
     fn test_encode_block_wand_max_tf() {

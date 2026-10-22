@@ -54,6 +54,8 @@ pub struct TermScorer {
     range_bounds: Option<Box<RangeMaxScores>>,
     // Last coarse group end; 0 means none yet (a full block never ends at 0).
     coarse_end: DocId,
+    /// Last skip-directory lookup; documents only move forward.
+    block_hint: usize,
 }
 
 #[derive(Clone)]
@@ -186,6 +188,7 @@ impl TermScorer {
             use_alternate_mask,
             range_bounds: None,
             coarse_end: 0,
+            block_hint: 0,
         }
     }
 
@@ -329,7 +332,8 @@ impl TermScorer {
             return self.coarse_end;
         }
         let directory = &self.postings.block_cursor.skip_directory;
-        let block = directory.block_at(target);
+        let block = directory.block_at_from(target, self.block_hint);
+        self.block_hint = block;
         let last = (block / COARSE_GROUP_BLOCKS + 1) * COARSE_GROUP_BLOCKS - 1;
         self.coarse_end = directory.end(
             last.min(directory.full_blocks().saturating_sub(1))
@@ -366,9 +370,10 @@ impl TermScorer {
         if !cache.bound.is_nan() && cache.floor <= lo && hi - 1 <= cache.end {
             return cache.bound;
         }
-        let first = directory.block_at(lo);
+        let first = directory.block_at_from(lo, self.block_hint);
+        self.block_hint = first;
         let last = directory
-            .block_at(hi - 1)
+            .block_at_from(hi - 1, first)
             .min(directory.len().saturating_sub(1));
         if first >= directory.len() {
             return 0.0; // Complete metadata proves there is no nonempty tail.
