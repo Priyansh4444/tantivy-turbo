@@ -145,6 +145,18 @@ impl RangeMaxScores {
         resolve: impl Fn(usize) -> Score,
     ) -> Score {
         let mut bound = 0.0_f32;
+        // Regions usually cover a few blocks: read their leaves directly
+        // rather than climbing every tree level. Same leaves, same maximum.
+        if right - left <= 4 {
+            for block in left..right {
+                let leaf = &mut self.tree[self.leaves + block];
+                if leaf.is_nan() {
+                    *leaf = resolve(block);
+                }
+                bound = bound.max(*leaf);
+            }
+            return bound;
+        }
         let mut width = 1;
         left += self.leaves;
         right += self.leaves;
