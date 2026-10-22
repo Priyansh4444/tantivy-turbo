@@ -76,7 +76,12 @@ pub(crate) const COARSE_GROUP_BLOCKS: usize = 256;
 struct RangeMaxScores {
     tree: Vec<Score>,
     leaves: usize,
+    // The cached bound covers exactly blocks first..=last: `lo` lies in
+    // [floor, first_end] and `hi - 1` in [last_floor, end]. A wider cached
+    // range would be sound but would loosen bounds of shrunken regions.
     floor: DocId,
+    first_end: DocId,
+    last_floor: DocId,
     end: DocId,
     bound: Score,
 }
@@ -88,6 +93,8 @@ impl RangeMaxScores {
             tree: vec![Score::NAN; 2 * leaves],
             leaves,
             floor: 0,
+            first_end: 0,
+            last_floor: 0,
             end: 0,
             bound: Score::NAN,
         }
@@ -367,7 +374,10 @@ impl TermScorer {
         let cache = self
             .range_bounds
             .get_or_insert_with(|| Box::new(RangeMaxScores::new(directory.len())));
-        if !cache.bound.is_nan() && cache.floor <= lo && hi - 1 <= cache.end {
+        if !cache.bound.is_nan()
+            && (cache.floor..=cache.first_end).contains(&lo)
+            && (cache.last_floor..=cache.end).contains(&(hi - 1))
+        {
             return cache.bound;
         }
         let first = directory.block_at_from(lo, self.block_hint);
@@ -410,11 +420,16 @@ impl TermScorer {
                 global
             }
         });
-        cache.floor = if first == 0 {
-            0
-        } else {
-            directory.end(first - 1) + 1
+        let floor_of = |block: usize| {
+            if block == 0 {
+                0
+            } else {
+                directory.end(block - 1) + 1
+            }
         };
+        cache.floor = floor_of(first);
+        cache.first_end = directory.end(first);
+        cache.last_floor = floor_of(last);
         cache.end = directory.end(last);
         cache.bound = bound;
         bound
