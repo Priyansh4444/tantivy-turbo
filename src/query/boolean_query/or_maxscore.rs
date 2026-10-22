@@ -155,9 +155,11 @@ pub(crate) fn or_maxscore(
     let force_coarse = false;
 
     while lo < max_doc {
+        // Like Lucene's outer windows, target 16 candidates per clause per
+        // region; fewer means region bookkeeping dominates.
         if force_coarse
             || (fine_regions >= COARSE_PROBE_REGIONS
-                && candidate_count < fine_regions * num_terms as u64)
+                && candidate_count < fine_regions * 16 * num_terms as u64)
         {
             return or_maxscore_coarse(
                 CoarseContinuation {
