@@ -129,6 +129,7 @@ pub(crate) fn or_maxscore(
     let mut prefix = vec![0.0f64; num_terms + 1];
     let mut contributions = vec![0.0; num_terms];
     let mut batch = ScoredTermBatch::new();
+    let mut window = None;
     let mut lo = clauses
         .iter()
         .map(|clause| clause.doc)
@@ -165,6 +166,7 @@ pub(crate) fn or_maxscore(
                     prefix,
                     contributions,
                     batch,
+                    window,
                     lo,
                     max_doc,
                     threshold,
@@ -337,6 +339,34 @@ pub(crate) fn or_maxscore(
                 clause.seek(&mut scorers, lo);
             }
         }
+        if num_terms - first_essential > 1 {
+            let mut state = Pruning {
+                threshold,
+                optional_cutoff,
+                candidate_count,
+                callback: &mut *callback,
+            };
+            score_essential_windows(
+                &mut clauses,
+                &mut scorers,
+                first_essential,
+                &prefix,
+                hi,
+                window.get_or_insert_with(EssentialWindow::new),
+                &mut batch,
+                &mut contributions,
+                &upper_bound,
+                &mut state,
+            );
+            threshold = state.threshold;
+            optional_cutoff = state.optional_cutoff;
+            candidate_count = state.candidate_count;
+            debug_assert!(clauses
+                .iter()
+                .all(|clause| clause.doc == scorers[clause.ordinal].doc()));
+            lo = hi;
+            continue;
+        }
         // The buffered phase retains the current certified partition. Cursor
         // docs always mean first unread; batch docs own the replay candidates.
         let single_essential = num_terms - first_essential == 1;
@@ -461,6 +491,7 @@ struct CoarseContinuation {
     prefix: Vec<f64>,
     contributions: Vec<Score>,
     batch: ScoredTermBatch,
+    window: Option<EssentialWindow>,
     lo: DocId,
     max_doc: DocId,
     threshold: Score,
@@ -484,6 +515,7 @@ fn or_maxscore_coarse(state: CoarseContinuation, callback: &mut dyn FnMut(DocId,
         mut prefix,
         mut contributions,
         mut batch,
+        mut window,
         mut lo,
         max_doc,
         mut threshold,
@@ -615,6 +647,34 @@ fn or_maxscore_coarse(state: CoarseContinuation, callback: &mut dyn FnMut(DocId,
                 // lo. seek(lo) therefore cannot take an old-doc shortcut.
                 clause.seek(&mut scorers, lo);
             }
+        }
+        if num_terms - first_essential > 1 {
+            let mut state = Pruning {
+                threshold,
+                optional_cutoff,
+                candidate_count,
+                callback: &mut *callback,
+            };
+            score_essential_windows(
+                &mut clauses,
+                &mut scorers,
+                first_essential,
+                &prefix,
+                hi,
+                window.get_or_insert_with(EssentialWindow::new),
+                &mut batch,
+                &mut contributions,
+                &upper_bound,
+                &mut state,
+            );
+            threshold = state.threshold;
+            optional_cutoff = state.optional_cutoff;
+            candidate_count = state.candidate_count;
+            debug_assert!(clauses
+                .iter()
+                .all(|clause| clause.doc == scorers[clause.ordinal].doc()));
+            lo = hi;
+            continue;
         }
         // The buffered phase retains the current certified partition. Cursor
         // docs always mean first unread; batch docs own the replay candidates.
@@ -825,6 +885,165 @@ fn coarse_region(
         hi = capped;
     }
     (hi, first_essential_coarse)
+}
+
+/// Doc IDs covered by one multiple-essential window, as in Lucene's
+/// `MaxScoreBulkScorer`.
+const ESSENTIAL_WINDOW: u32 = 4096;
+
+/// Reusable scratch for `score_essential_windows`. Between windows every
+/// bit and sum is zero.
+struct EssentialWindow {
+    matches: Box<[u64]>,
+    sums: Box<[f64]>,
+    /// Each essential clause's (doc, leaf) postings in the window, in clause
+    /// order; `ends[slot]` closes clause `slot`'s run.
+    postings: Vec<(DocId, Score)>,
+    ends: Vec<usize>,
+    cursors: Vec<usize>,
+}
+
+impl EssentialWindow {
+    fn new() -> Self {
+        Self {
+            matches: vec![0; ESSENTIAL_WINDOW as usize / 64].into_boxed_slice(),
+            sums: vec![0.0; ESSENTIAL_WINDOW as usize].into_boxed_slice(),
+            postings: Vec::new(),
+            ends: Vec::new(),
+            cursors: Vec::new(),
+        }
+    }
+}
+
+/// Mutable query state shared by the region loops and the window scorer.
+struct Pruning<'a> {
+    threshold: Score,
+    optional_cutoff: ScoreSumThresholdCutoff,
+    candidate_count: u64,
+    callback: &'a mut dyn FnMut(DocId, Score) -> Score,
+}
+
+/// Scores a region with several essential clauses. Their postings are
+/// batch-scored into doc windows: per doc the f64 sum accumulates in clause
+/// order, exactly as a doc-at-a-time merge would. Optional clauses are then
+/// probed per candidate in doc order with the same tests. Only candidates the
+/// complete sum cannot reject recover their leaves for the canonical
+/// ordinal-order sum that is published.
+#[inline(never)]
+#[allow(clippy::too_many_arguments)]
+fn score_essential_windows(
+    clauses: &mut [ClauseState],
+    scorers: &mut [TermScorer],
+    first_essential: usize,
+    prefix: &[f64],
+    hi: DocId,
+    window: &mut EssentialWindow,
+    batch: &mut ScoredTermBatch,
+    contributions: &mut [Score],
+    upper_bound: &SmallScoreSumUpperBound,
+    state: &mut Pruning,
+) {
+    let num_essential = clauses.len() - first_essential;
+    debug_assert!(num_essential > 1);
+    let mut optional_hits = [(0usize, 0.0 as Score); 32];
+    loop {
+        let start = clauses[first_essential..]
+            .iter()
+            .map(|clause| clause.doc)
+            .min()
+            .unwrap_or(TERMINATED);
+        if start >= hi {
+            break;
+        }
+        let end = hi.min(start.saturating_add(ESSENTIAL_WINDOW));
+        window.postings.clear();
+        window.ends.clear();
+        for clause in &mut clauses[first_essential..] {
+            while clause.doc < end {
+                let len = clause.fill_scored_batch(scorers, start, end, batch);
+                if len == 0 {
+                    break;
+                }
+                for (&doc, &leaf) in batch.docs[..len].iter().zip(&batch.scores[..len]) {
+                    let offset = (doc - start) as usize;
+                    window.matches[offset / 64] |= 1u64 << (offset % 64);
+                    window.sums[offset] += f64::from(leaf);
+                    window.postings.push((doc, leaf));
+                }
+            }
+            window.ends.push(window.postings.len());
+        }
+        window.cursors.clear();
+        window.cursors.push(0);
+        window
+            .cursors
+            .extend_from_slice(&window.ends[..num_essential - 1]);
+        let words = ((end - start) as usize).div_ceil(64);
+        for word_index in 0..words {
+            let mut word = std::mem::take(&mut window.matches[word_index]);
+            while word != 0 {
+                let offset = word_index * 64 + word.trailing_zeros() as usize;
+                word &= word - 1;
+                let doc = start + offset as DocId;
+                let mut known = std::mem::take(&mut window.sums[offset]);
+                state.candidate_count += 1;
+                let mut num_hits = 0;
+                let mut competitive = true;
+                for rank in (0..first_essential).rev() {
+                    let optional_sum = known + prefix[rank + 1];
+                    let rejected =
+                        upper_bound.score_is_at_most(optional_sum, &state.optional_cutoff);
+                    #[cfg(test)]
+                    debug_assert_eq!(rejected, upper_bound.score(optional_sum) <= state.threshold);
+                    if rejected {
+                        competitive = false;
+                        break;
+                    }
+                    let clause = &mut clauses[rank];
+                    if clause.doc < doc {
+                        clause.seek(scorers, doc);
+                    }
+                    if clause.doc == doc {
+                        clause.assert_coherent(scorers);
+                        let leaf = scorers[clause.ordinal].score();
+                        clause.assert_coherent(scorers);
+                        optional_hits[num_hits] = (clause.ordinal, leaf);
+                        num_hits += 1;
+                        known += f64::from(leaf);
+                    }
+                }
+                // The canonical sum is at most score(known); see the
+                // optional tests above, here with no clause left to add.
+                if !competitive || upper_bound.score_is_at_most(known, &state.optional_cutoff) {
+                    continue;
+                }
+                contributions.fill(0.0);
+                for (slot, clause) in clauses[first_essential..].iter().enumerate() {
+                    let run = &window.postings[window.cursors[slot]..window.ends[slot]];
+                    let position = run.partition_point(|&(posting, _)| posting < doc);
+                    window.cursors[slot] += position;
+                    if let Some(&(posting, leaf)) = run.get(position) {
+                        if posting == doc {
+                            contributions[clause.ordinal] = leaf;
+                        }
+                    }
+                }
+                for &(ordinal, leaf) in &optional_hits[..num_hits] {
+                    contributions[ordinal] = leaf;
+                }
+                let score = contributions
+                    .iter()
+                    .map(|&leaf| f64::from(leaf))
+                    .sum::<f64>() as Score;
+                if score > state.threshold {
+                    let next_threshold = (state.callback)(doc, score);
+                    debug_assert!(next_threshold >= state.threshold);
+                    state.threshold = next_threshold;
+                    state.optional_cutoff = ScoreSumThresholdCutoff::new(state.threshold);
+                }
+            }
+        }
+    }
 }
 
 #[cfg(test)]
