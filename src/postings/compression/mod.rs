@@ -208,6 +208,26 @@ impl BlockEncoder {
     }
 }
 
+/// For each byte, the positions of its set bits in increasing order, padded
+/// with zeros.
+static BYTE_BIT_POSITIONS: [[u8; 8]; 256] = {
+    let mut table = [[0u8; 8]; 256];
+    let mut byte = 0;
+    while byte < 256 {
+        let mut count = 0;
+        let mut bit = 0;
+        while bit < 8 {
+            if byte & (1 << bit) != 0 {
+                table[byte][count] = bit as u8;
+                count += 1;
+            }
+            bit += 1;
+        }
+        byte += 1;
+    }
+    table
+};
+
 #[derive(Clone)]
 pub struct BlockDecoder {
     bitpacker: BitPacker4x,
@@ -327,12 +347,27 @@ impl BlockDecoder {
         let base = bitset_base_doc(offset);
         let mut out = 0usize;
         for (word_idx, word_bytes) in compressed_data[..bytes_needed].chunks_exact(8).enumerate() {
-            let mut bits = u64::from_le_bytes(word_bytes.try_into().unwrap());
             let word_base = base.wrapping_add((word_idx * 64) as u32);
-            while bits != 0 {
-                self.output[out] = word_base.wrapping_add(bits.trailing_zeros());
-                out += 1;
-                bits &= bits - 1;
+            for (byte_idx, &byte) in word_bytes.iter().enumerate() {
+                let byte_base = word_base.wrapping_add((byte_idx * 8) as u32);
+                let positions = &BYTE_BIT_POSITIONS[byte as usize];
+                let count = byte.count_ones() as usize;
+                if out + 8 <= COMPRESSION_BLOCK_SIZE {
+                    // Write all eight lanes; lanes past `count` are
+                    // overwritten by the next byte or lie beyond the block.
+                    let lanes = &mut self.output[out..out + 8];
+                    for (lane, &position) in lanes.iter_mut().zip(positions) {
+                        *lane = byte_base.wrapping_add(u32::from(position));
+                    }
+                } else {
+                    for (lane, &position) in self.output[out..out + count]
+                        .iter_mut()
+                        .zip(positions)
+                    {
+                        *lane = byte_base.wrapping_add(u32::from(position));
+                    }
+                }
+                out += count;
             }
         }
         debug_assert_eq!(out, COMPRESSION_BLOCK_SIZE);
@@ -655,6 +690,44 @@ pub(crate) mod tests {
         let mut decoder = BlockDecoder::default();
         decoder.uncompress_bitset_sorted(&encoded, 1000, num_longs);
         assert_eq!(decoder.output_array(), &vals[..]);
+    }
+
+    #[test]
+    fn test_bitset_sorted_roundtrip_random_spans() {
+        let mut state = 0x853c_49e6_748f_ea9bu64;
+        for round in 0..2000 {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            let offset = if round % 3 == 0 { 0 } else { (state >> 40) as u32 };
+            let base = bitset_base_doc(offset);
+            let span = 128 + (state % 1500) as u32;
+            // Choose 128 distinct docs in [base, base + span), always
+            // including the last so the block needs every word.
+            let mut chosen = vec![false; span as usize];
+            chosen[span as usize - 1] = true;
+            let mut picked = 1;
+            while picked < 128 {
+                state ^= state << 13;
+                state ^= state >> 7;
+                state ^= state << 17;
+                let index = (state % u64::from(span - 1)) as usize;
+                if !chosen[index] {
+                    chosen[index] = true;
+                    picked += 1;
+                }
+            }
+            let vals: Vec<u32> = (0..span)
+                .filter(|&index| chosen[index as usize])
+                .map(|index| base + index)
+                .collect();
+            let num_longs = num_bitset_longs(span) as usize;
+            let mut encoder = BlockEncoder::new();
+            let encoded = encoder.compress_bitset_sorted(&vals, offset, num_longs).to_vec();
+            let mut decoder = BlockDecoder::default();
+            assert_eq!(decoder.uncompress_bitset_sorted(&encoded, offset, num_longs), num_longs * 8);
+            assert_eq!(decoder.output_array(), &vals[..]);
+        }
     }
 
     #[test]
