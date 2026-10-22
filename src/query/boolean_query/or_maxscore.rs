@@ -186,7 +186,12 @@ pub(crate) fn or_maxscore(
             .all(|clause| clause.doc == scorers[clause.ordinal].doc()));
         while certified_global < num_terms {
             let next_sum = certified_global_sum + f64::from(clauses[certified_global].global_max);
-            if upper_bound.score(next_sum) > threshold {
+            // Exact cached form of `upper_bound.score(next_sum) > threshold`.
+            debug_assert_eq!(
+                upper_bound.score_is_at_most(next_sum, &optional_cutoff),
+                upper_bound.score(next_sum) <= threshold
+            );
+            if !upper_bound.score_is_at_most(next_sum, &optional_cutoff) {
                 break;
             }
             certified_global_sum = next_sum;
@@ -312,7 +317,7 @@ pub(crate) fn or_maxscore(
         }
         let mut first_essential = 0;
         while first_essential < num_terms
-            && upper_bound.score(prefix[first_essential + 1]) <= threshold
+            && upper_bound.score_is_at_most(prefix[first_essential + 1], &optional_cutoff)
         {
             first_essential += 1;
         }
@@ -490,7 +495,12 @@ fn or_maxscore_coarse(state: CoarseContinuation, callback: &mut dyn FnMut(DocId,
             .all(|clause| clause.doc == scorers[clause.ordinal].doc()));
         while certified_global < num_terms {
             let next_sum = certified_global_sum + f64::from(clauses[certified_global].global_max);
-            if upper_bound.score(next_sum) > threshold {
+            // Exact cached form of `upper_bound.score(next_sum) > threshold`.
+            debug_assert_eq!(
+                upper_bound.score_is_at_most(next_sum, &optional_cutoff),
+                upper_bound.score(next_sum) <= threshold
+            );
+            if !upper_bound.score_is_at_most(next_sum, &optional_cutoff) {
                 break;
             }
             certified_global_sum = next_sum;
@@ -578,7 +588,7 @@ fn or_maxscore_coarse(state: CoarseContinuation, callback: &mut dyn FnMut(DocId,
             &mut region_count,
             candidate_count,
             &upper_bound,
-            threshold,
+            &optional_cutoff,
         );
         previous_essential = first_essential;
         if first_essential == num_terms {
@@ -719,7 +729,7 @@ fn coarse_region(
     region_count: &mut u64,
     candidate_count: u64,
     upper_bound: &SmallScoreSumUpperBound,
-    threshold: Score,
+    optional_cutoff: &ScoreSumThresholdCutoff,
 ) -> (DocId, usize) {
     let num_terms = clauses.len();
     // Only the previous essential leads end a region; optional clauses are
@@ -770,7 +780,7 @@ fn coarse_region(
         }
         first_essential_coarse = 0;
         while first_essential_coarse < num_terms
-            && upper_bound.score(prefix[first_essential_coarse + 1]) <= threshold
+            && upper_bound.score_is_at_most(prefix[first_essential_coarse + 1], optional_cutoff)
         {
             first_essential_coarse += 1;
         }
