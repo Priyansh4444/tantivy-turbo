@@ -157,6 +157,7 @@ impl ScoreSumUpperBound {
 
 /// The same rounded bound for an admitted 3..=32-term nonnegative score sum.
 /// Keep the generic helper for signed, exceptional, and unrestricted callers.
+#[derive(Clone, Copy)]
 pub(crate) struct SmallScoreSumUpperBound {
     factor: f64,
 }

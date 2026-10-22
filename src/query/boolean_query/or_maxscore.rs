@@ -68,6 +68,9 @@ thread_local! {
         const { std::cell::RefCell::new(None) };
     // Start every query on coarse regions so fixtures exercise that path.
     static FORCE_COARSE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    // Hand every coarse continuation back to fine regions after two regions.
+    static FORCE_REVERT: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    static REVERTS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
 }
 
 /// Regions on the fine (every clause's block) geometry before a query may
@@ -149,6 +152,10 @@ pub(crate) fn or_maxscore(
     let mut previous_essential = 0;
     let mut fine_regions = 0u64;
     let mut candidate_count = 0u64;
+    // Covering bounds can instead make dense clauses essential. Coarse regions
+    // hand the query back when that multiplies the fine candidate density.
+    let first_lo = lo;
+    let mut coarse_allowed = true;
     #[cfg(test)]
     let force_coarse = FORCE_COARSE.with(|force| force.get());
     #[cfg(not(test))]
@@ -157,11 +164,13 @@ pub(crate) fn or_maxscore(
     while lo < max_doc {
         // Like Lucene's outer windows, target 16 candidates per clause per
         // region; fewer means region bookkeeping dominates.
-        if force_coarse
-            || (fine_regions >= COARSE_PROBE_REGIONS
-                && candidate_count < fine_regions * 16 * num_terms as u64)
+        if coarse_allowed
+            && (force_coarse
+                || (fine_regions >= COARSE_PROBE_REGIONS
+                    && candidate_count < fine_regions * 16 * num_terms as u64))
         {
-            return or_maxscore_coarse(
+            let fine_span = u64::from(lo - first_lo);
+            let back = or_maxscore_coarse(
                 CoarseContinuation {
                     scorers,
                     clauses,
@@ -180,9 +189,35 @@ pub(crate) fn or_maxscore(
                     previous_essential,
                     candidate_count,
                     upper_bound,
+                    fine_span,
                 },
                 callback,
             );
+            let Some(back) = back else {
+                return;
+            };
+            CoarseContinuation {
+                scorers,
+                clauses,
+                prefix,
+                contributions,
+                batch,
+                window,
+                lo,
+                threshold,
+                optional_cutoff,
+                certified_global,
+                certified_global_sum,
+                previous_essential,
+                candidate_count,
+                ..
+            } = back;
+            #[cfg(test)]
+            {
+                global_appends = back.global_appends;
+            }
+            coarse_allowed = false;
+            continue;
         }
         fine_regions += 1;
         debug_assert!(clauses
@@ -507,12 +542,17 @@ struct CoarseContinuation {
     previous_essential: usize,
     candidate_count: u64,
     upper_bound: SmallScoreSumUpperBound,
+    /// Doc IDs the fine regions covered, all yielding `candidate_count`.
+    fine_span: u64,
 }
 
 /// The rest of `or_maxscore` on coarse regions, out of line so the fine loop
 /// keeps its accepted code generation.
 #[inline(never)]
-fn or_maxscore_coarse(state: CoarseContinuation, callback: &mut dyn FnMut(DocId, Score) -> Score) {
+fn or_maxscore_coarse(
+    state: CoarseContinuation,
+    callback: &mut dyn FnMut(DocId, Score) -> Score,
+) -> Option<CoarseContinuation> {
     let CoarseContinuation {
         mut scorers,
         mut clauses,
@@ -531,11 +571,50 @@ fn or_maxscore_coarse(state: CoarseContinuation, callback: &mut dyn FnMut(DocId,
         mut previous_essential,
         mut candidate_count,
         upper_bound,
+        fine_span,
     } = state;
+    let switch_lo = lo;
+    let fine_candidates = candidate_count;
     let num_terms = scorers.len();
     let mut min_span = 1u32;
     let mut region_count = 0u64;
     while lo < max_doc {
+        // Revert when coarse regions yield over twice the fine candidates per
+        // doc ID. The fine span is nonempty after its probe regions.
+        let coarse_span = u64::from(lo - switch_lo);
+        #[cfg(test)]
+        let force_revert = FORCE_REVERT.with(|force| force.get()) && region_count >= 2;
+        #[cfg(not(test))]
+        let force_revert = false;
+        if force_revert
+            || (region_count >= COARSE_PROBE_REGIONS
+                && fine_span > 0
+                && u128::from(candidate_count - fine_candidates) * u128::from(fine_span)
+                    > 2 * u128::from(fine_candidates.max(1)) * u128::from(coarse_span))
+        {
+            #[cfg(test)]
+            REVERTS.with(|reverts| reverts.set(reverts.get() + 1));
+            return Some(CoarseContinuation {
+                scorers,
+                clauses,
+                prefix,
+                contributions,
+                batch,
+                window,
+                lo,
+                max_doc,
+                threshold,
+                optional_cutoff,
+                certified_global,
+                certified_global_sum,
+                #[cfg(test)]
+                global_appends,
+                previous_essential,
+                candidate_count,
+                upper_bound,
+                fine_span,
+            });
+        }
         debug_assert!(clauses
             .iter()
             .all(|clause| clause.doc == scorers[clause.ordinal].doc()));
@@ -588,7 +667,7 @@ fn or_maxscore_coarse(state: CoarseContinuation, callback: &mut dyn FnMut(DocId,
             });
         }
         if certified_global == num_terms {
-            return;
+            return None;
         }
         let mut globally_optional = certified_global;
         #[cfg(test)]
@@ -797,6 +876,7 @@ fn or_maxscore_coarse(state: CoarseContinuation, callback: &mut dyn FnMut(DocId,
         // Optional clauses remain alive and may become essential there.
         lo = hi;
     }
+    None
 }
 
 /// Coarse region setup, kept out of line so the fine (accepted) region loop
@@ -1650,6 +1730,27 @@ mod tests {
         duplicates_disparate_boosts_exhaustion_and_sparse_regions();
         exact_growing_threshold_traces_for_mixed_dense_and_sparse_terms();
         unsafe_domains_use_exhaustive_canonical_sum_before_any_seek();
+        FORCE_COARSE.with(|force| force.set(false));
+    }
+
+    #[test]
+    fn reverted_coarse_regions_match_exhaustive_union_on_every_fixture() {
+        FORCE_COARSE.with(|force| force.set(true));
+        FORCE_REVERT.with(|force| force.set(true));
+        REVERTS.with(|reverts| reverts.set(0));
+        single_driver_batches_replay_every_dynamic_threshold_exactly();
+        exact_traces_at_full_block_and_tail_boundaries();
+        deferred_optional_clause_becomes_essential_after_shallow_full_blocks();
+        globally_optional_dense_terms_cover_sparse_essential_gaps_and_tails();
+        threshold_growth_promotes_local_optionals_to_global_certificates();
+        similar_density_terms_keep_local_certificates_until_both_are_optional();
+        exact_midpoint_leaves_preserve_incoming_order_and_strict_ties();
+        duplicates_disparate_boosts_exhaustion_and_sparse_regions();
+        exact_growing_threshold_traces_for_mixed_dense_and_sparse_terms();
+        unsafe_domains_use_exhaustive_canonical_sum_before_any_seek();
+        many_mixed_density_terms_match_exhaustive_union_in_both_geometries();
+        assert!(REVERTS.with(|reverts| reverts.get()) > 0);
+        FORCE_REVERT.with(|force| force.set(false));
         FORCE_COARSE.with(|force| force.set(false));
     }
 
