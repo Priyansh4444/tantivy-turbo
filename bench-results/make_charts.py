@@ -278,7 +278,7 @@ def main():
         lucene_per_query(theme)
         resources(theme, rss)
         regions(theme)
-        banner(theme, [("2x", "faster OR vs Tantivy 0.27"), ("1.36x", "faster top-10, all queries"),
+        banner(theme, [("2x", "faster OR vs Tantivy 0.27"), ("1.45x", "faster top-10, all queries"),
                        ("~2x", "faster than Lucene 10.4"), ("0", "changed results")])
     print("charts written:", sorted(p.name for p in OUT.glob("*.svg")))
 

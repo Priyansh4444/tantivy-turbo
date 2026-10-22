@@ -7,7 +7,7 @@ import balanced
 from balanced import Worker, CASES
 from pathlib import Path
 OUT = Path(__file__).resolve().parent
-balanced.BINS = {'turbo': Path(H) / 'attempt-34-v8-tantivy_worker',
+balanced.BINS = {'turbo': Path(os.environ.get('TURBO_BIN', str(Path(H) / 'attempt-34-v8-tantivy_worker'))),
                  'upstream': OUT / 'upstream-harness/target/release/tantivy_worker'}
 balanced.INDICES = {'turbo': balanced.TINDEX, 'upstream': OUT / 'upstream-027.idx'}
 os.sched_setaffinity(0, {6})

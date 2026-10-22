@@ -23,10 +23,11 @@ Top-10 search on 1M Wikipedia docs, 1,201 queries. Each number is how many times
 
 | | vs Tantivy 0.27 | vs [lucene-rs](https://github.com/pc-style/lucene-rs) | vs Lucene 10.4 |
 | --- | :---: | :---: | :---: |
-| Typical query | **1.1×** | **1.2×** | **1.8–2.1×** |
-| OR | **2×** | 1.04× (2 terms), 0.7× (3+ terms) | — |
-| AND | 0.7× | 0.8× | faster on all |
-| COUNT | **1.4×** | **5.9×** | **1.3×** |
+| All queries (total time) | **1.45×** | **1.02×** | — |
+| Typical query | **1.13×** | **1.28×** | **1.8–2.1×** |
+| OR | **2.1–2.3×** | 1.04× (2 terms), 0.68× (3+ terms) | — |
+| AND | 0.83× | 1.0× total, **1.16×** typical | faster on all |
+| COUNT | **1.4×** | **6.3×** | **1.3×** |
 | Same results? | same matches | identical top-10 & scores | identical scores |
 
 <p align="center">
@@ -53,7 +54,7 @@ Full tables, Lucene per-query results, memory, methodology and how to reproduce:
 
 ## Caveats
 
-- AND queries are slower than Tantivy 0.27 and lucene-rs; this is being worked on.
+- AND queries are ~1.2× slower than Tantivy 0.27 (level with lucene-rs); long OR queries are ~1.5× slower than lucene-rs.
 - Reads Tantivy 0.27 indexes, but Tantivy 0.27 can't read indexes written by tantivy-turbo.
 
 ## License

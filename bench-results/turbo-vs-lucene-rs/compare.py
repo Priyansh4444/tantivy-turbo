@@ -8,7 +8,7 @@ import balanced
 from balanced import Worker, CASES, native_run
 from pathlib import Path
 OUT = Path(__file__).resolve().parent
-balanced.BINS = {'tantivy': Path(H) / 'attempt-34-v8-tantivy_worker',
+balanced.BINS = {'tantivy': Path(os.environ.get('TURBO_BIN', str(Path(H) / 'attempt-34-v8-tantivy_worker'))),
                  'port': Path(H).parent.parent / 'lucene-rs-balanced-oct06/target/release/port_worker'}
 balanced.INDICES = {'tantivy': balanced.TINDEX, 'port': balanced.PINDEX}
 os.sched_setaffinity(0, {6})
