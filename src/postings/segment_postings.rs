@@ -52,7 +52,9 @@ impl SegmentPostings {
             self.block_cursor.freq_reading_option(),
             crate::postings::FreqReadingOption::ReadFreq
         ) {
-            freqs[..len].copy_from_slice(&self.block_cursor.freqs()[start..end]);
+            // The same slots `term_freq` reads: a term written without
+            // frequencies in a frequency field decodes none.
+            freqs[..len].copy_from_slice(&self.block_cursor.freq_slots()[start..end]);
         } else {
             // The scalar frequency decoder is prefilled with ones, but its
             // public slice can be empty when frequencies were not decoded.
@@ -334,10 +336,7 @@ impl SegmentPostings {
                     if docs[len - 1] - docs[i] >= 256 {
                         // Lanes pay for their 64-word setup and merge only with
                         // many postings in this window.
-                        if use_lanes
-                            && mask.len() == 64
-                            && i + 48 <= len
-                            && docs[i + 47] < horizon
+                        if use_lanes && mask.len() == 64 && i + 48 <= len && docs[i + 47] < horizon
                         {
                             // Consecutive postings often hit the same mask word.
                             // Alternate between independent lanes to avoid a chain

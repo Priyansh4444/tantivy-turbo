@@ -351,6 +351,12 @@ impl BlockSegmentPostings {
 
     /// Return the frequency at index `idx` of the block.
     #[inline]
+    /// The frequency slots `freq` reads, valid even when no frequencies were
+    /// encoded for this term (then prefilled with ones).
+    pub(crate) fn freq_slots(&self) -> &[u32; COMPRESSION_BLOCK_SIZE] {
+        self.freq_decoder.output_slots()
+    }
+
     pub fn freq(&self, idx: usize) -> u32 {
         debug_assert!(self.block_is_loaded());
         self.freq_decoder.output(idx)

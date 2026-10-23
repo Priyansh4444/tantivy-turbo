@@ -373,6 +373,12 @@ impl BlockDecoder {
         bytes_needed
     }
 
+    /// Every slot, including those past `output_len` (prefilled values).
+    #[inline]
+    pub(crate) fn output_slots(&self) -> &[u32; COMPRESSION_BLOCK_SIZE] {
+        &self.output
+    }
+
     #[inline]
     pub fn output_array(&self) -> &[u32] {
         &self.output[..self.output_len]
