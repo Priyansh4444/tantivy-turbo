@@ -23,11 +23,11 @@ Top-10 search on 1M Wikipedia docs, 1,201 queries. Each number is how many times
 
 | | vs Tantivy 0.27 | vs [lucene-rs](https://github.com/pc-style/lucene-rs) | vs Lucene 10.4 |
 | --- | :---: | :---: | :---: |
-| All queries (total time) | **1.45×** | **1.02×** | — |
-| Typical query | **1.13×** | **1.28×** | **1.8–2.1×** |
-| OR | **2.1–2.3×** | 1.04× (2 terms), 0.68× (3+ terms) | — |
-| AND | 0.83× | 1.0× total, **1.16×** typical | faster on all |
-| COUNT | **1.4×** | **6.3×** | **1.3×** |
+| All queries (total time) | **1.60×** | **1.13×** | — |
+| Typical query | **1.16×** | **1.31×** | **1.8–2.1×** |
+| OR | **2.2–3.1×** | **1.06×** (2 terms), 1.01× (3+ terms) | — |
+| AND | 0.85× | 1.0× total, **1.17×** typical | faster on all |
+| COUNT | **1.5×** | **6.3×** | **1.3×** |
 | Same results? | same matches | identical top-10 & scores | identical scores |
 
 <p align="center">
@@ -48,13 +48,13 @@ Full tables, Lucene per-query results, memory, methodology and how to reproduce:
 
 ## What's different
 
-- **OR queries:** MaxScore pruning for 2–32 terms, switching to wider regions when bookkeeping dominates.
+- **OR queries:** MaxScore pruning for 2–32 terms with Lucene-style bulk scoring windows, choosing fine or wide regions by measured cost, and scoring repeated terms once.
 - **Scoring:** exact Lucene 10 BM25. Scores match Lucene bit for bit.
 - **COUNT:** doc-frequency shortcuts and bitset counting lanes.
 
 ## Caveats
 
-- AND queries are ~1.2× slower than Tantivy 0.27 (level with lucene-rs); long OR queries are ~1.5× slower than lucene-rs.
+- AND queries are ~1.2× slower than Tantivy 0.27 (level with lucene-rs).
 - Reads Tantivy 0.27 indexes, but Tantivy 0.27 can't read indexes written by tantivy-turbo.
 
 ## License
