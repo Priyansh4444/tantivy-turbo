@@ -228,7 +228,32 @@ impl SkipDirectory {
     pub(crate) fn block_at_from(&self, doc: DocId, from: usize) -> usize {
         let mut left = from.min(self.blocks);
         if left > 0 && self.end(left - 1) >= doc {
-            return self.block_at(doc);
+            // The hint overshoots: gallop backward to a block ending before
+            // `doc`; the answer lies in (that block, left - 1].
+            let mut right = left - 1;
+            let mut step = 1;
+            loop {
+                if right < step {
+                    left = 0;
+                    break;
+                }
+                let probe = right - step;
+                if self.end(probe) < doc {
+                    left = probe + 1;
+                    break;
+                }
+                right = probe;
+                step *= 2;
+            }
+            while left < right {
+                let mid = left + (right - left) / 2;
+                if self.end(mid) < doc {
+                    left = mid + 1;
+                } else {
+                    right = mid;
+                }
+            }
+            return left;
         }
         // Every block before `left` ends before `doc`.
         let mut step = 1;
