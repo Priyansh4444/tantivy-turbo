@@ -405,10 +405,11 @@ impl TermScorer {
             return cache.bound;
         }
         let first = directory.block_at_from(lo, self.block_hint);
-        self.block_hint = first;
         let last = directory
             .block_at_from(hi - 1, first)
             .min(directory.len().saturating_sub(1));
+        // The next region starts at or after `hi`, usually in block `last`.
+        self.block_hint = last;
         if first >= directory.len() {
             return 0.0; // Complete metadata proves there is no nonempty tail.
         }
