@@ -82,13 +82,45 @@ fn write_u32(val: u32, buf: &mut Vec<u8>) {
     buf.extend_from_slice(&val.to_le_bytes());
 }
 
+/// Full blocks summarized by one level-1 skip record, as in Lucene.
+pub(crate) const SKIP_GROUP_BLOCKS: usize = 32;
+
+/// A level-1 record: the group's first byte offset (u64) and position offset
+/// (u64), then the group's selected max-score input pair (fieldnorm id, tf code).
+const GROUP_RECORD_LEN: usize = 18;
+
 pub struct SkipSerializer {
     buffer: Vec<u8>,
+    groups: Vec<u8>,
 }
 
 impl SkipSerializer {
     pub fn new() -> SkipSerializer {
-        SkipSerializer { buffer: Vec::new() }
+        SkipSerializer {
+            buffer: Vec::new(),
+            groups: Vec::new(),
+        }
+    }
+
+    /// Level-1 record for the group of `SKIP_GROUP_BLOCKS` full blocks just
+    /// written. Records follow every per-block record of the term.
+    pub fn write_group(
+        &mut self,
+        byte_offset: u64,
+        position_offset: u64,
+        fieldnorm_id: u8,
+        term_freq: u32,
+    ) {
+        self.groups.extend_from_slice(&byte_offset.to_le_bytes());
+        self.groups
+            .extend_from_slice(&position_offset.to_le_bytes());
+        self.groups
+            .extend_from_slice(&[fieldnorm_id, encode_block_wand_max_tf(term_freq)]);
+    }
+
+    /// Level-1 records, written after `data`.
+    pub fn group_data(&self) -> &[u8] {
+        &self.groups[..]
     }
 
     pub fn write_doc(&mut self, last_doc: DocId, doc_num_bits: u8) {
@@ -121,6 +153,7 @@ impl SkipSerializer {
 
     pub fn clear(&mut self) {
         self.buffer.clear();
+        self.groups.clear();
     }
 }
 
@@ -176,6 +209,8 @@ pub(crate) struct SkipDirectory {
     blocks: usize,
     stride: usize,
     has_tail: bool,
+    /// Level-1 records present (0 for indexes written without them).
+    groups: usize,
 }
 
 impl SkipDirectory {
@@ -185,12 +220,65 @@ impl SkipDirectory {
             IndexRecordOption::WithFreqs => 8,
             IndexRecordOption::WithFreqsAndPositions => 12,
         };
+        let blocks = doc_freq as usize / COMPRESSION_BLOCK_SIZE;
+        // Level-1 records exist exactly when the skip data holds one per
+        // complete group after the per-block records.
+        let full_groups = blocks / SKIP_GROUP_BLOCKS;
+        let groups =
+            if full_groups > 0 && data.len() == blocks * stride + full_groups * GROUP_RECORD_LEN {
+                full_groups
+            } else {
+                0
+            };
         Self {
             data,
-            blocks: doc_freq as usize / COMPRESSION_BLOCK_SIZE,
+            blocks,
             stride,
             has_tail: !(doc_freq as usize).is_multiple_of(COMPRESSION_BLOCK_SIZE),
+            groups,
         }
+    }
+
+    /// Complete groups of `SKIP_GROUP_BLOCKS` blocks with a level-1 record.
+    pub(crate) fn groups(&self) -> usize {
+        self.groups
+    }
+
+    fn group_record(&self, group: usize) -> &[u8] {
+        debug_assert!(group < self.groups);
+        let start = self.blocks * self.stride + group * GROUP_RECORD_LEN;
+        &self.data[start..start + GROUP_RECORD_LEN]
+    }
+
+    /// Byte offset into the postings data, and position offset, of the
+    /// group's first block.
+    pub(crate) fn group_offsets(&self, group: usize) -> (usize, u64) {
+        let record = self.group_record(group);
+        let byte_offset = u64::from_le_bytes(record[..8].try_into().unwrap());
+        let position_offset = u64::from_le_bytes(record[8..16].try_into().unwrap());
+        (byte_offset as usize, position_offset)
+    }
+
+    /// The group's selected pair, chosen over all its postings exactly as a
+    /// block's pair is chosen over the block's postings.
+    pub(crate) fn group_pair(&self, group: usize) -> Option<SelectedInputPair> {
+        if self.stride == 5 {
+            return None;
+        }
+        let record = self.group_record(group);
+        NonZeroU32::new(decode_block_wand_max_tf(record[17])).map(|selected_tf_ceiling| {
+            SelectedInputPair {
+                norm: record[16],
+                selected_tf_ceiling,
+            }
+        })
+    }
+
+    /// The skip data from full block `block`'s record on.
+    pub(crate) fn records_from(&self, block: usize) -> OwnedBytes {
+        debug_assert!(block < self.blocks);
+        self.data
+            .slice(block * self.stride..self.blocks * self.stride)
     }
 
     pub(crate) fn full_blocks(&self) -> usize {
@@ -580,6 +668,32 @@ impl SkipReader {
             self.last_doc_in_previous_block = last_doc;
             self.owned_read.advance(stride);
         }
+    }
+
+    /// Positions the reader on full block `block`, as if it had advanced there
+    /// block by block. `records` is the skip data from that block's record on.
+    pub(crate) fn jump_to_block(
+        &mut self,
+        records: OwnedBytes,
+        block: usize,
+        doc_freq: u32,
+        byte_offset: usize,
+        position_offset: u64,
+        last_doc_in_previous_block: DocId,
+    ) {
+        let remaining_docs = doc_freq - (block * COMPRESSION_BLOCK_SIZE) as u32;
+        debug_assert!(remaining_docs >= COMPRESSION_BLOCK_SIZE as u32);
+        self.owned_read = records;
+        self.remaining_docs = remaining_docs;
+        self.byte_offset = byte_offset;
+        self.position_offset = position_offset;
+        self.last_doc_in_previous_block = last_doc_in_previous_block;
+        self.read_block_info();
+    }
+
+    /// Index of the current block among the term's blocks.
+    pub(crate) fn block_index(&self, doc_freq: u32) -> usize {
+        ((doc_freq - self.remaining_docs) as usize) / COMPRESSION_BLOCK_SIZE
     }
 
     /// The bookkeeping half of `advance` for a parsed full block.

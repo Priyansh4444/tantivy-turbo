@@ -5,7 +5,9 @@ use common::TinySet;
 use crate::docset::DocSet;
 use crate::fieldnorm::FieldNormReader;
 use crate::index::field_statistics::BlockMaxSelection;
-use crate::postings::{BlockSegmentPostings, FreqReadingOption, Postings, SegmentPostings};
+use crate::postings::{
+    BlockSegmentPostings, FreqReadingOption, Postings, SegmentPostings, SKIP_GROUP_BLOCKS,
+};
 use crate::query::bm25::{Bm25Weight, NativeInputEnvelope, NativeSelectionContext};
 use crate::query::{Explanation, Scorer};
 use crate::{DocId, Score};
@@ -120,6 +122,7 @@ impl RangeMaxScores {
         left: usize,
         right: usize,
         resolve: &impl Fn(usize) -> Score,
+        resolve_group: &impl Fn(usize, usize) -> Option<Score>,
     ) -> Score {
         let cached = self.tree[node];
         if !cached.is_nan() {
@@ -127,14 +130,12 @@ impl RangeMaxScores {
         }
         let bound = if right - left == 1 {
             resolve(left)
+        } else if let Some(bound) = resolve_group(left, right) {
+            bound
         } else {
             let mid = left + (right - left) / 2;
-            self.node(node * 2, left, mid, resolve).max(self.node(
-                node * 2 + 1,
-                mid,
-                right,
-                resolve,
-            ))
+            self.node(node * 2, left, mid, resolve, resolve_group)
+                .max(self.node(node * 2 + 1, mid, right, resolve, resolve_group))
         };
         self.tree[node] = bound;
         bound
@@ -145,6 +146,7 @@ impl RangeMaxScores {
         mut left: usize,
         mut right: usize,
         resolve: impl Fn(usize) -> Score,
+        resolve_group: impl Fn(usize, usize) -> Option<Score>,
     ) -> Score {
         let mut bound = 0.0_f32;
         // Regions usually cover a few blocks: read their leaves directly
@@ -165,13 +167,13 @@ impl RangeMaxScores {
         while left < right {
             if left & 1 != 0 {
                 let start = (left * width) - self.leaves;
-                bound = bound.max(self.node(left, start, start + width, &resolve));
+                bound = bound.max(self.node(left, start, start + width, &resolve, &resolve_group));
                 left += 1;
             }
             if right & 1 != 0 {
                 right -= 1;
                 let start = (right * width) - self.leaves;
-                bound = bound.max(self.node(right, start, start + width, &resolve));
+                bound = bound.max(self.node(right, start, start + width, &resolve, &resolve_group));
             }
             left /= 2;
             right /= 2;
@@ -435,8 +437,8 @@ impl TermScorer {
         }
         let weight = &self.similarity_weight;
         let policy = &self.block_bounds;
-        let bound = cache.range(first, last + 1, |block| {
-            let Some(pair) = directory.pair(block) else {
+        let pair_bound = |pair: Option<crate::postings::SelectedInputPair>| {
+            let Some(pair) = pair else {
                 return global;
             };
             let bound = match policy {
@@ -464,7 +466,21 @@ impl TermScorer {
             } else {
                 global
             }
-        });
+        };
+        // A level-1 record bounds a whole aligned group with one pair, chosen
+        // over the group's postings exactly as a block's over its own.
+        let groups = directory.groups();
+        let bound = cache.range(
+            first,
+            last + 1,
+            |block| pair_bound(directory.pair(block)),
+            |left, right| {
+                (right - left == SKIP_GROUP_BLOCKS
+                    && left.is_multiple_of(SKIP_GROUP_BLOCKS)
+                    && left / SKIP_GROUP_BLOCKS < groups)
+                    .then(|| pair_bound(directory.group_pair(left / SKIP_GROUP_BLOCKS)))
+            },
+        );
         let floor_of = |block: usize| {
             if block == 0 {
                 0

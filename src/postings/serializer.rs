@@ -13,7 +13,7 @@ use crate::postings::compression::{
     bitset_base_doc, dense_block_size, num_bitset_longs, BlockEncoder, VIntEncoder,
     COMPRESSION_BLOCK_SIZE,
 };
-use crate::postings::skip::{SkipSerializer, MAX_DENSE_LONGS};
+use crate::postings::skip::{SkipSerializer, MAX_DENSE_LONGS, SKIP_GROUP_BLOCKS};
 use crate::query::Bm25Weight;
 use crate::schema::{Field, FieldEntry, IndexRecordOption, Schema};
 use crate::termdict::TermDictionaryBuilder;
@@ -381,6 +381,12 @@ pub struct PostingsSerializer {
     avg_fieldnorm: Score, /* Average number of term in the field for that segment.
                            * this value is used to compute the block wand information. */
     term_has_freq: bool,
+    /// Level-1 skip state for the current term: full blocks written, position
+    /// offset after them, and the open group's first offsets and best pair.
+    blocks_written: usize,
+    position_total: u64,
+    group_start: (u64, u64),
+    group_best: Option<(u8, u32, Score)>,
 }
 
 impl PostingsSerializer {
@@ -421,6 +427,10 @@ impl PostingsSerializer {
             selection,
             avg_fieldnorm,
             term_has_freq: false,
+            blocks_written: 0,
+            position_total: 0,
+            group_start: (0, 0),
+            group_best: None,
         }
     }
 
@@ -428,6 +438,9 @@ impl PostingsSerializer {
     /// * term_doc_freq - the number of documents containing the term.
     pub fn new_term(&mut self, term_doc_freq: u32, record_term_freq: bool) {
         self.bm25_weight = None;
+        self.blocks_written = 0;
+        self.position_total = 0;
+        self.group_best = None;
 
         self.term_has_freq = self.mode.has_freq() && record_term_freq;
         if !self.term_has_freq {
@@ -470,6 +483,9 @@ impl PostingsSerializer {
         // The estimate runs over the values FOR actually stores: with
         // strict-delta encoding, deltas are stored minus one (the very first
         // doc of the index is stored as-is).
+        if self.blocks_written.is_multiple_of(SKIP_GROUP_BLOCKS) {
+            self.group_start = (self.postings_write.len() as u64, self.position_total);
+        }
         let last_doc = self.block.last_doc();
         let base = bitset_base_doc(self.last_doc_id_encoded);
         let doc_range = last_doc.wrapping_sub(base).wrapping_add(1);
@@ -530,8 +546,10 @@ impl PostingsSerializer {
                 // in order to navigate through positions.
                 let sum_freq = self.block.term_freqs().iter().cloned().sum();
                 self.skip_write.write_total_term_freq(sum_freq);
+                self.position_total += u64::from(sum_freq);
             }
             let mut blockwand_params = (0u8, 0u32);
+            let mut blockwand_input = None;
             if let Some(bm25_weight) = self.bm25_weight.as_ref() {
                 if let Some(fieldnorm_reader) = self.fieldnorm_reader.as_ref() {
                     let docs = self.block.doc_ids().iter().cloned();
@@ -558,12 +576,47 @@ impl PostingsSerializer {
                             },
                         )
                         .unwrap();
+                    let (fieldnorm_id, term_freq) = blockwand_params;
+                    blockwand_input = Some(match self.selection {
+                        BlockMaxSelection::LegacyTfFactor => {
+                            bm25_weight.tf_factor(fieldnorm_id, term_freq)
+                        }
+                        BlockMaxSelection::NativeSaturationInput => {
+                            bm25_weight.native_saturation_input(fieldnorm_id, term_freq)
+                        }
+                    });
                 }
             }
             let (fieldnorm_id, term_freq) = blockwand_params;
             self.skip_write.write_blockwand_max(fieldnorm_id, term_freq);
+            // The group's pair is the maximum over its blocks' pairs under the
+            // same comparison, later blocks winning ties: the pair `max_by`
+            // selects over all of the group's postings.
+            if let Some(input) = blockwand_input {
+                let replace = match self.group_best {
+                    None => true,
+                    Some((_, _, best)) => {
+                        input.partial_cmp(&best).unwrap_or(Ordering::Equal) != Ordering::Less
+                    }
+                };
+                if replace {
+                    self.group_best = Some((fieldnorm_id, term_freq, input));
+                }
+            }
         }
         self.block.clear();
+        self.blocks_written += 1;
+        if self.blocks_written.is_multiple_of(SKIP_GROUP_BLOCKS) {
+            let (fieldnorm_id, term_freq) = self
+                .group_best
+                .take()
+                .map_or((0, 0), |(fieldnorm_id, term_freq, _)| {
+                    (fieldnorm_id, term_freq)
+                });
+            let (byte_offset, position_offset) = self.group_start;
+            self.skip_write
+                .write_group(byte_offset, position_offset, fieldnorm_id, term_freq);
+        }
     }
 
     /// Register that the given document contains the current term.
@@ -606,8 +659,10 @@ impl PostingsSerializer {
         }
         if doc_freq >= COMPRESSION_BLOCK_SIZE as u32 {
             let skip_data = self.skip_write.data();
-            VInt(skip_data.len() as u64).serialize(output_write)?;
+            let group_data = self.skip_write.group_data();
+            VInt((skip_data.len() + group_data.len()) as u64).serialize(output_write)?;
             output_write.write_all(skip_data)?;
+            output_write.write_all(group_data)?;
         }
         output_write.write_all(&self.postings_write[..])?;
         self.skip_write.clear();
@@ -619,6 +674,9 @@ impl PostingsSerializer {
     fn clear(&mut self) {
         self.block.clear();
         self.last_doc_id_encoded = 0;
+        self.blocks_written = 0;
+        self.position_total = 0;
+        self.group_best = None;
     }
 }
 
@@ -627,6 +685,123 @@ mod native_bound_tests {
     use super::*;
     use crate::directory::FileSlice;
     use crate::postings::BlockSegmentPostings;
+
+    /// Serializes one term and returns its bytes, and the same bytes with the
+    /// level-1 records removed, as an index written without them would be.
+    fn term_bytes_with_and_without_groups(
+        option: IndexRecordOption,
+        norms: &[u32],
+        postings: &[(DocId, u32)],
+    ) -> (Vec<u8>, Vec<u8>) {
+        let mut writer = PostingsSerializer::new_with_selection(
+            100.0,
+            option,
+            Some(FieldNormReader::for_test(norms)),
+            BlockMaxSelection::NativeSaturationInput,
+        );
+        let count = postings.len() as u32;
+        writer.new_term(count, option.has_freq());
+        for &(doc, frequency) in postings {
+            writer.write_doc(doc, frequency);
+        }
+        let groups = writer.skip_write.group_data().len();
+        let mut bytes = Vec::new();
+        writer.close_term(count, &mut bytes).unwrap();
+        let mut slice = &bytes[..];
+        let skip_len = VInt::deserialize_u64(&mut slice).unwrap() as usize;
+        let header = bytes.len() - slice.len();
+        let mut stripped = Vec::new();
+        VInt((skip_len - groups) as u64)
+            .serialize(&mut stripped)
+            .unwrap();
+        stripped.extend_from_slice(&slice[..skip_len - groups]);
+        stripped.extend_from_slice(&bytes[header + skip_len..]);
+        (bytes, stripped)
+    }
+
+    #[test]
+    fn level1_groups_seek_exactly_like_block_by_block_skips() {
+        let mut state = 0x9e37_79b9u32;
+        let mut next = move || {
+            state ^= state << 13;
+            state ^= state >> 17;
+            state ^= state << 5;
+            state
+        };
+        let max_doc = 400_000u32;
+        let norms: Vec<u32> = (0..max_doc).map(|_| 1 + next() % 2000).collect();
+        // Alternate dense and sparse stretches so both block encodings occur.
+        let mut postings = Vec::new();
+        for doc in 0..max_doc {
+            let density = if (doc / 20_000) % 2 == 0 { 2 } else { 23 };
+            if next() % density == 0 {
+                let frequency = if next() % 97 == 0 {
+                    300 + next() % 5000
+                } else {
+                    1 + next() % 9
+                };
+                postings.push((doc, frequency));
+            }
+        }
+        for option in [
+            IndexRecordOption::Basic,
+            IndexRecordOption::WithFreqs,
+            IndexRecordOption::WithFreqsAndPositions,
+        ] {
+            let (with, without) = term_bytes_with_and_without_groups(option, &norms, &postings);
+            assert!(with.len() > without.len());
+            let count = postings.len() as u32;
+            let open = |bytes: &Vec<u8>| {
+                BlockSegmentPostings::open(count, FileSlice::from(bytes.clone()), option, option)
+                    .unwrap()
+            };
+            let blocks = postings.len() / COMPRESSION_BLOCK_SIZE;
+            assert_eq!(
+                open(&with).skip_directory.groups(),
+                blocks / SKIP_GROUP_BLOCKS
+            );
+            assert_eq!(open(&without).skip_directory.groups(), 0);
+            for round in 0..40 {
+                let mut fast = open(&with);
+                let mut slow = open(&without);
+                let mut target = 0u32;
+                let step = [50u32, 3_000, 40_000, 150_000][round % 4];
+                while target < max_doc + 10 {
+                    target += 1 + next() % step;
+                    let index = fast.seek(target);
+                    assert_eq!(index, slow.seek(target));
+                    assert_eq!(fast.docs(), slow.docs());
+                    if option.has_freq() {
+                        assert_eq!(fast.freqs(), slow.freqs());
+                    }
+                    assert_eq!(fast.position_offset(), slow.position_offset());
+                    let expected = postings.iter().find(|&&(doc, _)| doc >= target);
+                    match expected {
+                        Some(&(doc, _)) => assert_eq!(fast.doc(index), doc),
+                        None => {
+                            assert!(fast.doc(index) == crate::TERMINATED || fast.docs().is_empty())
+                        }
+                    }
+                }
+            }
+            // A group's pair bounds every block of the group, with equality at
+            // the default query: it is one of those blocks' selected pairs.
+            if option.has_freq() {
+                let weight = Bm25Weight::for_native_block_bounds(100.0);
+                let directory = &open(&with).skip_directory;
+                for group in 0..directory.groups() {
+                    let score = |pair: crate::postings::SelectedInputPair| {
+                        weight.score(pair.norm, pair.selected_tf_ceiling.get())
+                    };
+                    let group_score = score(directory.group_pair(group).unwrap());
+                    let block_max = (group * SKIP_GROUP_BLOCKS..(group + 1) * SKIP_GROUP_BLOCKS)
+                        .map(|block| score(directory.pair(block).unwrap()))
+                        .fold(0.0, Score::max);
+                    assert_eq!(group_score, block_max);
+                }
+            }
+        }
+    }
 
     fn serialized_block(
         average: Score,

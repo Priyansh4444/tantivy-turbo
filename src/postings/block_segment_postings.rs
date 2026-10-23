@@ -5,6 +5,7 @@ use common::VInt;
 use crate::directory::{FileSlice, OwnedBytes};
 use crate::fieldnorm::FieldNormReader;
 use crate::postings::compression::{BlockDecoder, VIntDecoder, COMPRESSION_BLOCK_SIZE};
+use crate::postings::skip::SKIP_GROUP_BLOCKS;
 use crate::postings::{BlockInfo, FreqReadingOption, SkipDirectory, SkipReader};
 use crate::query::{Bm25Weight, NativeInputEnvelope};
 use crate::schema::IndexRecordOption;
@@ -430,10 +431,54 @@ impl BlockSegmentPostings {
     /// If all docs are smaller than target, the block loaded may be empty,
     /// or be the last an incomplete VInt block.
     pub(crate) fn seek_block(&mut self, target_doc: DocId) {
+        if self.skip_reader.last_doc_in_block() < target_doc && self.skip_directory.groups() > 0 {
+            self.jump_groups_before(target_doc);
+        }
         if self.skip_reader.seek(target_doc) {
             self.block_max_score_cache = None;
             self.block_loaded = false;
         }
+    }
+
+    /// Moves the skip reader, without parsing their blocks, past every level-1
+    /// group that ends before `target_doc`. The reader then lands exactly
+    /// where advancing block by block would have.
+    #[inline(never)]
+    fn jump_groups_before(&mut self, target_doc: DocId) {
+        let directory = &self.skip_directory;
+        let groups = directory.groups();
+        let current = self.skip_reader.block_index(self.doc_freq);
+        let mut group = current / SKIP_GROUP_BLOCKS;
+        // Count the groups, from the current one, that end before the target.
+        while group < groups && directory.end((group + 1) * SKIP_GROUP_BLOCKS - 1) < target_doc {
+            group += 1;
+        }
+        // Past every group, the last one is the latest recorded start.
+        let group = group.min(groups - 1);
+        let block = group * SKIP_GROUP_BLOCKS;
+        if block > current {
+            self.jump_to_group(group, block);
+        }
+    }
+
+    fn jump_to_group(&mut self, group: usize, block: usize) {
+        let directory = &self.skip_directory;
+        let (byte_offset, position_offset) = directory.group_offsets(group);
+        let previous = if block == 0 {
+            0
+        } else {
+            directory.end(block - 1)
+        };
+        self.skip_reader.jump_to_block(
+            directory.records_from(block),
+            block,
+            self.doc_freq,
+            byte_offset,
+            position_offset,
+            previous,
+        );
+        self.block_max_score_cache = None;
+        self.block_loaded = false;
     }
 
     #[inline]
