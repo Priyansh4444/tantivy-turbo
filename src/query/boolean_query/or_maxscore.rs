@@ -617,6 +617,9 @@ fn or_maxscore_coarse(
     } = state;
     let switch_lo = lo;
     let switch_candidates = candidate_count;
+    let range_blocks =
+        |scorers: &[TermScorer]| -> u64 { scorers.iter().map(TermScorer::range_blocks).sum() };
+    let switch_range_blocks = range_blocks(&scorers);
     let num_terms = scorers.len();
     let mut min_span = 1u32;
     let mut region_count = 0u64;
@@ -630,6 +633,13 @@ fn or_maxscore_coarse(
         if coarse_cost.is_none() && (force_revert || region_count >= COARSE_PROBE_REGIONS) {
             #[cfg(test)]
             REVERTS.with(|reverts| reverts.set(reverts.get() + 1));
+            // Covering bounds resolve each spanned block's maximum.
+            let cost = StintCost::new(
+                region_count,
+                candidate_count - switch_candidates + range_blocks(&scorers) - switch_range_blocks,
+                u64::from(lo - switch_lo),
+                num_terms,
+            );
             return Some(CoarseContinuation {
                 scorers,
                 clauses,
@@ -648,12 +658,7 @@ fn or_maxscore_coarse(
                 previous_essential,
                 candidate_count,
                 upper_bound,
-                coarse_cost: Some(StintCost::new(
-                    region_count,
-                    candidate_count - switch_candidates,
-                    u64::from(lo - switch_lo),
-                    num_terms,
-                )),
+                coarse_cost: Some(cost),
             });
         }
         debug_assert!(clauses

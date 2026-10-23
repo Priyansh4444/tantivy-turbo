@@ -68,6 +68,8 @@ pub struct TermScorer {
     coarse_end: DocId,
     /// Last skip-directory lookup; documents only move forward.
     block_hint: usize,
+    /// Blocks covered by uncached `range_max_score` calls, a work measure.
+    range_blocks: u64,
 }
 
 #[derive(Clone)]
@@ -220,6 +222,7 @@ impl TermScorer {
             range_bounds: None,
             coarse_end: 0,
             block_hint: 0,
+            range_blocks: 0,
         }
     }
 
@@ -375,6 +378,10 @@ impl TermScorer {
 
     /// Cover a half-open document interval using only existing skip metadata.
     /// The live skip/decoded cursor, positions and current-block cache are untouched.
+    pub(crate) fn range_blocks(&self) -> u64 {
+        self.range_blocks
+    }
+
     pub(crate) fn range_max_score(&mut self, lo: DocId, hi: DocId) -> Score {
         let lo = lo.max(self.doc());
         if lo >= hi {
@@ -410,6 +417,7 @@ impl TermScorer {
             .min(directory.len().saturating_sub(1));
         // The next region starts at or after `hi`, usually in block `last`.
         self.block_hint = last;
+        self.range_blocks += (last + 1).saturating_sub(first) as u64;
         if first >= directory.len() {
             return 0.0; // Complete metadata proves there is no nonempty tail.
         }
