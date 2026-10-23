@@ -2,7 +2,7 @@ use std::ops::{Deref, DerefMut};
 
 use super::block_wand_intersection;
 use crate::query::score_combiner::{ScoreSumUpperBound, SumCombiner};
-use crate::query::term_query::TermScorer;
+use crate::query::term_query::{ScoredTermBatch, TermScorer};
 use crate::query::weight::for_each_pruning_scorer;
 use crate::query::{BufferedUnionScorer, Scorer};
 use crate::{DocId, DocSet, Score, TERMINATED};
@@ -530,36 +530,46 @@ pub fn block_wand_single_scorer(
     mut threshold: Score,
     callback: &mut dyn FnMut(u32, Score) -> Score,
 ) {
+    let mut batch = ScoredTermBatch::new();
     let mut doc = scorer.doc();
     loop {
         // We position the scorer on a block that can reach
-        // the threshold.
+        // the threshold, passing whole level-1 groups that cannot.
         while scorer.block_max_score() <= threshold {
             let last_doc_in_block = scorer.last_doc_in_block();
             if last_doc_in_block == TERMINATED {
                 return;
             }
-            doc = last_doc_in_block + 1;
-            scorer.seek_block(doc);
-        }
-        // Seek will effectively load that block.
-        doc = scorer.seek(doc);
-        if doc == TERMINATED {
-            break;
-        }
-        loop {
-            let score = scorer.score();
-            if score > threshold {
-                threshold = callback(doc, score);
-            }
-            debug_assert!(doc <= scorer.last_doc_in_block());
-            if doc == scorer.last_doc_in_block() {
-                break;
-            }
-            doc = scorer.advance();
-            if doc == TERMINATED {
+            let skip_end = scorer
+                .group_skip_end(threshold)
+                .unwrap_or(last_doc_in_block);
+            if skip_end == TERMINATED {
                 return;
             }
+            doc = skip_end + 1;
+            scorer.seek_block(doc);
+        }
+        // Score every doc of the block but its last in one batch. Stopping
+        // short keeps the cursor in this block, so the next block is only
+        // decoded if its bound passes. Survivors of the threshold at batch
+        // start are rechecked against the current one, as in the scalar loop.
+        let last_doc_in_block = scorer.last_doc_in_block();
+        let len = scorer.fill_scored_batch(doc, last_doc_in_block, &mut batch);
+        let kept = batch.retain_scores_above(len, threshold);
+        for index in 0..kept {
+            let score = batch.scores[index];
+            if score > threshold {
+                threshold = callback(batch.docs[index], score);
+            }
+        }
+        doc = scorer.doc();
+        if doc == TERMINATED {
+            return;
+        }
+        debug_assert_eq!(doc, last_doc_in_block);
+        let score = scorer.score();
+        if score > threshold {
+            threshold = callback(doc, score);
         }
         doc += 1;
         scorer.seek_block(doc);
@@ -662,6 +672,73 @@ mod tests {
             super::block_wand(term_scorers, Score::MIN, callback);
         }
         checkpoints
+    }
+
+    #[test]
+    fn single_term_traces_match_exhaustive_scan_across_level1_groups() {
+        let mut state = 0x6a09_e667u32;
+        let mut next = move || {
+            state ^= state << 13;
+            state ^= state >> 17;
+            state ^= state << 5;
+            state
+        };
+        let max_doc = 120_000u32;
+        let norms: Vec<u32> = (0..max_doc).map(|_| 1 + next() % 300).collect();
+        for stride in [1u32, 2, 3, 7] {
+            let mut postings: Vec<(DocId, u32)> = Vec::new();
+            for doc in 0..max_doc {
+                if next() % stride == 0 {
+                    let tf = if next() % 1000 == 0 {
+                        40 + next() % 60
+                    } else {
+                        1 + next() % 3
+                    };
+                    postings.push((doc, tf));
+                }
+            }
+            let average =
+                norms.iter().map(|&norm| u64::from(norm)).sum::<u64>() as Score / max_doc as Score;
+            let scorer = TermScorer::create_for_test(
+                &postings,
+                &norms,
+                Bm25Weight::for_one_term(postings.len() as u64, max_doc as u64, average),
+            );
+            crate::query::term_query::GROUP_SKIPS.with(|skips| skips.set(0));
+            for limit in [1usize, 10, 100] {
+                let run = |pruned: bool| {
+                    let mut accepted = Vec::new();
+                    let mut best: Vec<Score> = Vec::new();
+                    let mut callback = |doc: DocId, score: Score| {
+                        accepted.push((doc, score.to_bits()));
+                        best.push(score);
+                        best.sort_unstable_by(|a, b| b.total_cmp(a));
+                        best.truncate(limit);
+                        if best.len() == limit {
+                            best[limit - 1]
+                        } else {
+                            Score::MIN
+                        }
+                    };
+                    let mut scorer = scorer.clone();
+                    if pruned {
+                        super::block_wand_single_scorer(scorer, Score::MIN, &mut callback);
+                    } else {
+                        let mut threshold = Score::MIN;
+                        while scorer.doc() != TERMINATED {
+                            let score = scorer.score();
+                            if score > threshold {
+                                threshold = callback(scorer.doc(), score);
+                            }
+                            scorer.advance();
+                        }
+                    }
+                    accepted
+                };
+                assert_eq!(run(true), run(false), "stride={stride} limit={limit}");
+            }
+            assert!(crate::query::term_query::GROUP_SKIPS.with(|skips| skips.get()) > 0);
+        }
     }
 
     fn compute_checkpoints_manual(

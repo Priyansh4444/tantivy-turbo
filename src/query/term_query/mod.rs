@@ -6,6 +6,8 @@ pub use self::term_query::TermQuery;
 pub(crate) use self::term_scorer::ScoredTermBatch;
 pub use self::term_scorer::TermScorer;
 #[cfg(test)]
+pub(crate) use self::term_scorer::GROUP_SKIPS;
+#[cfg(test)]
 mod tests {
 
     use crate::collector::TopDocs;

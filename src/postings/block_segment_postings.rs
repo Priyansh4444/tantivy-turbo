@@ -423,6 +423,11 @@ impl BlockSegmentPostings {
         docs_before_block + within as u32
     }
 
+    /// Index of the current block among the term's blocks.
+    pub(crate) fn current_block_index(&self) -> usize {
+        ((self.doc_freq - self.skip_reader.remaining_docs()) as usize) / COMPRESSION_BLOCK_SIZE
+    }
+
     pub(crate) fn position_offset(&self) -> u64 {
         self.skip_reader.position_offset()
     }

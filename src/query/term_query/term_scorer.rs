@@ -72,6 +72,51 @@ pub struct TermScorer {
     block_hint: usize,
     /// Blocks covered by uncached `range_max_score` calls, a work measure.
     range_blocks: u64,
+    /// Last level-1 group found able to beat a threshold (usize::MAX if none).
+    unskippable_group: usize,
+}
+
+#[cfg(test)]
+thread_local! {
+    /// Level-1 groups skipped whole by single-term pruning.
+    pub(crate) static GROUP_SKIPS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+/// Upper bound for a block or group from its stored selected pair, under the
+/// scorer's bound policy; the global maximum when no stored bound applies.
+fn stored_pair_bound(
+    policy: &TermBlockBounds,
+    weight: &Bm25Weight,
+    global: Score,
+    pair: Option<crate::postings::SelectedInputPair>,
+) -> Score {
+    let Some(pair) = pair else {
+        return global;
+    };
+    let bound = match policy {
+        TermBlockBounds::StoredDefault => {
+            let freq = pair.selected_tf_ceiling.get();
+            if freq == u32::MAX && !weight.supports_frequency_ceiling() {
+                return global;
+            }
+            weight.score(pair.norm, freq)
+        }
+        TermBlockBounds::NativeTransform(envelope) => {
+            let Some(upper) = envelope.input_upper(pair.norm, pair.selected_tf_ceiling) else {
+                return global;
+            };
+            if !upper.is_finite() {
+                return global;
+            }
+            weight.score_from_native_input_upper(upper)
+        }
+        _ => return global,
+    };
+    if bound.is_finite() && bound >= 0.0 {
+        bound
+    } else {
+        global
+    }
 }
 
 #[derive(Clone)]
@@ -225,6 +270,7 @@ impl TermScorer {
             coarse_end: 0,
             block_hint: 0,
             range_blocks: 0,
+            unskippable_group: usize::MAX,
         }
     }
 
@@ -396,6 +442,42 @@ impl TermScorer {
         self.range_blocks
     }
 
+    /// When the level-1 group holding the current block cannot score above
+    /// `threshold`, the group's last doc: every doc up to it may be skipped.
+    pub(crate) fn group_skip_end(&mut self, threshold: Score) -> Option<DocId> {
+        let groups = self.postings.block_cursor.skip_directory.groups();
+        if groups == 0 || !self.similarity_weight.has_safe_score_bounds() {
+            return None;
+        }
+        let group = self.postings.block_cursor.current_block_index() / SKIP_GROUP_BLOCKS;
+        if group >= groups || group == self.unskippable_group {
+            return None;
+        }
+        if let TermBlockBounds::PendingNative(context) = self.block_bounds {
+            self.block_bounds = self
+                .similarity_weight
+                .native_input_envelope(context)
+                .map(|envelope| TermBlockBounds::NativeTransform(Arc::new(envelope)))
+                .unwrap_or(TermBlockBounds::Global);
+        }
+        let directory = &self.postings.block_cursor.skip_directory;
+        let bound = stored_pair_bound(
+            &self.block_bounds,
+            &self.similarity_weight,
+            self.similarity_weight.max_score(),
+            directory.group_pair(group),
+        );
+        if bound <= threshold {
+            #[cfg(test)]
+            GROUP_SKIPS.with(|skips| skips.set(skips.get() + 1));
+            Some(directory.end((group + 1) * SKIP_GROUP_BLOCKS - 1))
+        } else {
+            // Not rechecked until the cursor leaves this group.
+            self.unskippable_group = group;
+            None
+        }
+    }
+
     pub(crate) fn range_max_score(&mut self, lo: DocId, hi: DocId) -> Score {
         let lo = lo.max(self.doc());
         if lo >= hi {
@@ -437,36 +519,7 @@ impl TermScorer {
         }
         let weight = &self.similarity_weight;
         let policy = &self.block_bounds;
-        let pair_bound = |pair: Option<crate::postings::SelectedInputPair>| {
-            let Some(pair) = pair else {
-                return global;
-            };
-            let bound = match policy {
-                TermBlockBounds::StoredDefault => {
-                    let freq = pair.selected_tf_ceiling.get();
-                    if freq == u32::MAX && !weight.supports_frequency_ceiling() {
-                        return global;
-                    }
-                    weight.score(pair.norm, freq)
-                }
-                TermBlockBounds::NativeTransform(envelope) => {
-                    let Some(upper) = envelope.input_upper(pair.norm, pair.selected_tf_ceiling)
-                    else {
-                        return global;
-                    };
-                    if !upper.is_finite() {
-                        return global;
-                    }
-                    weight.score_from_native_input_upper(upper)
-                }
-                _ => return global,
-            };
-            if bound.is_finite() && bound >= 0.0 {
-                bound
-            } else {
-                global
-            }
-        };
+        let pair_bound = |pair| stored_pair_bound(policy, weight, global, pair);
         // A level-1 record bounds a whole aligned group with one pair, chosen
         // over the group's postings exactly as a block's over its own.
         let groups = directory.groups();
