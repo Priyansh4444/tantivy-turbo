@@ -169,6 +169,9 @@ pub(crate) struct SkipReader {
     block_info: BlockInfo,
 
     position_offset: u64,
+    /// The term's skip directory and doc frequency, when it has level-1
+    /// records; used only by long skips.
+    level1: Option<Box<(SkipDirectory, u32)>>,
 }
 
 #[derive(Clone, Eq, PartialEq, Copy, Debug)]
@@ -433,6 +436,7 @@ impl SkipReader {
             byte_offset: 0,
             remaining_docs: doc_freq,
             position_offset: 0u64,
+            level1: None,
         };
         if doc_freq >= COMPRESSION_BLOCK_SIZE as u32 {
             skip_reader.read_block_info();
@@ -457,6 +461,7 @@ impl SkipReader {
         self.byte_offset = 0;
         self.remaining_docs = doc_freq;
         self.position_offset = 0u64;
+        self.level1 = None;
         if doc_freq >= COMPRESSION_BLOCK_SIZE as u32 {
             self.read_block_info();
         }
@@ -630,6 +635,20 @@ impl SkipReader {
     /// is parsed.
     #[inline(never)]
     fn skip_blocks_before(&mut self, target: DocId) {
+        if let Some(jump) = self.level1_jump(target) {
+            let (records, block, doc_freq, byte_offset, position_offset, previous) = jump;
+            self.jump_to_block(
+                records,
+                block,
+                doc_freq,
+                byte_offset,
+                position_offset,
+                previous,
+            );
+            if self.last_doc_in_block >= target {
+                return;
+            }
+        }
         self.account_current_block();
         let stride = match self.skip_info {
             IndexRecordOption::Basic => 5,
@@ -691,9 +710,36 @@ impl SkipReader {
         self.read_block_info();
     }
 
-    /// Index of the current block among the term's blocks.
-    pub(crate) fn block_index(&self, doc_freq: u32) -> usize {
-        ((doc_freq - self.remaining_docs) as usize) / COMPRESSION_BLOCK_SIZE
+    /// Lets long skips jump whole level-1 groups of this term.
+    pub(crate) fn set_level1(&mut self, directory: &SkipDirectory, doc_freq: u32) {
+        self.level1 = (directory.groups() > 0).then(|| Box::new((directory.clone(), doc_freq)));
+    }
+
+    /// The start of the last level-1 group beginning after the current block
+    /// and not after the target's group, with what `jump_to_block` needs.
+    fn level1_jump(&self, target: DocId) -> Option<(OwnedBytes, usize, u32, usize, u64, DocId)> {
+        let (directory, doc_freq) = self.level1.as_deref()?;
+        let current = ((doc_freq - self.remaining_docs) as usize) / COMPRESSION_BLOCK_SIZE;
+        let groups = directory.groups();
+        let mut group = current / SKIP_GROUP_BLOCKS;
+        while group < groups && directory.end((group + 1) * SKIP_GROUP_BLOCKS - 1) < target {
+            group += 1;
+        }
+        // Past every group, the last one is the latest recorded start.
+        let group = group.min(groups - 1);
+        let block = group * SKIP_GROUP_BLOCKS;
+        if block <= current {
+            return None;
+        }
+        let (byte_offset, position_offset) = directory.group_offsets(group);
+        Some((
+            directory.records_from(block),
+            block,
+            *doc_freq,
+            byte_offset,
+            position_offset,
+            directory.end(block - 1),
+        ))
     }
 
     /// The bookkeeping half of `advance` for a parsed full block.
