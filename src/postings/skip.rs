@@ -502,12 +502,71 @@ impl SkipReader {
         if self.last_doc_in_block() >= target {
             return false;
         }
+        // The current block is a full one ending before the target. Account
+        // for it as `advance` does, then pass over every following full block
+        // that also ends before the target reading only its last doc and
+        // sizes; only the block finally reached is parsed.
+        self.account_current_block();
+        let stride = match self.skip_info {
+            IndexRecordOption::Basic => 5,
+            IndexRecordOption::WithFreqs => 8,
+            IndexRecordOption::WithFreqsAndPositions => 12,
+        };
         loop {
-            self.advance();
-            if self.last_doc_in_block() >= target {
+            if self.remaining_docs < COMPRESSION_BLOCK_SIZE as u32 {
+                self.last_doc_in_block = TERMINATED;
+                self.block_info = BlockInfo::VInt {
+                    num_docs: self.remaining_docs,
+                };
                 return true;
             }
+            let bytes = self.owned_read.as_slice();
+            let last_doc = read_u32(bytes);
+            if last_doc >= target {
+                self.read_block_info();
+                return true;
+            }
+            let tf_header = if self.skip_info == IndexRecordOption::Basic {
+                0
+            } else {
+                bytes[5]
+            };
+            let doc_bytes = match decode_dense_marker(bytes[4]) {
+                Some(num_longs) => dense_block_size(num_longs),
+                None => compressed_block_size(decode_bitwidth(bytes[4]).0),
+            };
+            if self.skip_info == IndexRecordOption::WithFreqsAndPositions {
+                self.position_offset += u64::from(read_u32(&bytes[6..10]));
+            }
+            self.byte_offset += doc_bytes + compressed_freq_block_size(tf_header);
+            self.remaining_docs -= COMPRESSION_BLOCK_SIZE as u32;
+            self.last_doc_in_block = last_doc;
+            self.last_doc_in_previous_block = last_doc;
+            self.owned_read.advance(stride);
         }
+    }
+
+    /// The bookkeeping half of `advance` for a parsed full block.
+    fn account_current_block(&mut self) {
+        let (doc_bytes, tf_num_bits, tf_sum) = match self.block_info {
+            BlockInfo::BitPacked {
+                doc_num_bits,
+                tf_num_bits,
+                tf_sum,
+                ..
+            } => (compressed_block_size(doc_num_bits), tf_num_bits, tf_sum),
+            BlockInfo::Dense {
+                num_longs,
+                tf_num_bits,
+                tf_sum,
+                ..
+            } => (dense_block_size(num_longs), tf_num_bits, tf_sum),
+            BlockInfo::VInt { .. } => unreachable!("a tail block ends at TERMINATED"),
+        };
+        self.remaining_docs -= COMPRESSION_BLOCK_SIZE as u32;
+        self.byte_offset += doc_bytes + compressed_freq_block_size(tf_num_bits);
+        self.position_offset += tf_sum as u64;
+        self.last_doc_in_previous_block = self.last_doc_in_block;
     }
 
     pub fn advance(&mut self) {
@@ -560,6 +619,74 @@ mod tests {
     };
     use crate::directory::OwnedBytes;
     use crate::postings::compression::COMPRESSION_BLOCK_SIZE;
+
+    #[test]
+    fn seek_matches_repeated_advance() {
+        let mut state = 0x2545_f491_4f6c_dd1du64;
+        let mut next = move || {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            state
+        };
+        for option in [
+            IndexRecordOption::Basic,
+            IndexRecordOption::WithFreqs,
+            IndexRecordOption::WithFreqsAndPositions,
+        ] {
+            for round in 0..60 {
+                let blocks = 1 + (next() % 40) as usize;
+                let mut serializer = SkipSerializer::new();
+                let mut last = 0u32;
+                let mut ends = Vec::new();
+                for _ in 0..blocks {
+                    last += 128 + (next() % 3000) as u32;
+                    ends.push(last);
+                    if next() % 2 == 0 {
+                        serializer.write_doc_dense(last, 1 + (next() % 20) as u8);
+                    } else {
+                        serializer.write_doc(last, (next() % 32) as u8);
+                    }
+                    if option != IndexRecordOption::Basic {
+                        serializer.write_term_freq((next() % 33) as u8);
+                        if option == IndexRecordOption::WithFreqsAndPositions {
+                            serializer.write_total_term_freq((next() % 5000) as u32);
+                        }
+                        serializer.write_blockwand_max((next() % 256) as u8, (next() % 300) as u32);
+                    }
+                }
+                let tail = (round % 3) as u32 * 50;
+                let doc_freq = (blocks * COMPRESSION_BLOCK_SIZE) as u32 + tail;
+                let data = OwnedBytes::new(serializer.data().to_vec());
+                let fresh = || SkipReader::new(data.clone(), doc_freq, option);
+                for _ in 0..30 {
+                    let mut seeking = fresh();
+                    let mut stepping = fresh();
+                    let mut target = 0u32;
+                    for _ in 0..4 {
+                        target += (next() % u64::from(last / 2 + 2)) as u32;
+                        let moved = seeking.seek(target);
+                        let mut stepped = false;
+                        while stepping.last_doc_in_block() < target {
+                            stepping.advance();
+                            stepped = true;
+                        }
+                        assert_eq!(moved, stepped);
+                        assert_eq!(seeking.last_doc_in_block, stepping.last_doc_in_block);
+                        assert_eq!(
+                            seeking.last_doc_in_previous_block,
+                            stepping.last_doc_in_previous_block
+                        );
+                        assert_eq!(seeking.byte_offset, stepping.byte_offset);
+                        assert_eq!(seeking.position_offset, stepping.position_offset);
+                        assert_eq!(seeking.remaining_docs, stepping.remaining_docs);
+                        assert_eq!(seeking.block_info, stepping.block_info);
+                        assert_eq!(seeking.owned_read.as_slice(), stepping.owned_read.as_slice());
+                    }
+                }
+            }
+        }
+    }
 
     #[test]
     fn block_at_from_matches_block_at_for_every_hint() {
