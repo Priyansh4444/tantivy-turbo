@@ -470,17 +470,36 @@ impl TermScorer {
         // A level-1 record bounds a whole aligned group with one pair, chosen
         // over the group's postings exactly as a block's over its own.
         let groups = directory.groups();
-        let bound = cache.range(
-            first,
-            last + 1,
-            |block| pair_bound(directory.pair(block)),
-            |left, right| {
-                (right - left == SKIP_GROUP_BLOCKS
-                    && left.is_multiple_of(SKIP_GROUP_BLOCKS)
-                    && left / SKIP_GROUP_BLOCKS < groups)
-                    .then(|| pair_bound(directory.group_pair(left / SKIP_GROUP_BLOCKS)))
-            },
-        );
+        let resolve_group = |left: usize, right: usize| {
+            (right - left == SKIP_GROUP_BLOCKS
+                && left.is_multiple_of(SKIP_GROUP_BLOCKS)
+                && left / SKIP_GROUP_BLOCKS < groups)
+                .then(|| pair_bound(directory.group_pair(left / SKIP_GROUP_BLOCKS)))
+        };
+        let resolve = |block: usize| pair_bound(directory.pair(block));
+        // Like Lucene's level-1 impacts, a range over more than a few blocks
+        // takes the bounds of the whole recorded groups covering it, rather
+        // than resolving their partial ends block by block.
+        let bound = if last - first >= 4 && first / SKIP_GROUP_BLOCKS < groups {
+            let covered = ((last / SKIP_GROUP_BLOCKS) + 1).min(groups);
+            let mut bound = 0.0_f32;
+            for group in first / SKIP_GROUP_BLOCKS..covered {
+                let start = group * SKIP_GROUP_BLOCKS;
+                bound = bound.max(cache.range(
+                    start,
+                    start + SKIP_GROUP_BLOCKS,
+                    resolve,
+                    resolve_group,
+                ));
+            }
+            let tail = covered * SKIP_GROUP_BLOCKS;
+            if tail <= last {
+                bound = bound.max(cache.range(tail, last + 1, resolve, resolve_group));
+            }
+            bound
+        } else {
+            cache.range(first, last + 1, resolve, resolve_group)
+        };
         let floor_of = |block: usize| {
             if block == 0 {
                 0
