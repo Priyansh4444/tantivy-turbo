@@ -336,8 +336,8 @@ impl SegmentPostings {
                         // many postings in this window.
                         if use_lanes
                             && mask.len() == 64
-                            && i + 16 <= len
-                            && docs[i + 15] < horizon
+                            && i + 48 <= len
+                            && docs[i + 47] < horizon
                         {
                             // Consecutive postings often hit the same mask word.
                             // Alternate between independent lanes to avoid a chain
