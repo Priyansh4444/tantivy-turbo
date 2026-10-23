@@ -612,6 +612,18 @@ impl Bm25Weight {
         }
     }
 
+    /// Whether both weights compute bit-identical scores for every input.
+    pub(crate) fn scores_like(&self, other: &Bm25Weight) -> bool {
+        self.weight.to_bits() == other.weight.to_bits()
+            && self.scoring == other.scoring
+            && (Arc::ptr_eq(&self.cache, &other.cache)
+                || self
+                    .cache
+                    .iter()
+                    .zip(other.cache.iter())
+                    .all(|(left, right)| left.to_bits() == right.to_bits()))
+    }
+
     /// Whether `score` uses the native Lucene expression (otherwise the legacy one).
     pub(crate) fn is_native_lucene(&self) -> bool {
         self.scoring == Bm25Scoring::NativeLucene

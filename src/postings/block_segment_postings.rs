@@ -441,6 +441,14 @@ impl BlockSegmentPostings {
         self.skip_reader.has_remaining_docs()
     }
 
+    /// Whether both cursors read the same encoded postings, i.e. the same term
+    /// of the same field.
+    pub(crate) fn same_postings(&self, other: &BlockSegmentPostings) -> bool {
+        self.doc_freq == other.doc_freq
+            && self.data.as_slice().as_ptr() == other.data.as_slice().as_ptr()
+            && self.data.len() == other.data.len()
+    }
+
     pub(crate) fn block_is_loaded(&self) -> bool {
         self.block_loaded
     }

@@ -209,6 +209,7 @@ impl SkipDirectory {
         }
     }
 
+    #[cfg(test)]
     pub(crate) fn block_at(&self, doc: DocId) -> usize {
         let mut left = 0;
         let mut right = self.blocks;

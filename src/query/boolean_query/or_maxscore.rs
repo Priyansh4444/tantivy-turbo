@@ -5,9 +5,12 @@ use crate::query::{BufferedUnionScorer, Scorer};
 use crate::{DocId, DocSet, Score, TERMINATED};
 
 /// Hot metadata for one clause, sorted by pruning preference. The ordinal still
-/// addresses the incoming-order scorer and contribution arrays.
+/// addresses the merged scorer and contribution arrays.
 struct ClauseState {
     ordinal: usize,
+    /// Incoming clauses this scorer stands for: each of its leaves counts
+    /// this many times, an exact small multiple in f64.
+    copies: f64,
     global_max: Score,
     cost: u32,
     doc: DocId,
@@ -81,7 +84,7 @@ const COARSE_PROBE_REGIONS: u64 = 32;
 /// Scorers stay in incoming order: the preference order is for pruning only,
 /// while published scores replay the original f32 leaves in f64.
 pub(crate) fn or_maxscore(
-    mut scorers: Vec<TermScorer>,
+    scorers: Vec<TermScorer>,
     max_doc: DocId,
     mut threshold: Score,
     callback: &mut dyn FnMut(DocId, Score) -> Score,
@@ -101,17 +104,21 @@ pub(crate) fn or_maxscore(
         return;
     }
 
-    let num_terms = scorers.len();
     // Numeric admission above certifies finite nonnegative f32 leaves. Every
     // prefix/probe sum contains at most the admitted number of original terms.
     let upper_bound =
-        SmallScoreSumUpperBound::new(num_terms).expect("admitted 3..=32-term score sum");
+        SmallScoreSumUpperBound::new(scorers.len()).expect("admitted 3..=32-term score sum");
+    // Like Lucene's rewrite of repeated SHOULD clauses, score each distinct
+    // term once. Published sums still add its leaf at every incoming ordinal.
+    let (mut scorers, copies, mut distinct_of) = merge_duplicate_scorers(scorers);
+    let num_terms = scorers.len();
     let mut optional_cutoff = ScoreSumThresholdCutoff::new(threshold);
     let mut clauses: Vec<ClauseState> = scorers
         .iter()
         .enumerate()
         .map(|(ordinal, scorer)| ClauseState {
             ordinal,
+            copies: f64::from(copies[ordinal]),
             global_max: scorer.max_score(),
             cost: scorer.size_hint(),
             doc: scorer.doc(),
@@ -121,8 +128,9 @@ pub(crate) fn or_maxscore(
     // Low-value dense clauses make useful optional terms. Freeze this order for
     // the query instead of restoring a document order after every candidate.
     clauses.sort_unstable_by(|left, right| {
-        let priority =
-            |clause: &ClauseState| f64::from(clause.global_max) / f64::from(clause.cost.max(1));
+        let priority = |clause: &ClauseState| {
+            f64::from(clause.global_max) * clause.copies / f64::from(clause.cost.max(1))
+        };
         priority(left)
             .total_cmp(&priority(right))
             .then_with(|| left.ordinal.cmp(&right.ordinal))
@@ -190,6 +198,7 @@ pub(crate) fn or_maxscore(
                     clauses,
                     prefix,
                     contributions,
+                    distinct_of,
                     batch,
                     window,
                     lo,
@@ -215,6 +224,7 @@ pub(crate) fn or_maxscore(
                 clauses,
                 prefix,
                 contributions,
+                distinct_of,
                 batch,
                 window,
                 lo,
@@ -241,7 +251,8 @@ pub(crate) fn or_maxscore(
             .iter()
             .all(|clause| clause.doc == scorers[clause.ordinal].doc()));
         while certified_global < num_terms {
-            let next_sum = certified_global_sum + f64::from(clauses[certified_global].global_max);
+            let next = &clauses[certified_global];
+            let next_sum = certified_global_sum + f64::from(next.global_max) * next.copies;
             // Exact cached form of `upper_bound.score(next_sum) > threshold`.
             debug_assert_eq!(
                 upper_bound.score_is_at_most(next_sum, &optional_cutoff),
@@ -265,7 +276,7 @@ pub(crate) fn or_maxscore(
             let mut naive_count = 0;
             let mut naive_sum = 0.0f64;
             for clause in &clauses {
-                let next_sum = naive_sum + f64::from(clause.global_max);
+                let next_sum = naive_sum + f64::from(clause.global_max) * clause.copies;
                 if naive_bound.score(next_sum) > threshold {
                     break;
                 }
@@ -369,7 +380,7 @@ pub(crate) fn or_maxscore(
             if clause.doc >= hi {
                 clause.local_max = 0.0;
             }
-            prefix[rank + 1] = prefix[rank] + f64::from(clause.local_max);
+            prefix[rank + 1] = prefix[rank] + f64::from(clause.local_max) * clause.copies;
         }
         let mut first_essential = 0;
         while first_essential < num_terms
@@ -411,6 +422,7 @@ pub(crate) fn or_maxscore(
                 window.get_or_insert_with(EssentialWindow::new),
                 &mut batch,
                 &mut contributions,
+                &distinct_of,
                 &upper_bound,
                 &mut state,
             );
@@ -449,8 +461,11 @@ pub(crate) fn or_maxscore(
                     }
                     // Drop leaves the first optional test below rejects; the
                     // threshold only rises, so survivors are retested there.
-                    let floor =
-                        upper_bound.max_rejected_leaf(prefix[first_essential], &optional_cutoff);
+                    let floor = upper_bound.max_rejected_leaf(
+                        clauses[first_essential].copies,
+                        prefix[first_essential],
+                        &optional_cutoff,
+                    );
                     let kept = batch.retain_scores_above(batch_len, floor);
                     candidate_count += (batch_len - kept) as u64;
                     batch_len = kept;
@@ -475,7 +490,7 @@ pub(crate) fn or_maxscore(
             if single_essential {
                 let leaf = batch.scores[batch_index];
                 contributions[clauses[first_essential].ordinal] = leaf;
-                known = f64::from(leaf);
+                known = f64::from(leaf) * clauses[first_essential].copies;
             } else {
                 for clause in &clauses[first_essential..] {
                     if clause.doc == doc {
@@ -483,7 +498,7 @@ pub(crate) fn or_maxscore(
                         let leaf = scorers[clause.ordinal].score();
                         clause.assert_coherent(&scorers);
                         contributions[clause.ordinal] = leaf;
-                        known += f64::from(leaf);
+                        known += f64::from(leaf) * clause.copies;
                     }
                 }
             }
@@ -506,14 +521,11 @@ pub(crate) fn or_maxscore(
                     let leaf = scorers[clause.ordinal].score();
                     clause.assert_coherent(&scorers);
                     contributions[clause.ordinal] = leaf;
-                    known += f64::from(leaf);
+                    known += f64::from(leaf) * clause.copies;
                 }
             }
             if competitive {
-                let score = contributions
-                    .iter()
-                    .map(|&leaf| f64::from(leaf))
-                    .sum::<f64>() as Score;
+                let score = canonical_sum(&contributions, &distinct_of);
                 if score > threshold {
                     let next_threshold = callback(doc, score);
                     debug_assert!(next_threshold >= threshold);
@@ -569,6 +581,7 @@ struct CoarseContinuation {
     clauses: Vec<ClauseState>,
     prefix: Vec<f64>,
     contributions: Vec<Score>,
+    distinct_of: Vec<usize>,
     batch: ScoredTermBatch,
     window: Option<EssentialWindow>,
     lo: DocId,
@@ -600,6 +613,7 @@ fn or_maxscore_coarse(
         mut clauses,
         mut prefix,
         mut contributions,
+        distinct_of,
         mut batch,
         mut window,
         mut lo,
@@ -645,6 +659,7 @@ fn or_maxscore_coarse(
                 clauses,
                 prefix,
                 contributions,
+                distinct_of,
                 batch,
                 window,
                 lo,
@@ -665,7 +680,8 @@ fn or_maxscore_coarse(
             .iter()
             .all(|clause| clause.doc == scorers[clause.ordinal].doc()));
         while certified_global < num_terms {
-            let next_sum = certified_global_sum + f64::from(clauses[certified_global].global_max);
+            let next = &clauses[certified_global];
+            let next_sum = certified_global_sum + f64::from(next.global_max) * next.copies;
             // Exact cached form of `upper_bound.score(next_sum) > threshold`.
             debug_assert_eq!(
                 upper_bound.score_is_at_most(next_sum, &optional_cutoff),
@@ -689,7 +705,7 @@ fn or_maxscore_coarse(
             let mut naive_count = 0;
             let mut naive_sum = 0.0f64;
             for clause in &clauses {
-                let next_sum = naive_sum + f64::from(clause.global_max);
+                let next_sum = naive_sum + f64::from(clause.global_max) * clause.copies;
                 if naive_bound.score(next_sum) > threshold {
                     break;
                 }
@@ -795,6 +811,7 @@ fn or_maxscore_coarse(
                 window.get_or_insert_with(EssentialWindow::new),
                 &mut batch,
                 &mut contributions,
+                &distinct_of,
                 &upper_bound,
                 &mut state,
             );
@@ -833,8 +850,11 @@ fn or_maxscore_coarse(
                     }
                     // Drop leaves the first optional test below rejects; the
                     // threshold only rises, so survivors are retested there.
-                    let floor =
-                        upper_bound.max_rejected_leaf(prefix[first_essential], &optional_cutoff);
+                    let floor = upper_bound.max_rejected_leaf(
+                        clauses[first_essential].copies,
+                        prefix[first_essential],
+                        &optional_cutoff,
+                    );
                     let kept = batch.retain_scores_above(batch_len, floor);
                     candidate_count += (batch_len - kept) as u64;
                     batch_len = kept;
@@ -859,7 +879,7 @@ fn or_maxscore_coarse(
             if single_essential {
                 let leaf = batch.scores[batch_index];
                 contributions[clauses[first_essential].ordinal] = leaf;
-                known = f64::from(leaf);
+                known = f64::from(leaf) * clauses[first_essential].copies;
             } else {
                 for clause in &clauses[first_essential..] {
                     if clause.doc == doc {
@@ -867,7 +887,7 @@ fn or_maxscore_coarse(
                         let leaf = scorers[clause.ordinal].score();
                         clause.assert_coherent(&scorers);
                         contributions[clause.ordinal] = leaf;
-                        known += f64::from(leaf);
+                        known += f64::from(leaf) * clause.copies;
                     }
                 }
             }
@@ -890,14 +910,11 @@ fn or_maxscore_coarse(
                     let leaf = scorers[clause.ordinal].score();
                     clause.assert_coherent(&scorers);
                     contributions[clause.ordinal] = leaf;
-                    known += f64::from(leaf);
+                    known += f64::from(leaf) * clause.copies;
                 }
             }
             if competitive {
-                let score = contributions
-                    .iter()
-                    .map(|&leaf| f64::from(leaf))
-                    .sum::<f64>() as Score;
+                let score = canonical_sum(&contributions, &distinct_of);
                 if score > threshold {
                     let next_threshold = callback(doc, score);
                     debug_assert!(next_threshold >= threshold);
@@ -988,7 +1005,7 @@ fn coarse_region(
             } else {
                 scorers[clause.ordinal].range_max_score(lo, hi)
             };
-            prefix[rank + 1] = prefix[rank] + f64::from(clause.local_max);
+            prefix[rank + 1] = prefix[rank] + f64::from(clause.local_max) * clause.copies;
         }
         first_essential_coarse = 0;
         while first_essential_coarse < num_terms
@@ -1017,6 +1034,39 @@ fn coarse_region(
         hi = capped;
     }
     (hi, first_essential_coarse)
+}
+
+/// Merges incoming scorers that duplicate an earlier one. Returns the distinct
+/// scorers, how many incoming clauses each stands for, and the distinct index
+/// of every incoming ordinal.
+fn merge_duplicate_scorers(scorers: Vec<TermScorer>) -> (Vec<TermScorer>, Vec<u32>, Vec<usize>) {
+    let mut distinct: Vec<TermScorer> = Vec::with_capacity(scorers.len());
+    let mut copies = Vec::with_capacity(scorers.len());
+    let mut distinct_of = Vec::with_capacity(scorers.len());
+    for scorer in scorers {
+        match distinct.iter().position(|kept| kept.duplicates(&scorer)) {
+            Some(index) => {
+                copies[index] += 1;
+                distinct_of.push(index);
+            }
+            None => {
+                distinct_of.push(distinct.len());
+                distinct.push(scorer);
+                copies.push(1);
+            }
+        }
+    }
+    (distinct, copies, distinct_of)
+}
+
+/// The published score: the f64 sum of every incoming clause's leaf in
+/// incoming order, as `SumCombiner` adds them, cast to f32.
+#[inline]
+fn canonical_sum(contributions: &[Score], distinct_of: &[usize]) -> Score {
+    distinct_of
+        .iter()
+        .map(|&clause| f64::from(contributions[clause]))
+        .sum::<f64>() as Score
 }
 
 /// Doc IDs covered by one multiple-essential window, as in Lucene's
@@ -1087,6 +1137,7 @@ fn score_essential_windows(
     window: &mut EssentialWindow,
     batch: &mut ScoredTermBatch,
     contributions: &mut [Score],
+    distinct_of: &[usize],
     upper_bound: &SmallScoreSumUpperBound,
     state: &mut Pruning,
 ) {
@@ -1109,6 +1160,7 @@ fn score_essential_windows(
         window.postings.clear();
         window.ends.clear();
         for clause in &mut clauses[first_essential..] {
+            let copies = clause.copies;
             while clause.doc < end {
                 let len = clause.fill_scored_batch(scorers, start, end, batch);
                 if len == 0 {
@@ -1117,7 +1169,7 @@ fn score_essential_windows(
                 for (&doc, &leaf) in batch.docs[..len].iter().zip(&batch.scores[..len]) {
                     let offset = (doc - start) as usize;
                     window.matches[offset / 64] |= 1u64 << (offset % 64);
-                    window.sums[offset] += f64::from(leaf);
+                    window.sums[offset] += f64::from(leaf) * copies;
                 }
                 window.postings.extend(
                     batch.docs[..len]
@@ -1178,7 +1230,7 @@ fn score_essential_windows(
                         clause.assert_coherent(scorers);
                         optional_hits[num_hits] = (clause.ordinal, leaf);
                         num_hits += 1;
-                        known += f64::from(leaf);
+                        known += f64::from(leaf) * clause.copies;
                     }
                 }
                 // The canonical sum is at most score(known); see the
@@ -1200,10 +1252,7 @@ fn score_essential_windows(
                 for &(ordinal, leaf) in &optional_hits[..num_hits] {
                     contributions[ordinal] = leaf;
                 }
-                let score = contributions
-                    .iter()
-                    .map(|&leaf| f64::from(leaf))
-                    .sum::<f64>() as Score;
+                let score = canonical_sum(contributions, distinct_of);
                 if score > state.threshold {
                     let next_threshold = (state.callback)(doc, score);
                     debug_assert!(next_threshold >= state.threshold);
@@ -1805,6 +1854,64 @@ mod tests {
         exact_growing_threshold_traces_for_mixed_dense_and_sparse_terms();
         unsafe_domains_use_exhaustive_canonical_sum_before_any_seek();
         FORCE_COARSE.with(|force| force.set(false));
+    }
+
+    #[test]
+    fn repeated_clauses_are_scored_once_with_canonical_sums() {
+        let max_doc = 20_000;
+        let mut state = 0x51ed_270bu32;
+        let mut next = move || {
+            state ^= state << 13;
+            state ^= state >> 17;
+            state ^= state << 5;
+            state
+        };
+        let norms: Vec<u32> = (0..max_doc).map(|_| 1 + next() % 30).collect();
+        let terms: Vec<_> = [2u32, 7, 40, 300]
+            .iter()
+            .enumerate()
+            .map(|(term, &stride)| {
+                let mut postings = Vec::new();
+                for doc in 0..max_doc {
+                    if next() % stride == 0 {
+                        postings.push((doc, 1 + next() % 5));
+                    }
+                }
+                fixture(&postings, &norms, 0.3 + term as Score * 0.4)
+            })
+            .collect();
+        let layouts: [&[usize]; 4] = [
+            &[0, 1, 0, 2, 1],
+            &[3, 3, 3],
+            &[2, 0, 3, 0, 1, 2, 0],
+            &[1, 1, 2, 3, 0, 1],
+        ];
+        for layout in layouts {
+            let scorers: Vec<_> = layout.iter().map(|&term| terms[term].clone()).collect();
+            let (distinct, copies, distinct_of) = merge_duplicate_scorers(scorers.clone());
+            let mut unique = layout.to_vec();
+            unique.sort_unstable();
+            unique.dedup();
+            assert_eq!(distinct.len(), unique.len());
+            assert_eq!(copies.iter().sum::<u32>() as usize, layout.len());
+            for (ordinal, &term) in layout.iter().enumerate() {
+                assert_eq!(
+                    layout[distinct_of
+                        .iter()
+                        .position(|&d| d == distinct_of[ordinal])
+                        .unwrap()],
+                    term
+                );
+            }
+            for force in [false, true] {
+                FORCE_COARSE.with(|cell| cell.set(force));
+                for limit in [1, 10, 100] {
+                    check(scorers.clone(), max_doc, -Score::INFINITY, limit);
+                    check(scorers.clone(), max_doc, 0.5, limit);
+                }
+            }
+            FORCE_COARSE.with(|cell| cell.set(false));
+        }
     }
 
     #[test]

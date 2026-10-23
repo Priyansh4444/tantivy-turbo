@@ -306,15 +306,21 @@ impl SmallScoreSumUpperBound {
     }
 
     /// The largest finite leaf `x >= 0` with
-    /// `score_is_at_most(f64::from(x) + rest, cutoff)`, or -1 when no leaf
-    /// qualifies. The f64 conversion is exact and rounded addition and
-    /// multiplication are monotone, so the predicate holds exactly for the
-    /// leaves at most the result; nonnegative f32 bits order like values.
-    /// `rest` must be a finite nonnegative sum of at most `num_terms - 1`
-    /// admitted f32 values.
-    pub(crate) fn max_rejected_leaf(&self, rest: f64, cutoff: &ScoreSumThresholdCutoff) -> Score {
-        let rejected =
-            |bits: u32| self.score_is_at_most(f64::from(Score::from_bits(bits)) + rest, cutoff);
+    /// `score_is_at_most(f64::from(x) * copies + rest, cutoff)`, or -1 when no
+    /// leaf qualifies. The f64 conversion and the small integer multiple are
+    /// exact, and rounded addition and multiplication are monotone, so the
+    /// predicate holds exactly for the leaves at most the result; nonnegative
+    /// f32 bits order like values. `rest` must be a finite nonnegative sum of
+    /// admitted f32 values, at most `num_terms - copies` of them.
+    pub(crate) fn max_rejected_leaf(
+        &self,
+        copies: f64,
+        rest: f64,
+        cutoff: &ScoreSumThresholdCutoff,
+    ) -> Score {
+        let rejected = |bits: u32| {
+            self.score_is_at_most(f64::from(Score::from_bits(bits)) * copies + rest, cutoff)
+        };
         let max_bits = Score::MAX.to_bits();
         if !rejected(0) {
             return -1.0;
@@ -325,7 +331,7 @@ impl SmallScoreSumUpperBound {
         // Invariant: rejected(low) and !rejected(high). Start from the
         // unrounded solution and widen geometrically; it is usually within
         // a few bits of the answer.
-        let estimate = (cutoff.0 / self.factor - rest) as Score;
+        let estimate = ((cutoff.0 / self.factor - rest) / copies) as Score;
         let guess = if estimate.is_finite() && estimate > 0.0 {
             estimate.to_bits().min(max_bits - 1)
         } else {
@@ -447,8 +453,10 @@ mod cutoff_tests {
                         .sum::<f64>()
                 };
                 let cutoff = ScoreSumThresholdCutoff::new(threshold);
-                let rejected = |x: f32| bound.score_is_at_most(f64::from(x) + rest, &cutoff);
-                let floor = bound.max_rejected_leaf(rest, &cutoff);
+                let copies = f64::from(1 + (round % 3) as u32);
+                let rejected =
+                    |x: f32| bound.score_is_at_most(f64::from(x) * copies + rest, &cutoff);
+                let floor = bound.max_rejected_leaf(copies, rest, &cutoff);
                 if floor < 0.0 {
                     assert!(!rejected(0.0));
                 } else {

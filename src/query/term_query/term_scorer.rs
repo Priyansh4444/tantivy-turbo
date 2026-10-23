@@ -378,6 +378,18 @@ impl TermScorer {
 
     /// Cover a half-open document interval using only existing skip metadata.
     /// The live skip/decoded cursor, positions and current-block cache are untouched.
+    /// Whether `other` yields exactly this scorer's documents and leaves from
+    /// here on: the same term postings at the same position, with a weight
+    /// computing identical scores.
+    pub(crate) fn duplicates(&self, other: &TermScorer) -> bool {
+        self.doc() == other.doc()
+            && self
+                .postings
+                .block_cursor
+                .same_postings(&other.postings.block_cursor)
+            && self.similarity_weight.scores_like(&other.similarity_weight)
+    }
+
     pub(crate) fn range_blocks(&self) -> u64 {
         self.range_blocks
     }
