@@ -360,9 +360,7 @@ impl BlockDecoder {
                         *lane = byte_base.wrapping_add(u32::from(position));
                     }
                 } else {
-                    for (lane, &position) in self.output[out..out + count]
-                        .iter_mut()
-                        .zip(positions)
+                    for (lane, &position) in self.output[out..out + count].iter_mut().zip(positions)
                     {
                         *lane = byte_base.wrapping_add(u32::from(position));
                     }
@@ -699,7 +697,11 @@ pub(crate) mod tests {
             state ^= state << 13;
             state ^= state >> 7;
             state ^= state << 17;
-            let offset = if round % 3 == 0 { 0 } else { (state >> 40) as u32 };
+            let offset = if round % 3 == 0 {
+                0
+            } else {
+                (state >> 40) as u32
+            };
             let base = bitset_base_doc(offset);
             let span = 128 + (state % 1500) as u32;
             // Choose 128 distinct docs in [base, base + span), always
@@ -723,9 +725,14 @@ pub(crate) mod tests {
                 .collect();
             let num_longs = num_bitset_longs(span) as usize;
             let mut encoder = BlockEncoder::new();
-            let encoded = encoder.compress_bitset_sorted(&vals, offset, num_longs).to_vec();
+            let encoded = encoder
+                .compress_bitset_sorted(&vals, offset, num_longs)
+                .to_vec();
             let mut decoder = BlockDecoder::default();
-            assert_eq!(decoder.uncompress_bitset_sorted(&encoded, offset, num_longs), num_longs * 8);
+            assert_eq!(
+                decoder.uncompress_bitset_sorted(&encoded, offset, num_longs),
+                num_longs * 8
+            );
             assert_eq!(decoder.output_array(), &vals[..]);
         }
     }

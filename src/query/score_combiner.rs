@@ -313,7 +313,8 @@ impl SmallScoreSumUpperBound {
     /// `rest` must be a finite nonnegative sum of at most `num_terms - 1`
     /// admitted f32 values.
     pub(crate) fn max_rejected_leaf(&self, rest: f64, cutoff: &ScoreSumThresholdCutoff) -> Score {
-        let rejected = |bits: u32| self.score_is_at_most(f64::from(Score::from_bits(bits)) + rest, cutoff);
+        let rejected =
+            |bits: u32| self.score_is_at_most(f64::from(Score::from_bits(bits)) + rest, cutoff);
         let max_bits = Score::MAX.to_bits();
         if !rejected(0) {
             return -1.0;
@@ -405,9 +406,8 @@ mod cutoff_tests {
                 assert!(rejected(floor));
                 assert!(!rejected(f64::from_bits(floor.to_bits() + 1)));
                 for _ in 0..8 {
-                    let near = f64::from_bits(
-                        floor.to_bits().wrapping_add(next() % 9).wrapping_sub(4),
-                    );
+                    let near =
+                        f64::from_bits(floor.to_bits().wrapping_add(next() % 9).wrapping_sub(4));
                     let far = f64::from(f32::from_bits(next() as u32 % 0x4400_0000));
                     for known in [near, far] {
                         if known >= 0.0 && known < 1e39 {
@@ -459,7 +459,11 @@ mod cutoff_tests {
                 }
                 for _ in 0..8 {
                     let leaf = f32::from_bits(next() as u32 % 0x4400_0000);
-                    assert_eq!(rejected(leaf), leaf <= floor, "{terms} {threshold} {rest} {leaf}");
+                    assert_eq!(
+                        rejected(leaf),
+                        leaf <= floor,
+                        "{terms} {threshold} {rest} {leaf}"
+                    );
                 }
             }
         }

@@ -432,8 +432,8 @@ pub(crate) fn or_maxscore(
                     }
                     // Drop leaves the first optional test below rejects; the
                     // threshold only rises, so survivors are retested there.
-                    let floor = upper_bound
-                        .max_rejected_leaf(prefix[first_essential], &optional_cutoff);
+                    let floor =
+                        upper_bound.max_rejected_leaf(prefix[first_essential], &optional_cutoff);
                     let kept = batch.retain_scores_above(batch_len, floor);
                     candidate_count += (batch_len - kept) as u64;
                     batch_len = kept;
@@ -787,8 +787,8 @@ fn or_maxscore_coarse(
                     }
                     // Drop leaves the first optional test below rejects; the
                     // threshold only rises, so survivors are retested there.
-                    let floor = upper_bound
-                        .max_rejected_leaf(prefix[first_essential], &optional_cutoff);
+                    let floor =
+                        upper_bound.max_rejected_leaf(prefix[first_essential], &optional_cutoff);
                     let kept = batch.retain_scores_above(batch_len, floor);
                     candidate_count += (batch_len - kept) as u64;
                     batch_len = kept;
@@ -998,6 +998,9 @@ struct EssentialWindow {
     postings: Vec<(DocId, Score)>,
     ends: Vec<usize>,
     cursors: Vec<usize>,
+    /// Window offsets and essential sums of candidates the first optional
+    /// test cannot reject, in doc order.
+    candidates: Box<[(u32, f64)]>,
 }
 
 impl EssentialWindow {
@@ -1008,6 +1011,7 @@ impl EssentialWindow {
             postings: Vec::new(),
             ends: Vec::new(),
             cursors: Vec::new(),
+            candidates: vec![(0, 0.0); ESSENTIAL_WINDOW as usize].into_boxed_slice(),
         }
     }
 }
@@ -1084,17 +1088,28 @@ fn score_essential_windows(
             .cursors
             .extend_from_slice(&window.ends[..num_essential - 1]);
         let words = ((end - start) as usize).div_ceil(64);
+        // Reset every matched slot and keep, without branching on the
+        // outcome, those the first optional test cannot reject.
+        let mut num_candidates = 0;
         for word_index in 0..words {
             let mut word = std::mem::take(&mut window.matches[word_index]);
+            state.candidate_count += u64::from(word.count_ones());
             while word != 0 {
                 let offset = word_index * 64 + word.trailing_zeros() as usize;
                 word &= word - 1;
-                let doc = start + offset as DocId;
-                let mut known = std::mem::take(&mut window.sums[offset]);
-                state.candidate_count += 1;
-                if known <= first_floor {
-                    continue;
-                }
+                let known = std::mem::take(&mut window.sums[offset]);
+                window.candidates[num_candidates] = (offset as u32, known);
+                num_candidates += usize::from(known > first_floor);
+            }
+        }
+        for index in 0..num_candidates {
+            let (offset, mut known) = window.candidates[index];
+            let doc = start + offset;
+            // A callback may have raised the floor since compaction.
+            if known <= first_floor {
+                continue;
+            }
+            {
                 let mut num_hits = 0;
                 let mut competitive = true;
                 for rank in (0..first_essential).rev() {

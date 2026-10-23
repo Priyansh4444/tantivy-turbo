@@ -716,7 +716,10 @@ mod tests {
                         assert_eq!(seeking.position_offset, stepping.position_offset);
                         assert_eq!(seeking.remaining_docs, stepping.remaining_docs);
                         assert_eq!(seeking.block_info, stepping.block_info);
-                        assert_eq!(seeking.owned_read.as_slice(), stepping.owned_read.as_slice());
+                        assert_eq!(
+                            seeking.owned_read.as_slice(),
+                            stepping.owned_read.as_slice()
+                        );
                     }
                 }
             }
@@ -725,7 +728,9 @@ mod tests {
 
     #[test]
     fn block_at_from_matches_block_at_for_every_hint() {
-        let ends: Vec<u32> = (0..37u32).map(|block| 3 + block * 7 + block * block).collect();
+        let ends: Vec<u32> = (0..37u32)
+            .map(|block| 3 + block * 7 + block * block)
+            .collect();
         let mut data = Vec::new();
         for end in &ends {
             data.extend_from_slice(&end.to_le_bytes());
