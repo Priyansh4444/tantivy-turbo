@@ -1,6 +1,6 @@
 use crate::fieldnorm::FieldNormReader;
 use crate::postings::compression::COMPRESSION_BLOCK_SIZE;
-use crate::query::score_combiner::{ScoreSumThresholdCutoff, ScoreSumUpperBound};
+use crate::query::score_combiner::ScoreSumUpperBound;
 use crate::query::term_query::TermScorer;
 use crate::query::Scorer;
 use crate::{DocId, DocSet, Score, TERMINATED};
@@ -163,34 +163,6 @@ pub(crate) fn sparse_dense_intersection(
 /// # Preconditions
 /// - `scorers` has at least 2 elements
 /// - All scorers read frequencies (`FreqReadingOption::ReadFreq`)
-#[cfg(test)]
-thread_local! {
-    static LEVEL1_SKIPS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
-}
-
-/// The earliest last doc of the terms' current level-1 groups, when the sum
-/// of those groups' bounds cannot beat `threshold`. Every scorer must be on
-/// the block holding the current doc.
-#[inline(never)]
-fn level1_skip_end(
-    leader: &mut TermScorer,
-    secondaries: &mut [TermScorer],
-    upper_bound: &ScoreSumUpperBound,
-    threshold: Score,
-    cutoff: &ScoreSumThresholdCutoff,
-) -> Option<DocId> {
-    let (bound, mut end) = leader.current_group_bound()?;
-    let mut sum = f64::from(bound);
-    for secondary in secondaries.iter_mut() {
-        let (bound, group_end) = secondary.current_group_bound()?;
-        sum += f64::from(bound);
-        end = end.min(group_end);
-    }
-    upper_bound
-        .is_at_most(sum, threshold, cutoff)
-        .then_some(end)
-}
-
 pub(crate) fn block_wand_intersection(
     mut scorers: Vec<TermScorer>,
     mut threshold: Score,
@@ -274,16 +246,8 @@ pub(crate) fn block_wand_intersection(
             threshold,
             &cutoff,
         ) {
-            // The entire window cannot beat the threshold. Skip past it, or
-            // past the level-1 groups of every term when their bounds can't.
+            // The entire window cannot beat the threshold. Skip past it.
             doc = window_end + 1;
-            if let Some(groups_end) =
-                level1_skip_end(leader, secondaries, &upper_bound, threshold, &cutoff)
-            {
-                #[cfg(test)]
-                LEVEL1_SKIPS.with(|skips| skips.set(skips.get() + 1));
-                doc = doc.max(groups_end + 1);
-            }
             continue;
         }
 
@@ -572,67 +536,6 @@ mod tests {
                 assert!(nearly_equals(*score, *expected_score));
             }
         }
-    }
-
-    #[test]
-    fn level1_group_skips_match_exhaustive_intersection() {
-        let mut state = 0x3c6e_f372u32;
-        let mut next = move || {
-            state ^= state << 13;
-            state ^= state >> 17;
-            state ^= state << 5;
-            state
-        };
-        let max_doc = 200_000u32;
-        let fieldnorms: Vec<u32> = (0..max_doc).map(|_| 5 + next() % 400).collect();
-        let average_fieldnorm =
-            fieldnorms.iter().map(|&norm| u64::from(norm)).sum::<u64>() as Score / max_doc as Score;
-        let mut terms: Vec<Vec<(DocId, u32)>> = Vec::new();
-        for stride in [2u32, 3, 5, 40] {
-            let mut postings = Vec::new();
-            for doc in 0..max_doc {
-                if next() % stride == 0 {
-                    // Strong postings only early on: later level-1 groups have
-                    // low bounds, so whole groups can be skipped.
-                    let tf = if doc < 20_000 && next() % 50 == 0 {
-                        20 + next() % 40
-                    } else {
-                        1 + next() % 2
-                    };
-                    postings.push((doc, tf));
-                }
-            }
-            terms.push(postings);
-        }
-        super::LEVEL1_SKIPS.with(|skips| skips.set(0));
-        for layout in [&[0usize, 1][..], &[1, 2], &[0, 1, 2], &[3, 0], &[3, 1, 2]] {
-            let make_scorers = || -> Vec<TermScorer> {
-                layout
-                    .iter()
-                    .map(|&term| {
-                        let postings = &terms[term];
-                        let weight = Bm25Weight::for_one_term(
-                            postings.len() as u64,
-                            max_doc as u64,
-                            average_fieldnorm,
-                        );
-                        TermScorer::create_for_test(postings, &fieldnorms, weight)
-                    })
-                    .collect()
-            };
-            for top_k in [1, 10, 100] {
-                let pruned = compute_checkpoints_block_wand_intersection(make_scorers(), top_k);
-                let exhaustive = compute_checkpoints_naive_intersection(make_scorers(), top_k);
-                assert_eq!(pruned.len(), exhaustive.len(), "{layout:?} {top_k}");
-                for ((doc, score), (expected_doc, expected_score)) in
-                    pruned.iter().zip(exhaustive.iter())
-                {
-                    assert_eq!(doc, expected_doc);
-                    assert!(nearly_equals(*score, *expected_score));
-                }
-            }
-        }
-        assert!(super::LEVEL1_SKIPS.with(|skips| skips.get()) > 0);
     }
 
     #[test]
