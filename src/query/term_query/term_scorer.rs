@@ -72,8 +72,8 @@ pub struct TermScorer {
     block_hint: usize,
     /// Blocks covered by uncached `range_max_score` calls, a work measure.
     range_blocks: u64,
-    /// Last level-1 group found able to beat a threshold (usize::MAX if none).
-    unskippable_group: usize,
+    /// The last level-1 group whose bound was resolved, and that bound.
+    group_bound_cache: (usize, Score),
 }
 
 #[cfg(test)]
@@ -270,7 +270,7 @@ impl TermScorer {
             coarse_end: 0,
             block_hint: 0,
             range_blocks: 0,
-            unskippable_group: usize::MAX,
+            group_bound_cache: (usize::MAX, 0.0),
         }
     }
 
@@ -442,38 +442,50 @@ impl TermScorer {
         self.range_blocks
     }
 
-    /// When the level-1 group holding the current block cannot score above
-    /// `threshold`, the group's last doc: every doc up to it may be skipped.
-    pub(crate) fn group_skip_end(&mut self, threshold: Score) -> Option<DocId> {
+    /// The bound and last doc of the level-1 group holding the current
+    /// block, if the term has level-1 records there.
+    pub(crate) fn current_group_bound(&mut self) -> Option<(Score, DocId)> {
         let groups = self.postings.block_cursor.skip_directory.groups();
         if groups == 0 || !self.similarity_weight.has_safe_score_bounds() {
             return None;
         }
         let group = self.postings.block_cursor.current_block_index() / SKIP_GROUP_BLOCKS;
-        if group >= groups || group == self.unskippable_group {
+        if group >= groups {
             return None;
         }
-        if let TermBlockBounds::PendingNative(context) = self.block_bounds {
-            self.block_bounds = self
-                .similarity_weight
-                .native_input_envelope(context)
-                .map(|envelope| TermBlockBounds::NativeTransform(Arc::new(envelope)))
-                .unwrap_or(TermBlockBounds::Global);
+        if self.group_bound_cache.0 != group {
+            if let TermBlockBounds::PendingNative(context) = self.block_bounds {
+                self.block_bounds = self
+                    .similarity_weight
+                    .native_input_envelope(context)
+                    .map(|envelope| TermBlockBounds::NativeTransform(Arc::new(envelope)))
+                    .unwrap_or(TermBlockBounds::Global);
+            }
+            let bound = stored_pair_bound(
+                &self.block_bounds,
+                &self.similarity_weight,
+                self.similarity_weight.max_score(),
+                self.postings.block_cursor.skip_directory.group_pair(group),
+            );
+            self.group_bound_cache = (group, bound);
         }
-        let directory = &self.postings.block_cursor.skip_directory;
-        let bound = stored_pair_bound(
-            &self.block_bounds,
-            &self.similarity_weight,
-            self.similarity_weight.max_score(),
-            directory.group_pair(group),
-        );
+        let end = self
+            .postings
+            .block_cursor
+            .skip_directory
+            .end((group + 1) * SKIP_GROUP_BLOCKS - 1);
+        Some((self.group_bound_cache.1, end))
+    }
+
+    /// When the level-1 group holding the current block cannot score above
+    /// `threshold`, the group's last doc: every doc up to it may be skipped.
+    pub(crate) fn group_skip_end(&mut self, threshold: Score) -> Option<DocId> {
+        let (bound, end) = self.current_group_bound()?;
         if bound <= threshold {
             #[cfg(test)]
             GROUP_SKIPS.with(|skips| skips.set(skips.get() + 1));
-            Some(directory.end((group + 1) * SKIP_GROUP_BLOCKS - 1))
+            Some(end)
         } else {
-            // Not rechecked until the cursor leaves this group.
-            self.unskippable_group = group;
             None
         }
     }
