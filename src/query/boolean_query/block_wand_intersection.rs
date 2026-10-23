@@ -214,6 +214,11 @@ pub(crate) fn block_wand_intersection(
     let mut secondary_suffix_block_max: Box<[f64]> =
         vec![0.0f64; secondaries.len()].into_boxed_slice();
 
+    // Per-window candidate buffers; only the first `num_candidates` entries
+    // of a window are read, so they are not cleared between windows.
+    let mut candidate_doc_ids = [0u32; COMPRESSION_BLOCK_SIZE];
+    let mut candidate_scores = [0.0f32; COMPRESSION_BLOCK_SIZE];
+
     while doc < TERMINATED {
         // --- Phase 1: Block-level pruning ---
         //
@@ -282,8 +287,6 @@ pub(crate) fn block_wand_intersection(
         // decides it with f32 cuts and sends rare undecided windows to the
         // exact predicate below.
         let band = LeaderBand::new(&upper_bound, inv_factor, secondary_block_max_sum, threshold);
-        let mut candidate_doc_ids = [0u32; COMPRESSION_BLOCK_SIZE];
-        let mut candidate_scores = [0.0f32; COMPRESSION_BLOCK_SIZE];
         let native = bm25_weight.is_native_lucene();
         let (fr, d, f, b, cd, cs) = (
             &fieldnorm_reader,
