@@ -150,11 +150,17 @@ pub(crate) fn or_maxscore(
     // region bookkeeping (O(terms) per region) outweighs candidate work, the
     // rest of the segment continues on coarse covering-bound regions.
     let mut previous_essential = 0;
-    let mut fine_regions = 0u64;
+    // Fine regions in the current run, and where it started.
+    let mut stint_regions = 0u64;
     let mut candidate_count = 0u64;
     // Covering bounds can instead make dense clauses essential. Coarse regions
     // hand the query back when that multiplies the fine candidate density.
-    let first_lo = lo;
+    let mut stint_lo = lo;
+    let mut stint_candidates = 0u64;
+    // Covering bounds can make dense clauses essential, so the first coarse
+    // run hands back after a probe. With both geometries measured at a
+    // warmed threshold, the rest of the segment keeps the cheaper one.
+    let mut coarse_cost: Option<StintCost> = None;
     let mut coarse_allowed = true;
     #[cfg(test)]
     let force_coarse = FORCE_COARSE.with(|force| force.get());
@@ -164,12 +170,20 @@ pub(crate) fn or_maxscore(
     while lo < max_doc {
         // Like Lucene's outer windows, target 16 candidates per clause per
         // region; fewer means region bookkeeping dominates.
-        if coarse_allowed
-            && (force_coarse
-                || (fine_regions >= COARSE_PROBE_REGIONS
-                    && candidate_count < fine_regions * 16 * num_terms as u64))
-        {
-            let fine_span = u64::from(lo - first_lo);
+        let mut to_coarse = force_coarse;
+        if coarse_allowed && !to_coarse && stint_regions >= COARSE_PROBE_REGIONS {
+            let stint = candidate_count - stint_candidates;
+            to_coarse = match coarse_cost {
+                None => stint < stint_regions * 16 * num_terms as u64,
+                Some(coarse) => {
+                    let fine =
+                        StintCost::new(stint_regions, stint, u64::from(lo - stint_lo), num_terms);
+                    coarse_allowed = coarse.cheaper_than(fine);
+                    coarse_allowed
+                }
+            };
+        }
+        if coarse_allowed && to_coarse {
             let back = or_maxscore_coarse(
                 CoarseContinuation {
                     scorers,
@@ -189,7 +203,7 @@ pub(crate) fn or_maxscore(
                     previous_essential,
                     candidate_count,
                     upper_bound,
-                    fine_span,
+                    coarse_cost,
                 },
                 callback,
             );
@@ -210,16 +224,19 @@ pub(crate) fn or_maxscore(
                 certified_global_sum,
                 previous_essential,
                 candidate_count,
+                coarse_cost,
                 ..
             } = back;
             #[cfg(test)]
             {
                 global_appends = back.global_appends;
             }
-            coarse_allowed = false;
+            stint_regions = 0;
+            stint_lo = lo;
+            stint_candidates = candidate_count;
             continue;
         }
-        fine_regions += 1;
+        stint_regions += 1;
         debug_assert!(clauses
             .iter()
             .all(|clause| clause.doc == scorers[clause.ordinal].doc()));
@@ -523,6 +540,29 @@ pub(crate) fn or_maxscore(
     }
 }
 
+/// Work of a run of regions in one geometry: each region's bookkeeping
+/// counts as 16 candidates per clause, as in the fine-region exit rule.
+#[derive(Clone, Copy)]
+struct StintCost {
+    cost: u64,
+    span: u64,
+}
+
+impl StintCost {
+    fn new(regions: u64, candidates: u64, span: u64, num_terms: usize) -> Self {
+        Self {
+            cost: regions * 16 * num_terms as u64 + candidates,
+            span: span.max(1),
+        }
+    }
+
+    /// Lower cost per doc ID covered.
+    fn cheaper_than(self, other: StintCost) -> bool {
+        u128::from(self.cost) * u128::from(other.span)
+            < u128::from(other.cost) * u128::from(self.span)
+    }
+}
+
 /// Query state at the switch from fine to coarse regions, moved by value.
 struct CoarseContinuation {
     scorers: Vec<TermScorer>,
@@ -542,8 +582,10 @@ struct CoarseContinuation {
     previous_essential: usize,
     candidate_count: u64,
     upper_bound: SmallScoreSumUpperBound,
-    /// Doc IDs the fine regions covered, all yielding `candidate_count`.
-    fine_span: u64,
+    /// The measured coarse run. Absent on the first switch; returned with
+    /// the hand-back; present on entry once fine regions were re-measured,
+    /// and then coarse regions finish the segment.
+    coarse_cost: Option<StintCost>,
 }
 
 /// The rest of `or_maxscore` on coarse regions, out of line so the fine loop
@@ -571,27 +613,21 @@ fn or_maxscore_coarse(
         mut previous_essential,
         mut candidate_count,
         upper_bound,
-        fine_span,
+        coarse_cost,
     } = state;
     let switch_lo = lo;
-    let fine_candidates = candidate_count;
+    let switch_candidates = candidate_count;
     let num_terms = scorers.len();
     let mut min_span = 1u32;
     let mut region_count = 0u64;
     while lo < max_doc {
-        // Revert when coarse regions yield over twice the fine candidates per
-        // doc ID. The fine span is nonempty after its probe regions.
-        let coarse_span = u64::from(lo - switch_lo);
+        // The first coarse run hands back after its probe regions so fine
+        // regions can be re-measured at the now warmer threshold.
         #[cfg(test)]
         let force_revert = FORCE_REVERT.with(|force| force.get()) && region_count >= 2;
         #[cfg(not(test))]
         let force_revert = false;
-        if force_revert
-            || (region_count >= COARSE_PROBE_REGIONS
-                && fine_span > 0
-                && u128::from(candidate_count - fine_candidates) * u128::from(fine_span)
-                    > 2 * u128::from(fine_candidates.max(1)) * u128::from(coarse_span))
-        {
+        if coarse_cost.is_none() && (force_revert || region_count >= COARSE_PROBE_REGIONS) {
             #[cfg(test)]
             REVERTS.with(|reverts| reverts.set(reverts.get() + 1));
             return Some(CoarseContinuation {
@@ -612,7 +648,12 @@ fn or_maxscore_coarse(
                 previous_essential,
                 candidate_count,
                 upper_bound,
-                fine_span,
+                coarse_cost: Some(StintCost::new(
+                    region_count,
+                    candidate_count - switch_candidates,
+                    u64::from(lo - switch_lo),
+                    num_terms,
+                )),
             });
         }
         debug_assert!(clauses
