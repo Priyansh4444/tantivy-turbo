@@ -527,10 +527,20 @@ impl SkipReader {
         if self.last_doc_in_block() >= target {
             return false;
         }
-        // The current block is a full one ending before the target. Account
-        // for it as `advance` does, then pass over every following full block
-        // that also ends before the target reading only its last doc and
-        // sizes; only the block finally reached is parsed.
+        self.advance();
+        if self.last_doc_in_block() < target {
+            self.skip_blocks_before(target);
+        }
+        true
+    }
+
+    /// Long skips, out of line so `seek` stays small. The current full block
+    /// ends before the target. Account for it as `advance` does, then pass
+    /// over every following full block that also ends before the target
+    /// reading only its last doc and sizes; only the block finally reached
+    /// is parsed.
+    #[inline(never)]
+    fn skip_blocks_before(&mut self, target: DocId) {
         self.account_current_block();
         let stride = match self.skip_info {
             IndexRecordOption::Basic => 5,
@@ -543,13 +553,13 @@ impl SkipReader {
                 self.block_info = BlockInfo::VInt {
                     num_docs: self.remaining_docs,
                 };
-                return true;
+                return;
             }
             let bytes = self.owned_read.as_slice();
             let last_doc = read_u32(bytes);
             if last_doc >= target {
                 self.read_block_info();
-                return true;
+                return;
             }
             let tf_header = if self.skip_info == IndexRecordOption::Basic {
                 0
