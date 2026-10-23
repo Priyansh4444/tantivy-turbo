@@ -416,7 +416,7 @@ mod cutoff_tests {
                         f64::from_bits(floor.to_bits().wrapping_add(next() % 9).wrapping_sub(4));
                     let far = f64::from(f32::from_bits(next() as u32 % 0x4400_0000));
                     for known in [near, far] {
-                        if known >= 0.0 && known < 1e39 {
+                        if (0.0..1e39).contains(&known) {
                             assert_eq!(rejected(known), known <= floor);
                         }
                     }
