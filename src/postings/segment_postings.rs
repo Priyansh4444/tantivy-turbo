@@ -332,7 +332,13 @@ impl SegmentPostings {
                     let len = self.block_cursor.block_len();
                     let mut i = self.cur;
                     if docs[len - 1] - docs[i] >= 256 {
-                        if use_lanes && mask.len() == 64 {
+                        // Lanes pay for their 64-word setup and merge only with
+                        // many postings in this window.
+                        if use_lanes
+                            && mask.len() == 64
+                            && i + 16 <= len
+                            && docs[i + 15] < horizon
+                        {
                             // Consecutive postings often hit the same mask word.
                             // Alternate between independent lanes to avoid a chain
                             // of dependent memory ORs, then merge once per window.
