@@ -1,3 +1,4 @@
+use crate::fieldnorm::FieldNormReader;
 use crate::postings::compression::COMPRESSION_BLOCK_SIZE;
 use crate::query::score_combiner::{ScoreSumThresholdCutoff, ScoreSumUpperBound};
 use crate::query::term_query::TermScorer;
@@ -12,9 +13,9 @@ use crate::{DocId, DocSet, Score, TERMINATED};
 /// by `NONNEG`: when every leaf is known to be >= 0, `max(leader, 0)` is the
 /// leader itself (`-0.0` compares like `0.0`), so the clamp is skipped.
 #[inline(always)]
-fn filter_leader_window<S: Fn(u8, u32) -> Score, N: Fn(DocId) -> u8, const NONNEG: bool>(
+fn filter_leader_window<S: Fn(u8, u32) -> Score, const NONNEG: bool>(
     score: S,
-    fieldnorm_id: N,
+    fieldnorm_reader: &FieldNormReader,
     docs: &[DocId],
     freqs: &[u32],
     band: &LeaderBand,
@@ -23,7 +24,7 @@ fn filter_leader_window<S: Fn(u8, u32) -> Score, N: Fn(DocId) -> u8, const NONNE
 ) -> usize {
     let mut num_candidates = 0usize;
     for (&doc, &term_freq) in docs.iter().zip(freqs) {
-        let leader_score = score(fieldnorm_id(doc), term_freq);
+        let leader_score = score(fieldnorm_reader.fieldnorm_id(doc), term_freq);
         candidate_doc_ids[num_candidates] = doc;
         candidate_scores[num_candidates] = leader_score;
         let clamped = if NONNEG {
@@ -299,8 +300,6 @@ pub(crate) fn block_wand_intersection(
     // but Rust's borrow checker can't see through method calls, so we
     // extract them once upfront.
     let fieldnorm_reader = leader.fieldnorm_reader().clone();
-    // Resolved once: the reader's representation is fixed for the query.
-    let fieldnorm_ids = fieldnorm_reader.ids();
     let bm25_weight = leader.bm25_weight().clone();
 
     let mut doc = leader.doc();
@@ -398,72 +397,43 @@ pub(crate) fn block_wand_intersection(
             &mut candidate_doc_ids,
             &mut candidate_scores,
         );
-        let mut num_candidates = match fieldnorm_ids {
-            Some(ids) => {
-                let id = |doc: DocId| ids[doc as usize];
-                match (native, nonnegative_leaves) {
-                    (true, true) => filter_leader_window::<_, _, true>(
-                        |id, tf| bm25_weight.score_native_lucene(id, tf),
-                        id,
-                        d,
-                        f,
-                        b,
-                        cd,
-                        cs,
-                    ),
-                    (true, false) => filter_leader_window::<_, _, false>(
-                        |id, tf| bm25_weight.score_native_lucene(id, tf),
-                        id,
-                        d,
-                        f,
-                        b,
-                        cd,
-                        cs,
-                    ),
-                    (false, true) => filter_leader_window::<_, _, true>(
-                        |id, tf| bm25_weight.score_legacy_classic(id, tf),
-                        id,
-                        d,
-                        f,
-                        b,
-                        cd,
-                        cs,
-                    ),
-                    (false, false) => filter_leader_window::<_, _, false>(
-                        |id, tf| bm25_weight.score_legacy_classic(id, tf),
-                        id,
-                        d,
-                        f,
-                        b,
-                        cd,
-                        cs,
-                    ),
-                }
-            }
-            None => {
-                let id = |doc: DocId| fr.fieldnorm_id(doc);
-                if native {
-                    filter_leader_window::<_, _, false>(
-                        |id, tf| bm25_weight.score_native_lucene(id, tf),
-                        id,
-                        d,
-                        f,
-                        b,
-                        cd,
-                        cs,
-                    )
-                } else {
-                    filter_leader_window::<_, _, false>(
-                        |id, tf| bm25_weight.score_legacy_classic(id, tf),
-                        id,
-                        d,
-                        f,
-                        b,
-                        cd,
-                        cs,
-                    )
-                }
-            }
+        let mut num_candidates = match (native, nonnegative_leaves) {
+            (true, true) => filter_leader_window::<_, true>(
+                |id, tf| bm25_weight.score_native_lucene(id, tf),
+                fr,
+                d,
+                f,
+                b,
+                cd,
+                cs,
+            ),
+            (true, false) => filter_leader_window::<_, false>(
+                |id, tf| bm25_weight.score_native_lucene(id, tf),
+                fr,
+                d,
+                f,
+                b,
+                cd,
+                cs,
+            ),
+            (false, true) => filter_leader_window::<_, true>(
+                |id, tf| bm25_weight.score_legacy_classic(id, tf),
+                fr,
+                d,
+                f,
+                b,
+                cd,
+                cs,
+            ),
+            (false, false) => filter_leader_window::<_, false>(
+                |id, tf| bm25_weight.score_legacy_classic(id, tf),
+                fr,
+                d,
+                f,
+                b,
+                cd,
+                cs,
+            ),
         };
         if band.exact {
             num_candidates = 0;

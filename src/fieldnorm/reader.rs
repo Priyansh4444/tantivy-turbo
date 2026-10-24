@@ -135,15 +135,6 @@ impl FieldNormReader {
         }
     }
 
-    /// The per-document fieldnorm ids, unless every document shares one.
-    #[inline]
-    pub(crate) fn ids(&self) -> Option<&[u8]> {
-        match &self.0 {
-            ReaderImplEnum::FromData(data) => Some(data.as_slice()),
-            ReaderImplEnum::Const { .. } => None,
-        }
-    }
-
     /// Converts a `fieldnorm_id` into a fieldnorm.
     #[inline]
     pub fn id_to_fieldnorm(id: u8) -> u32 {
