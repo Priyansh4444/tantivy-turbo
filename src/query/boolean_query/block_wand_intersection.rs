@@ -6,8 +6,10 @@ use crate::query::Scorer;
 use crate::{DocId, DocSet, Score, TERMINATED};
 
 /// Pass 1 over a leader window: score each posting with `score`, append it to
-/// the candidate buffers, and count leaders at or above `band.sure` (admitted)
-/// and `band.maybe` (not certainly rejected). Monomorphized per scoring mode and
+/// the candidate buffers, and keep leaders at or above `band.maybe` (not
+/// certainly rejected). The kept set includes every leader the exact predicate
+/// admits plus at most the undecided band; pass 2 rechecks every candidate, so
+/// the extra ones cannot change results. Monomorphized per scoring mode and
 /// by `NONNEG`: when every leaf is known to be >= 0, `max(leader, 0)` is the
 /// leader itself (`-0.0` compares like `0.0`), so the clamp is skipped.
 #[inline(always)]
@@ -19,8 +21,8 @@ fn filter_leader_window<S: Fn(u8, u32) -> Score, const NONNEG: bool>(
     band: &LeaderBand,
     candidate_doc_ids: &mut [DocId; COMPRESSION_BLOCK_SIZE],
     candidate_scores: &mut [Score; COMPRESSION_BLOCK_SIZE],
-) -> (usize, usize) {
-    let (mut num_candidates, mut num_maybe) = (0usize, 0usize);
+) -> usize {
+    let mut num_candidates = 0usize;
     for (&doc, &term_freq) in docs.iter().zip(freqs) {
         let leader_score = score(fieldnorm_reader.fieldnorm_id(doc), term_freq);
         candidate_doc_ids[num_candidates] = doc;
@@ -30,10 +32,9 @@ fn filter_leader_window<S: Fn(u8, u32) -> Score, const NONNEG: bool>(
         } else {
             leader_score.max(0.0)
         };
-        num_candidates += (band.all | (clamped >= band.sure)) as usize;
-        num_maybe += (band.all | (clamped >= band.maybe)) as usize;
+        num_candidates += (band.all | (clamped >= band.maybe)) as usize;
     }
-    (num_candidates, num_maybe)
+    num_candidates
 }
 
 /// Per-window form of the candidate filter
@@ -48,6 +49,9 @@ fn filter_leader_window<S: Fn(u8, u32) -> Score, const NONNEG: bool>(
 /// fell in `[maybe, sure)` and the window is filtered again with the predicate. Both cuts are
 /// O(1) per window, and the loop stays pure f32 arithmetic.
 struct LeaderBand {
+    /// At or above this cut the predicate certainly holds (checked in tests;
+    /// pass 1 keeps everything not certainly rejected).
+    #[cfg_attr(not(test), allow(dead_code))]
     sure: Score,
     maybe: Score,
     /// Every leader is admitted (the predicate holds even at 0).
@@ -74,7 +78,13 @@ impl LeaderBand {
                 exact: true,
             };
         }
-        let t = f64::from(threshold);
+        Self::regular(f64::from(threshold), inv_factor, sum)
+    }
+
+    /// `new` for a finite positive threshold, a finite nonnegative `sum` and a
+    /// regular bound factor (`inv_factor > 0`, factor at least 1).
+    #[inline]
+    fn regular(t: f64, inv_factor: f64, sum: f64) -> Self {
         let margin = 1e-5 * (t + sum) + f64::from(Score::MIN_POSITIVE);
         let hi = t - sum + margin;
         if hi <= 0.0 {
@@ -264,6 +274,9 @@ pub(crate) fn block_wand_intersection(
         .iter()
         .all(|scorer| scorer.bm25_weight().is_native_lucene());
     let finite_nonnegative = nonnegative_leaves && upper_bound.factor().is_finite();
+    // With finite nonnegative leaves every block-max sum is finite and
+    // nonnegative, so the band's domain checks reduce to the threshold's.
+    let regular_bound = finite_nonnegative && inv_factor > 0.0 && upper_bound.factor() >= 1.0;
 
     let (leader, secondaries) = scorers.split_first_mut().unwrap();
 
@@ -328,11 +341,13 @@ pub(crate) fn block_wand_intersection(
             secondary_block_max_sum += f64::from(bms);
         }
 
-        if upper_bound.is_at_most(
-            f64::from(leader_block_max) + secondary_block_max_sum,
-            threshold,
-            &cutoff,
-        ) {
+        let window_bound = f64::from(leader_block_max) + secondary_block_max_sum;
+        let window_rejected = if finite_nonnegative {
+            upper_bound.finite_sum_is_at_most(window_bound, &cutoff)
+        } else {
+            upper_bound.is_at_most(window_bound, threshold, &cutoff)
+        };
+        if window_rejected {
             // The entire window cannot beat the threshold. Skip past it.
             doc = window_end + 1;
             continue;
@@ -368,7 +383,11 @@ pub(crate) fn block_wand_intersection(
         // could round upward and discard a winning final score). `LeaderBand`
         // decides it with f32 cuts and sends rare undecided windows to the
         // exact predicate below.
-        let band = LeaderBand::new(&upper_bound, inv_factor, secondary_block_max_sum, threshold);
+        let band = if regular_bound && threshold.is_finite() && threshold > 0.0 {
+            LeaderBand::regular(f64::from(threshold), inv_factor, secondary_block_max_sum)
+        } else {
+            LeaderBand::new(&upper_bound, inv_factor, secondary_block_max_sum, threshold)
+        };
         let native = bm25_weight.is_native_lucene();
         let (fr, d, f, b, cd, cs) = (
             &fieldnorm_reader,
@@ -378,9 +397,7 @@ pub(crate) fn block_wand_intersection(
             &mut candidate_doc_ids,
             &mut candidate_scores,
         );
-        // `num_maybe` counts leaders at or above `maybe`; more than
-        // `num_candidates` means some leader fell in the undecided band.
-        let (mut num_candidates, num_maybe) = match (native, nonnegative_leaves) {
+        let mut num_candidates = match (native, nonnegative_leaves) {
             (true, true) => filter_leader_window::<_, true>(
                 |id, tf| bm25_weight.score_native_lucene(id, tf),
                 fr,
@@ -418,7 +435,7 @@ pub(crate) fn block_wand_intersection(
                 cs,
             ),
         };
-        if band.exact || num_maybe != num_candidates {
+        if band.exact {
             num_candidates = 0;
             for (candidate_doc, term_freq) in
                 block_docs.iter().copied().zip(block_freqs.iter().copied())
