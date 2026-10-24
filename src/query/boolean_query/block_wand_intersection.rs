@@ -199,6 +199,20 @@ fn check_candidates<const NATIVE: bool, const NONNEG: bool>(
     true
 }
 
+/// The leader's first posting after `window_end` when its decoded block shows
+/// it, else `window_end + 1`.
+#[inline]
+fn leader_doc_after(leader: &mut TermScorer, window_end: DocId) -> DocId {
+    let cursor = leader.block_cursor();
+    if cursor.block_is_loaded() && cursor.skip_reader().last_doc_in_block() > window_end {
+        let index = cursor.doc_decoder.seek_within_block(window_end + 1);
+        if index < cursor.block_len() {
+            return cursor.doc_decoder.output_array()[index];
+        }
+    }
+    window_end + 1
+}
+
 /// Iterate the rare term directly when the other term covers most of the segment.
 /// In this case the dense term usually matches, so per-block bounds and candidate
 /// buffers cost more than the membership checks they avoid.
@@ -348,8 +362,9 @@ pub(crate) fn block_wand_intersection(
             upper_bound.is_at_most(window_bound, threshold, &cutoff)
         };
         if window_rejected {
-            // The entire window cannot beat the threshold. Skip past it.
-            doc = window_end + 1;
+            // The entire window cannot beat the threshold. Skip past it, and
+            // past any later windows before the leader's next posting.
+            doc = leader_doc_after(leader, window_end);
             continue;
         }
 
@@ -369,6 +384,13 @@ pub(crate) fn block_wand_intersection(
             .seek_within_block(window_end + 1)
             .min(block_cursor.block_len());
 
+        // The leader's first posting after the window: windows before it hold
+        // no leader posting, hence no match, and need not be visited.
+        let next_window_doc = if end_idx < block_cursor.block_len() {
+            block_cursor.doc_decoder.output_array()[end_idx]
+        } else {
+            window_end + 1
+        };
         let block_docs = &block_cursor.doc_decoder.output_array()[start_idx..end_idx];
         let block_freqs = &block_cursor.freq_output_array()[start_idx..end_idx];
 
@@ -454,7 +476,7 @@ pub(crate) fn block_wand_intersection(
         // Used in Phase 2 to prune candidates that can't beat threshold even with
         // remaining secondaries contributing their block_max.
         if num_candidates == 0 {
-            doc = window_end + 1;
+            doc = next_window_doc;
             continue;
         }
 
@@ -487,7 +509,7 @@ pub(crate) fn block_wand_intersection(
             return;
         }
 
-        doc = window_end + 1;
+        doc = next_window_doc;
     }
 }
 
