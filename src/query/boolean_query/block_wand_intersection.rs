@@ -336,11 +336,12 @@ pub(crate) fn block_wand_intersection(
         leader.seek_block(doc);
         let leader_block_max: Score = leader.block_max_score();
 
-        // Compute the window end as the minimum last_doc_in_block across all scorers.
-        // This ensures the block_max values are valid for all docs in [doc, window_end].
-        // Different scorers have independently aligned blocks, so we must use the
-        // smallest window where all block_max values hold.
-        let mut window_end: DocId = leader.last_doc_in_block();
+        // The window is the rest of the leader's block. Secondaries are bounded
+        // over it by their cached range maxima (whole level-1 groups for long
+        // ranges): looser than their current blocks, but the rare leader's
+        // block spans many of a dense secondary's blocks, and ending windows
+        // at those boundaries cost more in per-window work than it saved.
+        let window_end: DocId = leader.last_doc_in_block();
 
         let mut secondary_block_max_sum = 0.0f64;
         let num_secondaries = secondaries.len();
@@ -349,8 +350,7 @@ pub(crate) fn block_wand_intersection(
             if !secondary.block_cursor().has_remaining_docs() {
                 return;
             }
-            window_end = window_end.min(secondary.last_doc_in_block());
-            let bms = secondary.block_max_score();
+            let bms = secondary.range_max_score(doc, window_end.saturating_add(1));
             secondary_block_max_scores[idx] = bms;
             secondary_block_max_sum += f64::from(bms);
         }
