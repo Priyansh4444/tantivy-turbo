@@ -92,32 +92,6 @@ where
     )))
 }
 
-/// `|A ∪ B| = df(A) + df(B) - |A ∩ B|` for two fresh term cursors without
-/// deletions, when the sparser term is rare: its postings are walked once and
-/// the other term only probed, instead of merging both lists.
-fn count_sparse_two_term_union(term_scorers: &[TermScorer], num_docs: u32) -> Option<u32> {
-    let [first, second] = term_scorers else {
-        return None;
-    };
-    let (sparse, other) = if first.size_hint() <= second.size_hint() {
-        (first, second)
-    } else {
-        (second, first)
-    };
-    if sparse.size_hint().saturating_mul(32) >= num_docs {
-        return None;
-    }
-    let mut sparse = sparse.clone();
-    let mut other = other.clone();
-    let mut both = 0u32;
-    let mut doc = sparse.doc();
-    while doc != TERMINATED {
-        both += other.contains_doc_for_count(doc) as u32;
-        doc = sparse.advance();
-    }
-    Some(sparse.size_hint() + other.size_hint() - both)
-}
-
 fn into_box_scorer<TScoreCombiner: ScoreCombiner>(
     scorer: SpecializedScorer,
     score_combiner_fn: impl Fn() -> TScoreCombiner,
@@ -602,34 +576,6 @@ impl<TScoreCombiner: ScoreCombiner + Sync> Weight for BooleanWeight<TScoreCombin
         }
     }
 
-    fn count(&self, reader: &SegmentReader) -> crate::Result<u32> {
-        if reader.alive_bitset().is_none() && self.per_occur_weights.len() > 1 {
-            let num_docs = reader.num_docs();
-            let specialized = if self.scoring_enabled {
-                self.complex_scorer(reader, 1.0, &self.score_combiner_fn)?
-            } else {
-                self.complex_scorer(reader, 1.0, DoNothingCombiner::default)?
-            };
-            if let SpecializedScorer::TermUnion(term_scorers) = &specialized {
-                if let Some(count) = count_sparse_two_term_union(term_scorers, num_docs) {
-                    return Ok(count);
-                }
-            }
-            let mut scorer = if self.scoring_enabled {
-                into_box_scorer(specialized, &self.score_combiner_fn, num_docs)
-            } else {
-                into_box_scorer(specialized, DoNothingCombiner::default, num_docs)
-            };
-            return Ok(scorer.count_including_deleted());
-        }
-        let mut scorer = self.scorer(reader, 1.0)?;
-        if let Some(alive_bitset) = reader.alive_bitset() {
-            Ok(scorer.count(alive_bitset))
-        } else {
-            Ok(scorer.count_including_deleted())
-        }
-    }
-
     fn explain(&self, reader: &SegmentReader, doc: DocId) -> crate::Result<Explanation> {
         let mut scorer = self.scorer(reader, 1.0)?;
         if scorer.seek(doc) != doc {
@@ -808,64 +754,6 @@ mod tests {
     use crate::query::{EmptyScorer, EnableScoring, Query, TermQuery, Weight};
     use crate::schema::{Field, IndexRecordOption, Schema, TEXT};
     use crate::{Index, Searcher, Term, TERMINATED};
-
-    #[test]
-    fn two_term_union_counts_match_brute_force() -> crate::Result<()> {
-        use crate::collector::Count;
-        use crate::query::{BooleanQuery, Occur};
-        let mut schema_builder = Schema::builder();
-        let text = schema_builder.add_text_field("text", TEXT);
-        let index = Index::create_in_ram(schema_builder.build());
-        let mut writer = index.writer_for_tests()?;
-        let mut state = 0x1234_5678u32;
-        let mut next = move || {
-            state ^= state << 13;
-            state ^= state >> 17;
-            state ^= state << 5;
-            state
-        };
-        // "rare" terms are well under 1/32 of the docs; "dense" are not.
-        let mut docs: Vec<Vec<&str>> = Vec::new();
-        for _ in 0..20_000 {
-            let mut terms = Vec::new();
-            for (term, one_in) in [("rare", 300u32), ("rarer", 900), ("dense", 2), ("mid", 7)] {
-                if next() % one_in == 0 {
-                    terms.push(term);
-                }
-            }
-            terms.push("filler");
-            writer.add_document(doc!(text => terms.join(" ")))?;
-            docs.push(terms);
-        }
-        writer.commit()?;
-        let searcher = index.reader()?.searcher();
-        let term = |word: &str| -> Box<dyn Query> {
-            Box::new(TermQuery::new(
-                Term::from_field_text(text, word),
-                IndexRecordOption::WithFreqs,
-            ))
-        };
-        for (left, right) in [
-            ("rare", "dense"),
-            ("rarer", "rare"),
-            ("rare", "mid"),
-            ("dense", "mid"),
-            ("rare", "rare"),
-            ("rare", "absent"),
-        ] {
-            let query = BooleanQuery::new(vec![
-                (Occur::Should, term(left)),
-                (Occur::Should, term(right)),
-            ]);
-            let expected = docs
-                .iter()
-                .filter(|terms| terms.contains(&left) || terms.contains(&right))
-                .count();
-            assert_eq!(query.count(&searcher)?, expected, "{left} {right}");
-            assert_eq!(searcher.search(&query, &Count)?, expected, "{left} {right}");
-        }
-        Ok(())
-    }
 
     fn test_index() -> crate::Result<(Index, Field)> {
         let mut schema_builder = Schema::builder();
