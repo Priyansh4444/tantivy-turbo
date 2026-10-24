@@ -248,11 +248,15 @@ impl<TDocSet: DocSet + 'static, TOtherDocSet: DocSet> DocSet
             .saturating_mul(DENSITY_THRESHOLD_INVERSE)
             < self.segment_num_docs
         {
-            if self.others.is_empty() && self.right.size_hint() > self.segment_num_docs / 2 {
+            if self.others.is_empty() {
+                // Probing a term costs at most a seek per candidate, and a
+                // dense block is a single bit test instead of a decode.
                 if let Some(right) = (&self.right as &dyn Any).downcast_ref::<TermScorer>() {
                     return self.count_including_deleted_sparse_dense_term(right.clone());
                 }
-                return self.count_including_deleted_sparse_window();
+                if self.right.size_hint() > self.segment_num_docs / 2 {
+                    return self.count_including_deleted_sparse_window();
+                }
             }
             // Sparse path: if the lead iterator covers less than ~3% of docs,
             // the block approach wastes time on mostly-empty blocks.
