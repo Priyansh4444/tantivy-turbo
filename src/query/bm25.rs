@@ -487,6 +487,15 @@ impl Bm25Weight {
         Self::new_with_parameters(idf_explain, average_fieldnorm, Bm25Parameters::DEFAULT)
     }
 
+    /// The placeholder weight of queries run without scoring, built once:
+    /// its scores are never read, so its cache need not be rebuilt per query.
+    pub(crate) fn no_score() -> Bm25Weight {
+        static NO_SCORE: once_cell::sync::Lazy<Bm25Weight> = once_cell::sync::Lazy::new(|| {
+            Bm25Weight::new(Explanation::new("<no score>", 1.0f32), 1.0f32)
+        });
+        NO_SCORE.clone()
+    }
+
     fn new_with_parameters(
         idf_explain: Explanation,
         average_fieldnorm: Score,
