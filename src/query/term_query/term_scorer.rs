@@ -633,6 +633,17 @@ impl DocSet for TermScorer {
     }
 }
 
+impl TermScorer {
+    /// `score` for a native Lucene weight, without the scoring-mode dispatch.
+    #[inline(always)]
+    pub(crate) fn score_native_lucene(&mut self) -> Score {
+        let fieldnorm_id = self.fieldnorm_id();
+        let term_freq = self.term_freq();
+        self.similarity_weight
+            .score_native_lucene(fieldnorm_id, term_freq)
+    }
+}
+
 impl Scorer for TermScorer {
     #[inline]
     fn score(&mut self) -> Score {

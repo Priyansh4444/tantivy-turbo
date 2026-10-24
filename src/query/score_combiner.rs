@@ -115,6 +115,14 @@ impl ScoreSumUpperBound {
         self.factor
     }
 
+    /// `is_at_most` for a finite nonnegative sum with a finite factor, where
+    /// it reduces to the cached comparison.
+    #[inline]
+    pub(crate) fn finite_sum_is_at_most(&self, sum: f64, cutoff: &ScoreSumThresholdCutoff) -> bool {
+        debug_assert!(sum.is_finite() && sum >= 0.0 && self.factor.is_finite());
+        sum * self.factor <= cutoff.0
+    }
+
     /// Precomputed form of `self.score(sum) <= threshold` for finite nonnegative
     /// sums; recompute it whenever the threshold changes.
     pub(crate) fn cutoff(&self, threshold: Score) -> ScoreSumThresholdCutoff {

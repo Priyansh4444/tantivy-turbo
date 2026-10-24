@@ -1,6 +1,6 @@
 use crate::fieldnorm::FieldNormReader;
 use crate::postings::compression::COMPRESSION_BLOCK_SIZE;
-use crate::query::score_combiner::ScoreSumUpperBound;
+use crate::query::score_combiner::{ScoreSumThresholdCutoff, ScoreSumUpperBound};
 use crate::query::term_query::TermScorer;
 use crate::query::Scorer;
 use crate::{DocId, DocSet, Score, TERMINATED};
@@ -115,6 +115,80 @@ impl LeaderBand {
     }
 }
 
+/// Pass 2 of a window: check each surviving leader candidate against the
+/// secondaries in order, pruning with their block-max suffix, and publish the
+/// clause-ordered f64 sum. Returns false once no document can beat the
+/// threshold. `NONNEG` requires finite nonnegative leaves and a finite bound
+/// factor: the signed-sum bound is then the sum itself, always finite.
+type CandidateArgs<'a> = (
+    &'a [DocId],
+    &'a [Score],
+    &'a mut [TermScorer],
+    &'a [f64],
+    &'a ScoreSumUpperBound,
+    &'a mut Score,
+    &'a mut ScoreSumThresholdCutoff,
+    f64,
+);
+
+#[inline(always)]
+fn check_candidates<const NATIVE: bool, const NONNEG: bool>(
+    args: CandidateArgs,
+    callback: &mut dyn FnMut(DocId, Score) -> Score,
+) -> bool {
+    let (docs, leader_scores, secondaries, suffix, upper_bound, threshold, cutoff, global_bound) =
+        args;
+    'next_candidate: for (&candidate_doc, &leader_score) in docs.iter().zip(leader_scores) {
+        let mut total_score = f64::from(leader_score);
+        // Keep bound leaves nonnegative even for negative boosted scores.
+        // Pointwise monotonic addition makes this counterfactual positive
+        // sum bound the signed actual sum; the positive-sum error proof
+        // then handles different prefix/suffix grouping and visit order.
+        let mut positive_score = if NONNEG {
+            0.0
+        } else {
+            f64::from(leader_score.max(0.0))
+        };
+        for (secondary_idx, secondary) in secondaries.iter_mut().enumerate() {
+            // If a previous candidate already advanced this secondary past
+            // candidate_doc, the candidate can't be in the intersection.
+            if secondary.doc() > candidate_doc {
+                continue 'next_candidate;
+            }
+            if secondary.seek(candidate_doc) != candidate_doc {
+                continue 'next_candidate;
+            }
+            let score = if NATIVE {
+                secondary.score_native_lucene()
+            } else {
+                secondary.score()
+            };
+            total_score += f64::from(score);
+            // Prune: even if all remaining secondaries score at their block max,
+            // can we still beat the threshold?
+            let rejected = if NONNEG {
+                upper_bound.finite_sum_is_at_most(total_score + suffix[secondary_idx], cutoff)
+            } else {
+                positive_score += f64::from(score.max(0.0));
+                upper_bound.is_at_most(positive_score + suffix[secondary_idx], *threshold, cutoff)
+            };
+            if rejected {
+                continue 'next_candidate;
+            }
+        }
+        // All secondaries matched.
+        let total_score = total_score as Score;
+        if total_score > *threshold {
+            *threshold = callback(candidate_doc, total_score);
+            *cutoff = upper_bound.cutoff(*threshold);
+            if upper_bound.is_at_most(global_bound, *threshold, cutoff) {
+                return false;
+            }
+        }
+    }
+    true
+}
+
 /// Iterate the rare term directly when the other term covers most of the segment.
 /// In this case the dense term usually matches, so per-block bounds and candidate
 /// buffers cost more than the membership checks they avoid.
@@ -184,12 +258,20 @@ pub(crate) fn block_wand_intersection(
         scorer.bm25_weight().has_safe_score_bounds() && maximum.is_finite() && maximum > 0.0
     });
 
+    // Specialize pass 2: native scoring everywhere avoids the per-score mode
+    // dispatch; finite nonnegative leaves make the signed-sum bound the sum.
+    let all_native = scorers
+        .iter()
+        .all(|scorer| scorer.bm25_weight().is_native_lucene());
+    let finite_nonnegative = nonnegative_leaves && upper_bound.factor().is_finite();
+
     let (leader, secondaries) = scorers.split_first_mut().unwrap();
 
     // Precompute global max scores for early termination checks.
     let leader_max_score: Score = leader.max_score();
     let secondaries_global_max_sum: f64 =
         secondaries.iter().map(|s| f64::from(s.max_score())).sum();
+    let global_bound = f64::from(leader_max_score) + secondaries_global_max_sum;
 
     // Early exit: no document can possibly beat the threshold.
     if upper_bound.is_at_most(
@@ -368,54 +450,24 @@ pub(crate) fn block_wand_intersection(
         // Pass 2: Check intersection membership only for survivors.
         // Earlier filtering used a possibly lower threshold. This is conservative:
         // we may check extra candidates after callbacks increase it.
-        'next_candidate: for candidate_idx in 0..num_candidates {
-            let candidate_doc = candidate_doc_ids[candidate_idx];
-            let mut total_score = f64::from(candidate_scores[candidate_idx]);
-            // Keep bound leaves nonnegative even for negative boosted scores.
-            // Pointwise monotonic addition makes this counterfactual positive
-            // sum bound the signed actual sum; the positive-sum error proof
-            // then handles different prefix/suffix grouping and visit order.
-            let mut positive_score = f64::from(candidate_scores[candidate_idx].max(0.0));
-
-            for (secondary_idx, secondary) in secondaries.iter_mut().enumerate() {
-                // If a previous candidate already advanced this secondary past
-                // candidate_doc, the candidate can't be in the intersection.
-                if secondary.doc() > candidate_doc {
-                    continue 'next_candidate;
-                }
-                let seek_result = secondary.seek(candidate_doc);
-                if seek_result != candidate_doc {
-                    continue 'next_candidate;
-                }
-                let score = secondary.score();
-                total_score += f64::from(score);
-                positive_score += f64::from(score.max(0.0));
-
-                // Prune: even if all remaining secondaries score at their block max,
-                // can we still beat the threshold?
-                if upper_bound.is_at_most(
-                    positive_score + secondary_suffix_block_max[secondary_idx],
-                    threshold,
-                    &cutoff,
-                ) {
-                    continue 'next_candidate;
-                }
-            }
-
-            // All secondaries matched.
-            let total_score = total_score as Score;
-            if total_score > threshold {
-                threshold = callback(candidate_doc, total_score);
-                cutoff = upper_bound.cutoff(threshold);
-
-                if upper_bound.is_at_most(
-                    f64::from(leader_max_score) + secondaries_global_max_sum,
-                    threshold,
-                    &cutoff,
-                ) {
-                    return;
-                }
-            }
+        let args = (
+            &candidate_doc_ids[..num_candidates],
+            &candidate_scores[..num_candidates],
+            &mut *secondaries,
+            &secondary_suffix_block_max[..],
+            &upper_bound,
+            &mut threshold,
+            &mut cutoff,
+            global_bound,
+        );
+        let more = match (all_native, finite_nonnegative) {
+            (true, true) => check_candidates::<true, true>(args, callback),
+            (true, false) => check_candidates::<true, false>(args, callback),
+            (false, true) => check_candidates::<false, true>(args, callback),
+            (false, false) => check_candidates::<false, false>(args, callback),
+        };
+        if !more {
+            return;
         }
 
         doc = window_end + 1;
