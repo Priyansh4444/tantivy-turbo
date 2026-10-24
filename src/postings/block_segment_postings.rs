@@ -1,3 +1,4 @@
+use std::cell::{Cell, UnsafeCell};
 use std::io;
 
 use common::VInt;
@@ -32,7 +33,7 @@ fn max_score<I: Iterator<Item = Score>>(it: I) -> Option<Score> {
 pub struct BlockSegmentPostings {
     pub(crate) doc_decoder: BlockDecoder,
     block_loaded: bool,
-    freq_decoder: BlockDecoder,
+    freq_decoder: LazyFreqs,
     freq_reading_option: FreqReadingOption,
     block_max_score_cache: Option<Score>,
     doc_freq: u32,
@@ -41,34 +42,60 @@ pub struct BlockSegmentPostings {
     pub(crate) skip_directory: SkipDirectory,
 }
 
-fn decode_bitpacked_block(
-    doc_decoder: &mut BlockDecoder,
-    freq_decoder_opt: Option<&mut BlockDecoder>,
-    data: &[u8],
-    doc_offset: DocId,
-    doc_num_bits: u8,
-    tf_num_bits: u8,
-    strict_delta: bool,
-) {
-    let num_consumed_bytes =
-        doc_decoder.uncompress_block_sorted(data, doc_offset, doc_num_bits, strict_delta);
-    if let Some(freq_decoder) = freq_decoder_opt {
-        freq_decoder.uncompress_term_freqs(&data[num_consumed_bytes..], tf_num_bits, strict_delta);
+/// Term frequencies of the loaded block, decoded on first use: blocks loaded
+/// only to test doc membership never pay for them.
+struct LazyFreqs {
+    decoder: UnsafeCell<BlockDecoder>,
+    /// While undecoded: the frequency data's byte offset, its header and
+    /// whether it was strict-delta encoded.
+    pending: Cell<Option<(usize, u8, bool)>>,
+}
+
+impl LazyFreqs {
+    fn with_val(val: u32) -> Self {
+        Self {
+            decoder: UnsafeCell::new(BlockDecoder::with_val(val)),
+            pending: Cell::new(None),
+        }
+    }
+
+    /// The decoder, after decoding a pending block from `data`.
+    #[inline]
+    fn decoded(&self, data: &[u8]) -> &BlockDecoder {
+        if let Some((offset, header, strict_delta)) = self.pending.take() {
+            // SAFETY: `pending` is only set through `&mut self`, so no reference
+            // handed out earlier is alive; within this `&self` borrow, the
+            // decode runs before the first reference is handed out, and later
+            // calls find nothing pending and never mutate.
+            unsafe { &mut *self.decoder.get() }.uncompress_term_freqs(
+                &data[offset..],
+                header,
+                strict_delta,
+            );
+        }
+        // SAFETY: no mutable access can follow while this reference lives.
+        unsafe { &*self.decoder.get() }
+    }
+
+    /// Eager access, cancelling any pending decode.
+    fn decoder_mut(&mut self) -> &mut BlockDecoder {
+        self.pending.set(None);
+        self.decoder.get_mut()
+    }
+
+    fn set_pending(&mut self, offset: usize, header: u8, strict_delta: bool) {
+        self.pending.set(Some((offset, header, strict_delta)));
     }
 }
 
-fn decode_dense_block(
-    doc_decoder: &mut BlockDecoder,
-    freq_decoder_opt: Option<&mut BlockDecoder>,
-    data: &[u8],
-    doc_offset: DocId,
-    num_longs: u8,
-    tf_num_bits: u8,
-) {
-    let num_consumed_bytes =
-        doc_decoder.uncompress_bitset_sorted(data, doc_offset, num_longs as usize);
-    if let Some(freq_decoder) = freq_decoder_opt {
-        freq_decoder.uncompress_term_freqs(&data[num_consumed_bytes..], tf_num_bits, true);
+impl Clone for LazyFreqs {
+    fn clone(&self) -> Self {
+        Self {
+            // SAFETY: shared read; mutation only happens through `decoded`
+            // before any reference is handed out.
+            decoder: UnsafeCell::new(unsafe { &*self.decoder.get() }.clone()),
+            pending: Cell::new(self.pending.get()),
+        }
     }
 }
 
@@ -149,7 +176,7 @@ impl BlockSegmentPostings {
         let mut block_segment_postings = BlockSegmentPostings {
             doc_decoder: BlockDecoder::with_val(TERMINATED),
             block_loaded: false,
-            freq_decoder: BlockDecoder::with_val(1),
+            freq_decoder: LazyFreqs::with_val(1),
             freq_reading_option,
             block_max_score_cache: None,
             doc_freq,
@@ -274,7 +301,7 @@ impl BlockSegmentPostings {
         let docs = self.doc_decoder.output_array().iter().copied();
         let bm25_scores = docs.enumerate().map(|(idx, doc)| {
             let fieldnorm_id = fieldnorm_reader.fieldnorm_id(doc);
-            let term_freq = self.freq_decoder.output(idx);
+            let term_freq = self.freq_decoder.decoded(&self.data).output(idx);
             bm25_weight.score(fieldnorm_id, term_freq)
         });
         // An absent term contributes zero to a union, including all-negative blocks.
@@ -346,20 +373,20 @@ impl BlockSegmentPostings {
     #[inline]
     pub fn freqs(&self) -> &[u32] {
         debug_assert!(self.block_is_loaded());
-        self.freq_decoder.output_array()
+        self.freq_decoder.decoded(&self.data).output_array()
     }
 
     /// The frequency slots `freq` reads, valid even when no frequencies were
     /// encoded for this term (then prefilled with ones).
     pub(crate) fn freq_slots(&self) -> &[u32; COMPRESSION_BLOCK_SIZE] {
-        self.freq_decoder.output_slots()
+        self.freq_decoder.decoded(&self.data).output_slots()
     }
 
     /// Return the frequency at index `idx` of the block.
     #[inline]
     pub fn freq(&self, idx: usize) -> u32 {
         debug_assert!(self.block_is_loaded());
-        self.freq_decoder.output(idx)
+        self.freq_decoder.decoded(&self.data).output(idx)
     }
 
     /// Returns the length of the current block.
@@ -367,7 +394,7 @@ impl BlockSegmentPostings {
     /// Returns the decoded term-frequency buffer for the current block.
     #[inline]
     pub(crate) fn freq_output_array(&self) -> &[u32] {
-        self.freq_decoder.output_array()
+        self.freq_decoder.decoded(&self.data).output_array()
     }
 
     /// All blocks have a length of `NUM_DOCS_PER_BLOCK`,
@@ -480,37 +507,34 @@ impl BlockSegmentPostings {
                 tf_num_bits,
                 ..
             } => {
-                decode_bitpacked_block(
-                    &mut self.doc_decoder,
-                    if let FreqReadingOption::ReadFreq = self.freq_reading_option {
-                        Some(&mut self.freq_decoder)
-                    } else {
-                        None
-                    },
+                let doc_bytes = self.doc_decoder.uncompress_block_sorted(
                     &self.data.as_slice()[offset..],
                     self.skip_reader.last_doc_in_previous_block,
                     doc_num_bits,
-                    tf_num_bits,
                     strict_delta_encoded,
                 );
+                if let FreqReadingOption::ReadFreq = self.freq_reading_option {
+                    self.freq_decoder.set_pending(
+                        offset + doc_bytes,
+                        tf_num_bits,
+                        strict_delta_encoded,
+                    );
+                }
             }
             BlockInfo::Dense {
                 num_longs,
                 tf_num_bits,
                 ..
             } => {
-                decode_dense_block(
-                    &mut self.doc_decoder,
-                    if let FreqReadingOption::ReadFreq = self.freq_reading_option {
-                        Some(&mut self.freq_decoder)
-                    } else {
-                        None
-                    },
+                let doc_bytes = self.doc_decoder.uncompress_bitset_sorted(
                     &self.data.as_slice()[offset..],
                     self.skip_reader.last_doc_in_previous_block,
-                    num_longs,
-                    tf_num_bits,
+                    num_longs as usize,
                 );
+                if let FreqReadingOption::ReadFreq = self.freq_reading_option {
+                    self.freq_decoder
+                        .set_pending(offset + doc_bytes, tf_num_bits, true);
+                }
             }
             BlockInfo::VInt { num_docs } => {
                 let data = {
@@ -523,7 +547,7 @@ impl BlockSegmentPostings {
                 decode_vint_block(
                     &mut self.doc_decoder,
                     if let FreqReadingOption::ReadFreq = self.freq_reading_option {
-                        Some(&mut self.freq_decoder)
+                        Some(self.freq_decoder.decoder_mut())
                     } else {
                         None
                     },
@@ -549,7 +573,7 @@ impl BlockSegmentPostings {
         BlockSegmentPostings {
             doc_decoder: BlockDecoder::with_val(TERMINATED),
             block_loaded: true,
-            freq_decoder: BlockDecoder::with_val(1),
+            freq_decoder: LazyFreqs::with_val(1),
             freq_reading_option: FreqReadingOption::NoFreq,
             block_max_score_cache: None,
             doc_freq: 0,
