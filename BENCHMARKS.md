@@ -23,12 +23,13 @@ Back to the [README](README.md).
 
 | | vs **Tantivy 0.27** | vs **lucene-rs** (Lucene 10 port) | vs **Apache Lucene 10.4** |
 | --- | :---: | :---: | :---: |
-| TOP-10, typical query (geomean) | **1.22× faster** | **1.39× faster** | **1.82–2.09× faster** |
-| TOP-10, total time (1,201 queries) | **1.66× faster** | **1.14× faster** | n/a¹ |
-| TOP-10, single term | **1.19× faster** | **1.86× faster** | n/a¹ |
-| TOP-10, OR queries | **2.3–3.3× faster** | 2 terms **1.04× faster**, 3+ terms **1.05× faster** | n/a¹ |
-| TOP-10, AND queries | 1.2× slower | even on total time, **1.18× faster** typical | faster on all 6¹ |
-| COUNT, total time | **1.5× faster** | **6.6× faster** | **1.27–1.30× faster** |
+| TOP-10, typical query (geomean) | **1.34× faster** | **1.49× faster** | **1.82–2.09× faster** |
+| TOP-10, total time (1,201 queries) | **1.79× faster** | **1.25× faster** | n/a¹ |
+| TOP-10, single term | **1.18× faster** | **1.85× faster** | n/a¹ |
+| TOP-10, OR queries | **2.3–3.3× faster** | 2 terms **1.02× faster**, 3+ terms **1.04× faster** | n/a¹ |
+| TOP-10, AND queries | **1.35× faster** | **1.58× faster** | faster on all 6¹ |
+| TOP-10, phrase queries | **1.37× faster** | **1.24× faster** | n/a¹ |
+| COUNT, total time | **1.6× faster** (every query type) | **7.1× faster** (every query type) | **1.27–1.30× faster** |
 | Results | identical match counts | identical top-10 IDs, scores and counts | identical raw BM25 scores |
 
 <sub>¹ The Lucene 10.4 comparison uses the 20-query search-benchmark-game Wikipedia set (8 term, 6 AND, 4 OR, 2 phrase). The fork has the lower median latency on all 20 queries, for both TOP-10 and COUNT, in both process orders.</sub>
@@ -46,7 +47,7 @@ Back to the [README](README.md).
 - **Results are checked during timing.** Every timed call's checksum is compared against a frozen correctness dump.
 - **Machine:** Intel Core Ultra 7 255H laptop on AC power, Rust 1.99, `-C target-cpu=native`, fat LTO.
 
-Absolute microseconds are only comparable within one table, because each table is a separate run. The current tables were measured on battery, and ratios between separate runs vary by a few percent (for example, AND against lucene-rs measured 1.01 to 1.08 across runs of code that executes the same instructions). tantivy-turbo's index is the same 1M-document index re-encoded by a single-segment merge to add level-1 skip data; documents and doc IDs are unchanged.
+Absolute microseconds are only comparable within one table, because each table is a separate run. The current tables were measured on battery, and ratios between separate runs vary by a few percent; typical-query ratios of very short queries (a few microseconds) vary the most. tantivy-turbo's index is the same 1M-document index re-encoded by a single-segment merge to add level-1 skip data; documents and doc IDs are unchanged.
 
 <br>
 
@@ -63,32 +64,32 @@ Both engines index the same documents. Each uses its own default text analysis a
 
 | TOP-10 | Queries | turbo | Tantivy 0.27 | Time ratio (AB / BA) | Typical query | Queries faster |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| OR, 3+ terms | 103 | 299 µs | 995 µs | **0.30 / 0.30** | 0.40 | 100 / 100 |
-| OR, 2 terms | 198 | 71.8 µs | 166 µs | **0.43 / 0.43** | 0.48 | 197 / 198 |
-| Phrase | 300 | 309 µs | 428 µs | **0.73 / 0.71** | 0.92 | 136 / 143 |
-| Single term | 300 | 12.2 µs | 14.5 µs | **0.84 / 0.84** | 0.88 | 232 / 222 |
-| AND | 300 | 135 µs | 112 µs | 1.19 / 1.23 | 1.22 | 8 / 10 |
-| **All 1,201** | 1,201 | 151 µs | 251 µs | **0.61 / 0.60** | 0.82 | 673 / 673 |
-| Wikipedia 20 | 20 | 178 µs | 1,278 µs | **0.14 / 0.14** | 0.52 | 14 / 14 |
+| OR, 3+ terms | 103 | 294 µs | 962 µs | **0.30 / 0.31** | 0.41 | 101 / 102 |
+| OR, 2 terms | 198 | 70.9 µs | 164 µs | **0.43 / 0.43** | 0.48 | 197 / 198 |
+| Phrase | 300 | 304 µs | 416 µs | **0.73 / 0.73** | 0.91 | 134 / 137 |
+| Single term | 300 | 12.3 µs | 14.5 µs | **0.85 / 0.84** | 0.88 | 232 / 229 |
+| AND | 300 | 81.3 µs | 110 µs | **0.74 / 0.74** | 0.85 | 121 / 124 |
+| **All 1,201** | 1,201 | 136 µs | 244 µs | **0.56 / 0.56** | 0.75 | 785 / 790 |
+| Wikipedia 20 | 20 | 198 µs | 1,265 µs | **0.16 / 0.15** | 0.53 | 15 / 15 |
 
 <details>
 <summary><b>COUNT results</b></summary>
 
 | COUNT | Queries | turbo | Tantivy 0.27 | Time ratio (AB / BA) | Typical query | Queries faster |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| OR, 3+ terms | 103 | 275 µs | 1,055 µs | **0.26 / 0.26** | 0.50 | 77 / 78 |
-| OR, 2 terms | 198 | 56.8 µs | 98.5 µs | **0.58 / 0.57** | 0.96 | 82 / 90 |
-| Phrase | 300 | 421 µs | 419 µs | 1.00 / 1.01 | 1.04 | 101 / 107 |
-| Single term | 300 | 0.7 µs | 0.7 µs | 1.03 / 1.04 | 1.03 | 80 / 82 |
-| AND | 300 | 105 µs | 131 µs | **0.81 / 0.79** | 1.00 | 106 / 130 |
-| **All 1,201** | 1,201 | 165 µs | 244 µs | **0.67 / 0.67** | 0.95 | 446 / 487 |
-| Wikipedia 20 | 20 | 557 µs | 1,668 µs | **0.34 / 0.33** | 0.55 | 13 / 14 |
+| OR, 3+ terms | 103 | 268 µs | 1,034 µs | **0.26 / 0.26** | 0.50 | 77 / 83 |
+| OR, 2 terms | 198 | 56.5 µs | 97.4 µs | **0.58 / 0.58** | 0.96 | 79 / 90 |
+| Phrase | 300 | 384 µs | 410 µs | 0.94 / 0.94 | 1.00 | 131 / 121 |
+| Single term | 300 | 0.6 µs | 0.7 µs | 0.98 / 0.91 | 0.94 | 234 / 258 |
+| AND | 300 | 88.6 µs | 131 µs | **0.68 / 0.67** | 0.86 | 171 / 197 |
+| **All 1,201** | 1,201 | 151 µs | 240 µs | **0.63 / 0.63** | 0.89 | 692 / 749 |
+| Wikipedia 20 | 20 | 492 µs | 1,631 µs | **0.30 / 0.30** | 0.54 | 18 / 18 |
 
 </details>
 
 - **The win is concentrated in OR.** OR queries with 3+ terms take under a third of the time, 2-term ORs under half. The Wikipedia-20 total drops 7×, and turbo is faster on 14 of those 20 queries.
-- **Single terms are now faster too** (1.19×): whole level-1 groups that cannot beat the threshold are skipped, and candidate blocks are scored in batches.
-- **AND is the remaining regression.** Conjunctions are about 1.2× slower than in 0.27. The algorithm is the same; tantivy-turbo's exact f64 score arithmetic costs the difference.
+- **Every query type is faster**, in both TOP-10 and COUNT total time. Single terms (1.18×) skip whole level-1 groups and score candidate blocks in batches; AND (1.35×) follows the rarest term's blocks instead of every term's, and jumps to its next posting.
+- **Phrase COUNT is the closest:** 1.07× faster in total, level on the typical query.
 - **Resources:** the index is 598 MB against 661 MB. tantivy-turbo's heap stays at about 1.7 MB; total RSS is dominated by memory-mapped index pages (roughly 190–240 MB for either engine, varying run to run with the page cache).
 
 Data: [`bench-results/turbo-vs-tantivy-0.27`](bench-results/turbo-vs-tantivy-0.27).
@@ -108,18 +109,18 @@ Data: [`bench-results/turbo-vs-tantivy-0.27`](bench-results/turbo-vs-tantivy-0.2
 
 | TOP-10 | Queries | turbo | lucene-rs | Time ratio (AB / BA) | Typical query | Queries faster |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| OR, 3+ terms | 103 | 302 µs | 316 µs | 0.95 / 0.96 | 0.92 | 70 / 65 |
-| OR, 2 terms | 198 | 71.9 µs | 74.7 µs | 0.94 / 0.98 | 0.71 | 151 / 141 |
-| Phrase | 300 | 312 µs | 385 µs | **0.81 / 0.81** | 0.69 | 265 / 259 |
-| Single term | 300 | 12.1 µs | 22.5 µs | **0.54 / 0.53** | 0.59 | 292 / 290 |
-| AND | 300 | 134 µs | 133 µs | 1.00 / 1.02 | 0.85 | 211 / 210 |
-| **All 1,201** | 1,201 | 152 µs | 174 µs | **0.87 / 0.88** | 0.72 | 989 / 965 |
-| Wikipedia 20 | 20 | 179 µs | 233 µs | **0.76 / 0.77** | 0.56 | 16 / 16 |
+| OR, 3+ terms | 103 | 295 µs | 307 µs | 0.96 / 0.96 | 0.92 | 75 / 72 |
+| OR, 2 terms | 198 | 71.0 µs | 72.8 µs | 0.96 / 0.99 | 0.72 | 148 / 140 |
+| Phrase | 300 | 303 µs | 374 µs | **0.81 / 0.81** | 0.69 | 266 / 266 |
+| Single term | 300 | 12.1 µs | 22.4 µs | **0.55 / 0.53** | 0.59 | 295 / 295 |
+| AND | 300 | 81.7 µs | 129 µs | **0.63 / 0.63** | 0.62 | 270 / 272 |
+| **All 1,201** | 1,201 | 136 µs | 170 µs | **0.80 / 0.80** | 0.67 | 1,054 / 1,045 |
+| Wikipedia 20 | 20 | 194 µs | 227 µs | **0.85 / 0.85** | 0.59 | 17 / 17 |
 
 **What this means:**
-- **Typical query:** tantivy-turbo is **1.39× faster** and wins on 989 / 965 of 1,201 queries (by run order).
-- **Total time:** tantivy-turbo is **1.14× faster**, and at least level on every query type (AND: 1.01, within run-to-run noise).
-- **Long-OR progress:** this release took 3+ term ORs from 1.47× slower than lucene-rs to **1.05× faster** (1.09× faster on the typical query, faster on 70 / 65 of 103). See [Bulk scoring](#bulk-scoring-for-long-or-queries) and [Level-1 skip data](#level-1-skip-data) below.
+- **Typical query:** tantivy-turbo is **1.49× faster** and wins on 1,054 / 1,045 of 1,201 queries (by run order).
+- **Total time:** tantivy-turbo is **1.25× faster**, and faster on every query type, TOP-10 and COUNT. AND, previously level, is now **1.58× faster**.
+- **Long-OR progress:** this release took 3+ term ORs from 1.47× slower than lucene-rs to **1.04× faster** (1.09× faster on the typical query, faster on 75 / 72 of 103). See [Bulk scoring](#bulk-scoring-for-long-or-queries) and [Level-1 skip data](#level-1-skip-data) below.
 
 <p align="center">
   <picture>
@@ -133,13 +134,13 @@ Data: [`bench-results/turbo-vs-tantivy-0.27`](bench-results/turbo-vs-tantivy-0.2
 
 | COUNT | Queries | turbo | lucene-rs | Time ratio (AB / BA) | Typical query | Queries faster |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| OR, 3+ terms | 103 | 275 µs | 8,718 µs | **0.03 / 0.03** | 0.05 | 103 / 103 |
-| OR, 2 terms | 198 | 57.3 µs | 858 µs | **0.07 / 0.07** | 0.11 | 197 / 197 |
-| Phrase | 300 | 422 µs | 440 µs | 0.96 / 0.96 | 0.75 | 256 / 258 |
-| Single term | 300 | 0.7 µs | 209 µs | **< 0.01 / < 0.01** | 0.02 | 300 / 300 |
-| AND | 300 | 109 µs | 174 µs | **0.63 / 0.63** | 0.61 | 279 / 275 |
-| **All 1,201** | 1,201 | 166 µs | 1,095 µs | **0.15 / 0.15** | 0.17 | 1,135 / 1,133 |
-| Wikipedia 20 | 20 | 553 µs | 3,968 µs | **0.14 / 0.14** | 0.02 | 20 / 20 |
+| OR, 3+ terms | 103 | 266 µs | 8,471 µs | **0.03 / 0.03** | 0.05 | 103 / 103 |
+| OR, 2 terms | 198 | 55.0 µs | 838 µs | **0.07 / 0.07** | 0.11 | 197 / 198 |
+| Phrase | 300 | 383 µs | 422 µs | 0.91 / 0.90 | 0.73 | 262 / 267 |
+| Single term | 300 | 0.7 µs | 206 µs | **< 0.01 / < 0.01** | 0.02 | 300 / 300 |
+| AND | 300 | 88.1 µs | 170 µs | **0.52 / 0.52** | 0.53 | 284 / 281 |
+| **All 1,201** | 1,201 | 150 µs | 1,064 µs | **0.14 / 0.14** | 0.16 | 1,146 / 1,149 |
+| Wikipedia 20 | 20 | 486 µs | 3,864 µs | **0.13 / 0.12** | 0.02 | 20 / 20 |
 
 </details>
 
@@ -208,6 +209,16 @@ New in this release, and all exact: results are bit-identical to the previous bu
 - **Dense blocks:** bitset blocks decode a byte at a time from a lookup table.
 - **Repeated terms are scored once:** like Lucene's rewrite of repeated SHOULD clauses, `to be or not to be` scores 4 terms instead of 6. The published sum still adds each leaf at every original clause position.
 
+### AND queries: windows that follow the rarest term
+
+Block-max conjunctions (Tantivy's and Lucene's) end each window at the nearest block boundary of *any* term, so a dense term chops the rare term's range into many tiny windows that each pay for bound checks. tantivy-turbo instead:
+
+- ends each window at the rare leader's block, bounding the other terms over it with their cached range maxima (level-1 groups for long ranges);
+- starts the next window at the leader's next posting, skipping stretches that cannot contain a match;
+- filters leaders with a single conservative cut, since the second pass rechecks every candidate exactly.
+
+This cut AND time by about a third, from 1.2× slower than Tantivy 0.27 to 1.35× faster.
+
 ### Level-1 skip data
 
 Like Lucene's two-level skip lists and impacts, every 32 full blocks of a term get one fixed-width record after the per-block skip records: the group's byte and position offsets, and one max-score input pair selected over all the group's postings (with the same rule that selects a block's pair, so its bound is sound for the same reason).
@@ -259,9 +270,8 @@ Speed changes are only accepted if results are **bit-identical**:
 
 ## Known limitations and roadmap
 
-- **AND queries:** about 1.2× slower than Tantivy 0.27; level with lucene-rs on total time and 1.18× faster on the typical query.
-- **Long OR queries:** 1.05× faster than lucene-rs on total time, but some 3-term queries are still 1.2–1.3× slower (`world bank president`, `us coast guard`).
-- **COUNT for single terms and phrases:** within about 3–4% of Tantivy 0.27 (single-term counts are a dictionary lookup in both).
+- **Long OR queries:** 1.04× faster than lucene-rs on total time, but some 3-term queries are still 1.2–1.3× slower (`world bank president`, `us coast guard`).
+- **Phrase COUNT:** level with Tantivy 0.27 on the typical query (1.07× faster in total).
 - **Index compatibility:** turbo-written indexes can't be opened by upstream Tantivy.
 - **Lucene API parity:** not complete beyond scoring and the core query types.
 
