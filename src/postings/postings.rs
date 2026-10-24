@@ -32,11 +32,10 @@ impl Iterator for PositionCursor<'_> {
         if self.remaining == 0 {
             return None;
         }
-        let mut delta = [0u32; 1];
-        self.reader.read(self.read_offset, &mut delta);
+        let delta = self.reader.get(self.read_offset);
         self.read_offset += 1;
         self.remaining -= 1;
-        self.position += delta[0];
+        self.position += delta;
         Some(self.position)
     }
 }

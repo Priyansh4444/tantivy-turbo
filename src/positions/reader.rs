@@ -155,6 +155,21 @@ impl PositionReader {
     /// Fills a buffer with the positions `[offset..offset+output.len())` integers.
     ///
     /// This function is optimized to be called with increasing values of `offset`.
+    /// The single position delta at `offset`; `read` for one value, served
+    /// straight from the decoded block when the reader is anchored on it.
+    #[inline]
+    pub(crate) fn get(&mut self, offset: u64) -> u32 {
+        if self.anchor_offset == self.block_offset && offset >= self.block_offset {
+            let offset_in_block = offset - self.block_offset;
+            if offset_in_block < COMPRESSION_BLOCK_SIZE as u64 {
+                return self.block_decoder.output_array()[offset_in_block as usize];
+            }
+        }
+        let mut delta = [0u32; 1];
+        self.read(offset, &mut delta);
+        delta[0]
+    }
+
     pub fn read(&mut self, mut offset: u64, mut output: &mut [u32]) {
         if offset < self.anchor_offset {
             self.reset();
