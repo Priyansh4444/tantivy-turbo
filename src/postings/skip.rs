@@ -169,9 +169,9 @@ pub(crate) struct SkipReader {
     block_info: BlockInfo,
 
     position_offset: u64,
-    /// The term's skip directory and doc frequency, when it has level-1
-    /// records; used only by long skips.
-    level1: Option<Box<(SkipDirectory, u32)>>,
+    /// The term's skip directory, doc frequency and postings length, when it
+    /// has level-1 records; used only by long skips.
+    level1: Option<Box<(SkipDirectory, u32, usize)>>,
 }
 
 #[derive(Clone, Eq, PartialEq, Copy, Debug)]
@@ -711,14 +711,20 @@ impl SkipReader {
     }
 
     /// Lets long skips jump whole level-1 groups of this term.
-    pub(crate) fn set_level1(&mut self, directory: &SkipDirectory, doc_freq: u32) {
-        self.level1 = (directory.groups() > 0).then(|| Box::new((directory.clone(), doc_freq)));
+    pub(crate) fn set_level1(
+        &mut self,
+        directory: &SkipDirectory,
+        doc_freq: u32,
+        postings_len: usize,
+    ) {
+        self.level1 =
+            (directory.groups() > 0).then(|| Box::new((directory.clone(), doc_freq, postings_len)));
     }
 
     /// The start of the last level-1 group beginning after the current block
     /// and not after the target's group, with what `jump_to_block` needs.
     fn level1_jump(&self, target: DocId) -> Option<(OwnedBytes, usize, u32, usize, u64, DocId)> {
-        let (directory, doc_freq) = self.level1.as_deref()?;
+        let (directory, doc_freq, postings_len) = self.level1.as_deref()?;
         let current = ((doc_freq - self.remaining_docs) as usize) / COMPRESSION_BLOCK_SIZE;
         let groups = directory.groups();
         let mut group = current / SKIP_GROUP_BLOCKS;
@@ -732,6 +738,14 @@ impl SkipReader {
             return None;
         }
         let (byte_offset, position_offset) = directory.group_offsets(group);
+        // Records come from the index file: a jump must move forward and stay
+        // inside the postings, else the block-by-block walk is used instead.
+        if byte_offset < self.byte_offset
+            || byte_offset >= *postings_len
+            || position_offset < self.position_offset
+        {
+            return None;
+        }
         Some((
             directory.records_from(block),
             block,

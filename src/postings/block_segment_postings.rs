@@ -157,9 +157,11 @@ impl BlockSegmentPostings {
             skip_reader,
             skip_directory: SkipDirectory::new(directory_data, doc_freq, record_option),
         };
-        block_segment_postings
-            .skip_reader
-            .set_level1(&block_segment_postings.skip_directory, doc_freq);
+        block_segment_postings.skip_reader.set_level1(
+            &block_segment_postings.skip_directory,
+            doc_freq,
+            block_segment_postings.data.len(),
+        );
         block_segment_postings.load_block();
         Ok(block_segment_postings)
     }
@@ -311,7 +313,8 @@ impl BlockSegmentPostings {
         } else {
             self.skip_reader.reset(OwnedBytes::empty(), doc_freq);
         }
-        self.skip_reader.set_level1(&self.skip_directory, doc_freq);
+        self.skip_reader
+            .set_level1(&self.skip_directory, doc_freq, self.data.len());
         self.doc_freq = doc_freq;
         self.load_block();
         Ok(())

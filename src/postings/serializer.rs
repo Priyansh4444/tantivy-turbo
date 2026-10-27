@@ -720,6 +720,56 @@ mod native_bound_tests {
     }
 
     #[test]
+    fn corrupt_level1_offsets_fall_back_to_block_skips() {
+        let mut state = 0x2468_ace1u32;
+        let mut next = move || {
+            state ^= state << 13;
+            state ^= state >> 17;
+            state ^= state << 5;
+            state
+        };
+        let max_doc = 200_000u32;
+        let norms: Vec<u32> = (0..max_doc).map(|_| 1 + next() % 500).collect();
+        let postings: Vec<(DocId, u32)> = (0..max_doc)
+            .step_by(3)
+            .map(|doc| (doc, 1 + doc % 4))
+            .collect();
+        let option = IndexRecordOption::WithFreqsAndPositions;
+        let (with, without) = term_bytes_with_and_without_groups(option, &norms, &postings);
+        let mut slice = &with[..];
+        let skip_len = VInt::deserialize_u64(&mut slice).unwrap() as usize;
+        let header = with.len() - slice.len();
+        let blocks = postings.len() / COMPRESSION_BLOCK_SIZE;
+        let groups_start = header + blocks * 12;
+        assert_eq!(
+            header + skip_len,
+            groups_start + (blocks / SKIP_GROUP_BLOCKS) * 18
+        );
+        for corrupt_offset in [u64::MAX, u64::from(u32::MAX)] {
+            let mut corrupt = with.clone();
+            for group in 1..blocks / SKIP_GROUP_BLOCKS {
+                let start = groups_start + group * 18;
+                corrupt[start..start + 8].copy_from_slice(&corrupt_offset.to_le_bytes());
+            }
+            let count = postings.len() as u32;
+            let open = |bytes: &Vec<u8>| {
+                BlockSegmentPostings::open(count, FileSlice::from(bytes.clone()), option, option)
+                    .unwrap()
+            };
+            let mut fast = open(&corrupt);
+            let mut slow = open(&without);
+            let mut target = 0u32;
+            while target < max_doc {
+                target += 1 + next() % 20_000;
+                assert_eq!(fast.seek(target), slow.seek(target));
+                assert_eq!(fast.docs(), slow.docs());
+                assert_eq!(fast.freqs(), slow.freqs());
+                assert_eq!(fast.position_offset(), slow.position_offset());
+            }
+        }
+    }
+
+    #[test]
     fn level1_groups_seek_exactly_like_block_by_block_skips() {
         let mut state = 0x9e37_79b9u32;
         let mut next = move || {
