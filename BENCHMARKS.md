@@ -262,8 +262,11 @@ Short OR queries that mix a stopword with rarer terms gained the most: `medal of
 Speed changes are only accepted if results are **bit-identical**:
 
 - **Exact gates:** top-10 document IDs, f32 score bits and match counts are compared against the previous accepted build on three 1,227-query gates (default BM25, k1 0.9/b 0.4, and k1 2/b 1). They are also compared against an exhaustive scorer. The level-1 build passes them on the re-encoded index against results recorded on the original index.
-- **Tests:** the full workspace suite passes, 2,159 tests with 9 ignored. That includes exhaustive-equality fixtures that force the coarse-region path, and forced hand-backs to fine regions, on every OR fixture, plus fixtures with repeated terms.
+- **Tests:** the full workspace suite passes (2,185 tests with every feature enabled, 9 ignored). That includes exhaustive-equality fixtures that force the coarse-region path, and forced hand-backs to fine regions, on every OR fixture, plus fixtures with repeated terms.
+- **End-to-end differential test** ([`tests/pruning_exactness.rs`](tests/pruning_exactness.rs)): on random multi-segment indexes with dense and sparse terms, deletions, repeated query terms and three BM25 parameter sets, the pruned top-1/10/100 of random term, OR, AND, phrase and mixed queries must equal scoring every match, document for document and bit for bit, and both count paths must equal the match count. Deliberately planted pruning bugs in the OR and AND paths make it fail.
+- **Index robustness:** level-1 skip records are only used when their offsets move forward and stay inside the term's postings; corrupted offsets fall back to block-by-block skipping (tested).
 - **Upstream CI:** all of Tantivy's CI workflows (unit tests across feature sets, long-running tests, coverage) pass on this repository.
+- **Security:** the fork adds no `unsafe` code to Tantivy 0.27. `cargo audit` reports no vulnerabilities; its only warnings are unmaintained crates inherited from upstream's optional or dev dependencies (`atty`, `proc-macro-error`, `paste`).
 - **One frozen ruler:** every optimization attempt, kept or reverted, was judged by the same frozen benchmark ruler. 34 attempts and their raw samples are published under [`doc/performance/lucene-10.4/results`](doc/performance/lucene-10.4/results).
 
 <br>
