@@ -14,12 +14,12 @@ tantivy = { package = "tantivy-turbo", git = "https://github.com/Priyansh4444/ta
 
 <p align="center">
   <a href="demo/tantivy-turbo-demo.mp4"><img alt="Demo video" src="demo/poster.png" width="720"></a>
-  <br><sub>▶ <a href="demo/tantivy-turbo-demo.mp4">32 s demo</a>, made with <a href="https://github.com/dmtrKovalenko/fframes">fframes</a></sub>
+  <br><sub>▶ <a href="demo/tantivy-turbo-demo.mp4">45 s demo</a>, made with <a href="https://github.com/dmtrKovalenko/fframes">fframes</a></sub>
 </p>
 
 ## Results
 
-Top-10 search on 1M Wikipedia docs, 1,201 queries. Each number is how many times faster tantivy-turbo is.
+Top-10 search on 1M Wikipedia docs, 1,201 queries. The saved Tantivy and lucene-rs comparisons were measured on October 23, before a later skip-reader fix; the Lucene comparison uses an earlier build and 20 queries. Each number is the speedup in its recorded run.
 
 | | vs Tantivy 0.27 | vs [lucene-rs](https://github.com/pc-style/lucene-rs) | vs Lucene 10.4 |
 | --- | :---: | :---: | :---: |
@@ -51,7 +51,7 @@ Full tables, Lucene per-query results, memory, methodology and how to reproduce:
 ## What's different
 
 - **OR queries:** MaxScore pruning for 2–32 terms with Lucene-style bulk scoring windows, choosing fine or wide regions by measured cost, and scoring repeated terms once.
-- **Scoring:** exact Lucene 10 BM25. Scores match Lucene bit for bit.
+- **Scoring:** Lucene-style BM25. Score bits match lucene-rs on the checked query workload; the earlier Apache Lucene comparison used a numeric tolerance.
 - **AND queries:** block-max windows follow the rarest term's blocks and jump straight to its next posting.
 - **COUNT:** doc-frequency shortcuts, bitset counting lanes, and bit-test probes into dense blocks.
 - **Index:** Lucene-style level-1 skip data every 32 blocks (jump offsets and a max-score pair per group).

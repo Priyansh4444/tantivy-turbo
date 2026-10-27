@@ -1,9 +1,9 @@
 # tantivy-turbo demo video
 
-A 32-second 1080p launch video for tantivy-turbo, written in Rust with
-[fframes](https://github.com/dmtrKovalenko/fframes): six scenes, Bayer-dithered
-bars and backgrounds (16 fill levels per color as SVG patterns), no audio. Every
-number on screen comes from the benchmarks in the repository README.
+A 45-second 1080p launch video for tantivy-turbo, written in Rust with
+[fframes](https://github.com/dmtrKovalenko/fframes): eight scenes, solid bars,
+and no audio. Benchmark figures are from the repository; the AND window-count
+animation is illustrative.
 
 ```bash
 cargo build --release                         # first build downloads prebuilt Skia/ffmpeg
