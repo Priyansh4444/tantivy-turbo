@@ -102,6 +102,8 @@ Data: [`bench-results/turbo-vs-tantivy-0.27`](bench-results/turbo-vs-tantivy-0.2
 
 <p align="center">
   <picture>
+    <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/vs-lucene-rs-mobile-dark.svg">
+    <source media="(max-width: 600px)" srcset="assets/vs-lucene-rs-mobile-light.svg">
     <source media="(prefers-color-scheme: dark)" srcset="assets/vs-lucene-rs-dark.svg">
     <img alt="tantivy-turbo vs lucene-rs, TOP-10" src="assets/vs-lucene-rs-light.svg" width="860">
   </picture>
@@ -304,7 +306,7 @@ What you need to know to rerun them:
 
 ## Demo video
 
-The demo is a 45-second, eight-scene video written in Rust with [fframes](https://github.com/dmtrKovalenko/fframes). Its benchmark figures come from the tables above; the AND window-count animation is illustrative.
+The demo is a 54.5-second, eight-scene video written in Rust with [fframes](https://github.com/dmtrKovalenko/fframes). Its benchmark figures come from the tables above; the AND window-count animation is illustrative.
 
 ```bash
 cd demo

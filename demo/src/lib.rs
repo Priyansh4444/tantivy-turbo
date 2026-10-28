@@ -32,9 +32,10 @@ const MONO: &str = "JetBrains Mono";
 const W_SANS: u16 = 500;
 const W_MONO: u16 = 400;
 
-/// Seconds of cross-fade between scenes.
+/// Seconds shared by adjacent scenes. Titles fade through the background so
+/// two explanations are never superimposed during the transition.
 const XFADE: f32 = 0.4;
-const SCENES: [f32; 8] = [4.0, 7.5, 6.0, 5.5, 6.0, 6.5, 5.0, 4.5];
+const SCENES: [f32; 8] = [4.0, 9.0, 8.0, 7.0, 7.5, 8.0, 6.0, 5.0];
 
 static EASE: LazyLock<AnimationRuntime> =
     LazyLock::new(|| AnimationRuntime::new(0.8, &Easing::CubicBezier(0.16, 1.0, 0.3, 1.0)));
@@ -140,11 +141,12 @@ fn rise(frame: &Frame, start: f32) -> f32 {
     frame.animate_runtime(AnimateRuntimeInput { on_second: start, from: 40.0, to: 0.0, animation_runtime: &SPRING })
 }
 
-/// Opacity of a cross-faded scene of `length` seconds (plus the overlap in front of it):
-/// fade in over the overlap, fade out over the last 0.3 s.
+/// Fade through the background during the overlap, keeping titles legible.
 fn scene_alpha(frame: &Frame, length: f32) -> f32 {
     let t = frame.seconds();
-    (t / XFADE).min((length + XFADE - t) / 0.3).clamp(0.0, 1.0)
+    ((t - XFADE / 2.0) / (XFADE / 2.0))
+        .min((length + XFADE / 2.0 - t) / (XFADE / 2.0))
+        .clamp(0.0, 1.0)
 }
 
 /// A horizontal bar growing right from `x`: square at the baseline, 8px rounded data end.
@@ -209,7 +211,7 @@ impl Scene for Intro {
                 fframes::svgr!(<rect x={x} y={300.0 - h * front} width="52" height={h * front} rx="8" fill={color} opacity={front * settle} />)
             })
             .collect();
-        let alpha = (t / 0.2).min((SCENES[0] - t) / 0.3).clamp(0.0, 1.0);
+        let alpha = (t / 0.2).min((SCENES[0] - XFADE / 2.0 - t) / 0.2).clamp(0.0, 1.0);
         let title = ramp(&frame, 1.0);
         let sub = ramp(&frame, 1.5);
         fframes::svgr!(<g opacity={alpha}>
@@ -268,9 +270,12 @@ impl Scene for VsUpstream {
             })
             .collect();
         fframes::svgr!(<g opacity={scene_alpha(&frame, SCENES[1])}>
-            {heading("VS TANTIVY 0.27", "Every query type, faster in total", &frame)}
+            {heading("VS TANTIVY 0.27", "Speedup by query type", &frame)}
             {legend(1290.0, 300.0, &frame, 0.5)}
             <line x1="620" y1="340" x2="620" y2="930" stroke={AXIS} stroke-width="2" opacity={ramp(&frame, 0.5)} />
+            <text x="620" y="326" font-family={MONO} font-weight={W_MONO} font-size="24" fill={INK2} opacity={ramp(&frame, 0.5)}>"1× same speed"</text>
+            <text x="1110" y="326" text-anchor="middle" font-family={MONO} font-weight={W_MONO} font-size="24" fill={MUTED} opacity={ramp(&frame, 0.5)}>"2×"</text>
+            <text x="1600" y="326" text-anchor="middle" font-family={MONO} font-weight={W_MONO} font-size="24" fill={MUTED} opacity={ramp(&frame, 0.5)}>"4×"</text>
             {groups}
             <text x="192" y="956" font-family={MONO} font-weight={W_MONO} font-size="24" fill={MUTED} opacity={ramp(&frame, 1.8)}>"Oct 23 run · geometric mean of both orders · before later skip-reader fix"</text>
         </g>)
@@ -318,6 +323,9 @@ impl Scene for VsLuceneRs {
         fframes::svgr!(<g opacity={scene_alpha(&frame, SCENES[2])}>
             {heading("VS LUCENE-RS · RUST PORT OF LUCENE 10", "1.25× faster, same bits", &frame)}
             <line x1="620" y1="350" x2="620" y2="860" stroke={AXIS} stroke-width="2" opacity={ramp(&frame, 0.5)} />
+            <text x="620" y="336" font-family={MONO} font-weight={W_MONO} font-size="24" fill={INK2} opacity={ramp(&frame, 0.5)}>"1× same speed"</text>
+            <text x="1123" y="336" text-anchor="middle" font-family={MONO} font-weight={W_MONO} font-size="24" fill={MUTED} opacity={ramp(&frame, 0.5)}>"1.5×"</text>
+            <text x="1480" y="336" text-anchor="middle" font-family={MONO} font-weight={W_MONO} font-size="24" fill={MUTED} opacity={ramp(&frame, 0.5)}>"2×"</text>
             {bars}
             <g opacity={ramp(&frame, 2.0)}>
                 <rect x="1390" y="540" width="338" height="180" rx="20" fill={PANEL} />
