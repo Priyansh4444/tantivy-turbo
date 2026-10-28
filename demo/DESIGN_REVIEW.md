@@ -21,3 +21,20 @@ The dark visuals now use a deeper navy surface, cool text, blue for TOP-10 and c
 ## Black, social-feed pass
 
 The background is now black with bright blue and cyan accents. The opening explains what search does and defines the two measurements before presenting them. The query-type and algorithm scenes use everyday words, and the typography is larger. The animated diagrams still label illustrative material and identify the older fork in the region comparison. Historical benchmark sources and measured values have not changed.
+
+## Short social cut
+
+The video is now 32.5 seconds. It removes the Apache Lucene scene and its
+20/20 claim, omits the production-tool credit, and replaces two abstract
+diagrams with one explicitly illustrative, staged example. The retained
+benchmark screens show aggregate results and the separately measured longer
+OR result, with the historical build limitation on screen. A plain-text
+transcript is in `demo/README.md`.
+
+Two GPT-6.1 Sol reviewers assessed the previous cut, and a third reviewed a
+rendered draft. Their feedback led to the concrete example, simplified
+comparison screens, clearer benchmark scope and more legible labels. The
+third reviewer reported missing glyphs in preview images; OCR of the actual
+encoded draft at those timestamps found the complete text, indicating the
+preview display rather than the encoded images was unreliable there. The
+final export should still be checked independently.
