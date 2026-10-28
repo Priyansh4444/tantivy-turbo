@@ -306,7 +306,7 @@ What you need to know to rerun them:
 
 ## Demo video
 
-The demo is a 54.5-second, eight-scene video written in Rust with [fframes](https://github.com/dmtrKovalenko/fframes). Its benchmark figures come from the tables above; the AND window-count animation is illustrative.
+The demo is a 56-second, eight-scene video written in Rust with [fframes](https://github.com/dmtrKovalenko/fframes). Its benchmark figures come from the tables above; the AND window-count animation is illustrative.
 
 ```bash
 cd demo

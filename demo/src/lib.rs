@@ -3,8 +3,7 @@
 //! Benchmark figures come from the repository (`bench-results/` and
 //! `doc/performance/`); the AND window count is an illustrative diagram.
 //! The look matches the README charts:
-//! solid rounded bars, blue for TOP-10 and cyan for COUNT, and cool ink on a
-//! deep navy surface.
+//! bright blue and cyan marks on black, with explanations for new viewers.
 use fframes::{
     AnimateRuntimeInput, AudioMap, Color, Duration, FFramesContext, Frame, Overlap, Scene, Scenes,
     Svgr, Transform, Video,
@@ -18,15 +17,15 @@ include_media_dir!(pub struct TantivyTurboDemoMedia, "media");
 pub const WIDTH: usize = 1920;
 pub const HEIGHT: usize = 1080;
 
-const BG: &str = "#090f1a";
-const PANEL: &str = "#141f30";
-const LINE: &str = "#29394d";
-const AXIS: &str = "#75899e";
-const INK: &str = "#edf3ff";
-const INK2: &str = "#bbc9dc";
-const MUTED: &str = "#8e9fb4";
-const BLUE: &str = "#79a8ff";
-const AQUA: &str = "#4ec8d7";
+const BG: &str = "#000000";
+const PANEL: &str = "#111315";
+const LINE: &str = "#303439";
+const AXIS: &str = "#7b858e";
+const INK: &str = "#f7f9f9";
+const INK2: &str = "#ccd3da";
+const MUTED: &str = "#9daab6";
+const BLUE: &str = "#329cff";
+const AQUA: &str = "#00d8c5";
 const SANS: &str = "DM Sans";
 const MONO: &str = "JetBrains Mono";
 const W_SANS: u16 = 500;
@@ -35,12 +34,12 @@ const W_MONO: u16 = 400;
 /// Seconds shared by adjacent scenes. Titles fade through the background so
 /// two explanations are never superimposed during the transition.
 const XFADE: f32 = 0.4;
-const SCENES: [f32; 8] = [4.0, 9.0, 8.0, 7.0, 7.5, 8.0, 6.0, 5.0];
+const SCENES: [f32; 8] = [5.5, 9.0, 8.0, 7.0, 7.5, 8.0, 6.0, 5.0];
 
 static EASE: LazyLock<AnimationRuntime> =
     LazyLock::new(|| AnimationRuntime::new(0.8, &Easing::CubicBezier(0.16, 1.0, 0.3, 1.0)));
 static GROW: LazyLock<AnimationRuntime> =
-    LazyLock::new(|| AnimationRuntime::new(1.1, &Easing::CubicBezier(0.65, 0.0, 0.35, 1.0)));
+    LazyLock::new(|| AnimationRuntime::new(0.9, &Easing::CubicBezier(0.16, 1.0, 0.3, 1.0)));
 static SPRING: LazyLock<AnimationRuntime> = LazyLock::new(|| {
     AnimationRuntime::new(3.0, &Easing::Spring { mass: 1.0, stiffness: 180.0, damping: 20.0 })
 });
@@ -132,7 +131,7 @@ fn ramp(frame: &Frame, start: f32) -> f32 {
     frame.animate_runtime(AnimateRuntimeInput { on_second: start, from: 0.0, to: 1.0, animation_runtime: &EASE })
 }
 
-/// 0 to 1 over 1.1 s with ease-in-out, for growing bars.
+/// 0 to 1 over 0.9 s with a quick start and a soft landing.
 fn grow(frame: &Frame, start: f32) -> f32 {
     frame.animate_runtime(AnimateRuntimeInput { on_second: start, from: 0.0, to: 1.0, animation_runtime: &GROW })
 }
@@ -181,9 +180,9 @@ fn heading<'a>(kicker: &'a str, title: &'a str, frame: &Frame) -> Svgr<'a> {
 fn legend<'a>(x: f32, y: f32, frame: &Frame, start: f32) -> Svgr<'a> {
     fframes::svgr!(<g opacity={ramp(frame, start)}>
         <rect x={x} y={y - 20.0} width="26" height="22" rx="5" fill={BLUE} />
-        <text x={x + 38.0} y={y} font-family={SANS} font-weight={W_SANS} font-size="30" fill={INK2}>"TOP-10"</text>
+        <text x={x + 38.0} y={y} font-family={SANS} font-weight={W_SANS} font-size="34" fill={INK2}>"BEST 10"</text>
         <rect x={x + 180.0} y={y - 20.0} width="26" height="22" rx="5" fill={AQUA} />
-        <text x={x + 218.0} y={y} font-family={SANS} font-weight={W_SANS} font-size="30" fill={INK2}>"COUNT"</text>
+        <text x={x + 218.0} y={y} font-family={SANS} font-weight={W_SANS} font-size="34" fill={INK2}>"COUNT"</text>
     </g>)
 }
 
@@ -212,15 +211,17 @@ impl Scene for Intro {
             })
             .collect();
         let alpha = (t / 0.2).min((SCENES[0] - XFADE / 2.0 - t) / 0.2).clamp(0.0, 1.0);
-        let title = ramp(&frame, 1.0);
-        let sub = ramp(&frame, 1.5);
+        let title = ramp(&frame, 0.35);
+        let sub = ramp(&frame, 0.9);
         fframes::svgr!(<g opacity={alpha}>
             {tiles}
-            <g opacity={title} transform={Transform::translate(0.0, rise(&frame, 1.0))}>
-                <text x="186" y="560" font-family={SANS} font-weight={W_SANS} font-size="184" letter-spacing="-7" fill={INK}>"tantivy-turbo"</text>
+            <g opacity={title} transform={Transform::translate(0.0, rise(&frame, 0.35))}>
+                <text x="186" y="520" font-family={SANS} font-weight={W_SANS} font-size="170" letter-spacing="-6" fill={INK}>"Search. "<tspan fill={BLUE}>"Faster."</tspan></text>
             </g>
-            <g opacity={sub} transform={Transform::translate(0.0, rise(&frame, 1.5))}>
-                <text x="192" y="660" font-family={SANS} font-weight={W_SANS} font-size="50" fill={INK2}>"A faster Tantivy fork, with results checked against exhaustive scoring."</text>
+            <g opacity={sub} transform={Transform::translate(0.0, rise(&frame, 0.9))}>
+                <text x="192" y="625" font-family={SANS} font-weight={W_SANS} font-size="48" fill={INK2}>"Apps use search to find the best matches in a collection."</text>
+                <text x="192" y="700" font-family={SANS} font-weight={W_SANS} font-size="48" fill={INK2}>"tantivy-turbo makes that work faster, with checked results."</text>
+                <text x="192" y="775" font-family={SANS} font-weight={W_SANS} font-size="40" fill={MUTED}>"BEST 10: top matches  ·  COUNT: number of matches"</text>
             </g>
         </g>)
     }
@@ -241,12 +242,12 @@ impl Scene for VsUpstream {
     fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
         // Speedup over Tantivy 0.27, summed time, mean of both run orders (TOP-10, COUNT).
         let rows = [
-            ("OR, 3+ terms", 3.27_f32, 3.85_f32),
-            ("OR, 2 terms", 2.31, 1.72),
-            ("Phrase", 1.37, 1.07),
-            ("Single term", 1.18, 1.06),
-            ("AND", 1.35, 1.48),
-            ("All 1,201 queries", 1.79, 1.59),
+            ("Any 3+ words", 3.27_f32, 3.85_f32),
+            ("Any 2 words", 2.31, 1.72),
+            ("Exact phrase", 1.37, 1.07),
+            ("One word", 1.18, 1.06),
+            ("All words", 1.35, 1.48),
+            ("1,201 searches", 1.79, 1.59),
         ];
         // Log scale from 1x (same speed) to 4x.
         let scale = |v: f32| v.log2() / 4.0_f32.log2() * 980.0;
@@ -261,7 +262,7 @@ impl Scene for VsUpstream {
                 let w2 = scale(count) * p;
                 let weight = if i == 5 { INK } else { INK2 };
                 fframes::svgr!(<g opacity={ramp(&frame, start)}>
-                    <text x="192" y={y + 46.0} font-family={SANS} font-weight={W_SANS} font-size="38" fill={weight}>{name}</text>
+                    <text x="192" y={y + 46.0} font-family={SANS} font-weight={W_SANS} font-size="44" fill={weight}>{name}</text>
                     {bar(620.0, y + 8.0, w1, 32.0, BLUE)}
                     {bar(620.0, y + 46.0, w2, 32.0, AQUA)}
                     <text x={636.0 + w1} y={y + 34.0} font-family={MONO} font-weight={W_MONO} font-size="28" fill={INK} opacity={ramp(&frame, start + 0.6)}>{format!("{top10:.2}×")}</text>
@@ -270,14 +271,14 @@ impl Scene for VsUpstream {
             })
             .collect();
         fframes::svgr!(<g opacity={scene_alpha(&frame, SCENES[1])}>
-            {heading("VS TANTIVY 0.27", "Speedup by query type", &frame)}
+            {heading("VS TANTIVY 0.27 · THE ORIGINAL RUST LIBRARY", "Same searches. Less time.", &frame)}
             {legend(1290.0, 300.0, &frame, 0.5)}
             <line x1="620" y1="340" x2="620" y2="930" stroke={AXIS} stroke-width="2" opacity={ramp(&frame, 0.5)} />
-            <text x="620" y="326" font-family={MONO} font-weight={W_MONO} font-size="24" fill={INK2} opacity={ramp(&frame, 0.5)}>"1× same speed"</text>
-            <text x="1110" y="326" text-anchor="middle" font-family={MONO} font-weight={W_MONO} font-size="24" fill={MUTED} opacity={ramp(&frame, 0.5)}>"2×"</text>
-            <text x="1600" y="326" text-anchor="middle" font-family={MONO} font-weight={W_MONO} font-size="24" fill={MUTED} opacity={ramp(&frame, 0.5)}>"4×"</text>
+            <text x="620" y="326" font-family={MONO} font-weight={W_MONO} font-size="28" fill={INK2} opacity={ramp(&frame, 0.5)}>"1× same speed"</text>
+            <text x="1110" y="326" text-anchor="middle" font-family={MONO} font-weight={W_MONO} font-size="28" fill={MUTED} opacity={ramp(&frame, 0.5)}>"2×"</text>
+            <text x="1600" y="326" text-anchor="middle" font-family={MONO} font-weight={W_MONO} font-size="28" fill={MUTED} opacity={ramp(&frame, 0.5)}>"4×"</text>
             {groups}
-            <text x="192" y="956" font-family={MONO} font-weight={W_MONO} font-size="24" fill={MUTED} opacity={ramp(&frame, 1.8)}>"Oct 23 run · geometric mean of both orders · before later skip-reader fix"</text>
+            <text x="192" y="956" font-family={MONO} font-weight={W_MONO} font-size="28" fill={MUTED} opacity={ramp(&frame, 1.8)}>"Oct 23 run · geometric mean of both orders · before later skip-reader fix"</text>
         </g>)
     }
 }
@@ -297,12 +298,12 @@ impl Scene for VsLuceneRs {
     fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
         // TOP-10 speedup over lucene-rs (Rust port of Lucene 10), summed time.
         let rows = [
-            ("Single term", 1.85_f32),
-            ("AND", 1.58),
-            ("Phrase", 1.24),
-            ("OR, 3+ terms", 1.04),
-            ("OR, 2 terms", 1.02),
-            ("All 1,201 queries", 1.25),
+            ("One word", 1.85_f32),
+            ("All words", 1.58),
+            ("Exact phrase", 1.24),
+            ("Any 3+ words", 1.04),
+            ("Any 2 words", 1.02),
+            ("1,201 searches", 1.25),
         ];
         let scale = |v: f32| v.log2() / 2.0_f32.log2() * 860.0;
         let bars: Vec<Svgr> = rows
@@ -314,26 +315,26 @@ impl Scene for VsLuceneRs {
                 let w = scale(speedup) * grow(&frame, start);
                 let weight = if i == 5 { INK } else { INK2 };
                 fframes::svgr!(<g opacity={ramp(&frame, start)}>
-                    <text x="192" y={y + 38.0} font-family={SANS} font-weight={W_SANS} font-size="38" fill={weight}>{name}</text>
+                    <text x="192" y={y + 38.0} font-family={SANS} font-weight={W_SANS} font-size="44" fill={weight}>{name}</text>
                     {bar(620.0, y + 8.0, w, 40.0, BLUE)}
-                    <text x={638.0 + w} y={y + 40.0} font-family={MONO} font-weight={W_MONO} font-size="30" fill={INK} opacity={ramp(&frame, start + 0.6)}>{format!("{speedup:.2}×")}</text>
+                    <text x={638.0 + w} y={y + 40.0} font-family={MONO} font-weight={W_MONO} font-size="34" fill={INK} opacity={ramp(&frame, start + 0.6)}>{format!("{speedup:.2}×")}</text>
                 </g>)
             })
             .collect();
         fframes::svgr!(<g opacity={scene_alpha(&frame, SCENES[2])}>
-            {heading("VS LUCENE-RS · RUST PORT OF LUCENE 10", "1.25× faster, same bits", &frame)}
+            {heading("VS LUCENE-RS · ANOTHER RUST SEARCH LIBRARY", "1.25× faster overall", &frame)}
             <line x1="620" y1="350" x2="620" y2="860" stroke={AXIS} stroke-width="2" opacity={ramp(&frame, 0.5)} />
-            <text x="620" y="336" font-family={MONO} font-weight={W_MONO} font-size="24" fill={INK2} opacity={ramp(&frame, 0.5)}>"1× same speed"</text>
-            <text x="1123" y="336" text-anchor="middle" font-family={MONO} font-weight={W_MONO} font-size="24" fill={MUTED} opacity={ramp(&frame, 0.5)}>"1.5×"</text>
-            <text x="1480" y="336" text-anchor="middle" font-family={MONO} font-weight={W_MONO} font-size="24" fill={MUTED} opacity={ramp(&frame, 0.5)}>"2×"</text>
+            <text x="620" y="336" font-family={MONO} font-weight={W_MONO} font-size="28" fill={INK2} opacity={ramp(&frame, 0.5)}>"1× same speed"</text>
+            <text x="1123" y="336" text-anchor="middle" font-family={MONO} font-weight={W_MONO} font-size="28" fill={MUTED} opacity={ramp(&frame, 0.5)}>"1.5×"</text>
+            <text x="1480" y="336" text-anchor="middle" font-family={MONO} font-weight={W_MONO} font-size="28" fill={MUTED} opacity={ramp(&frame, 0.5)}>"2×"</text>
             {bars}
             <g opacity={ramp(&frame, 2.0)}>
                 <rect x="1390" y="540" width="338" height="180" rx="20" fill={PANEL} />
                 <text x="1420" y="630" font-family={SANS} font-weight={W_SANS} font-size="84" letter-spacing="-2" fill={INK}>"7.1×"</text>
-                <text x="1424" y="684" font-family={SANS} font-weight={W_SANS} font-size="30" fill={INK2}>"faster COUNT"</text>
+                <text x="1424" y="684" font-family={SANS} font-weight={W_SANS} font-size="34" fill={INK2}>"faster to count"</text>
             </g>
-            <text x="192" y="914" font-family={MONO} font-weight={W_MONO} font-size="24" fill={MUTED} opacity={ramp(&frame, 1.8)}>"Oct 23 benchmark · before later skip-reader fix"</text>
-            <text x="192" y="956" font-family={MONO} font-weight={W_MONO} font-size="24" fill={MUTED} opacity={ramp(&frame, 1.8)}>"identical top-10 doc IDs, score bits and counts on 1,227 checked queries"</text>
+            <text x="192" y="914" font-family={MONO} font-weight={W_MONO} font-size="28" fill={MUTED} opacity={ramp(&frame, 1.8)}>"Oct 23 benchmark · before later skip-reader fix"</text>
+            <text x="192" y="956" font-family={MONO} font-weight={W_MONO} font-size="28" fill={MUTED} opacity={ramp(&frame, 1.8)}>"same results, scores and counts on 1,227 checked searches"</text>
         </g>)
     }
 }
@@ -352,9 +353,9 @@ impl Scene for VsLucene {
 
     fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
         let stats = [
-            ("1.8–2.1×", "faster TOP-10", BLUE),
-            ("1.3×", "faster COUNT", AQUA),
-            ("20 / 20", "queries faster", INK2),
+            ("1.8–2.1×", "faster · best 10", BLUE),
+            ("1.3×", "faster · counting", AQUA),
+            ("20 / 20", "searches faster", INK2),
         ];
         let cards: Vec<Svgr> = stats
             .iter()
@@ -373,7 +374,7 @@ impl Scene for VsLucene {
         // Memory: tantivy-turbo vs Lucene with the default JVM heap, warmed process RSS.
         let p = grow(&frame, 1.5);
         fframes::svgr!(<g opacity={scene_alpha(&frame, SCENES[3])}>
-            {heading("VS APACHE LUCENE 10.4 · EARLIER FORK BUILD", "Measured against Lucene", &frame)}
+            {heading("VS APACHE LUCENE 10.4 · EARLIER FORK BUILD", "Compared with Lucene", &frame)}
             {cards}
             <g opacity={ramp(&frame, 1.4)}>
                 <text x="192" y="752" font-family={SANS} font-weight={W_SANS} font-size="32" fill={INK2}>"resident memory"</text>
@@ -382,7 +383,7 @@ impl Scene for VsLucene {
                 {bar(500.0, 790.0, 1228.0 * p * 0.86, 36.0, AXIS)}
                 <text x={516.0 + 1228.0 * p * 0.86} y="818" font-family={MONO} font-weight={W_MONO} font-size="28" fill={INK2}>"346 MiB Lucene"</text>
             </g>
-            <text x="192" y="956" font-family={MONO} font-weight={W_MONO} font-size="24" fill={MUTED} opacity={ramp(&frame, 1.8)}>"2026-10-04 · geometric means · 20 queries · default JVM heap"</text>
+            <text x="192" y="956" font-family={MONO} font-weight={W_MONO} font-size="28" fill={MUTED} opacity={ramp(&frame, 1.8)}>"2026-10-04 · geometric means · 20 queries · default JVM heap"</text>
         </g>)
     }
 }
@@ -405,6 +406,7 @@ impl Scene for OrTrick {
         let scan = grow(&frame, 0.7);
         // These are measured endpoints, not measurements during the animation.
         let count = if merge < 0.5 { 30_242 } else { 362 };
+        let context = if merge < 0.5 { "earlier fork · one 21-word search" } else { "optimized fork · one 21-word search" };
         let thin = 120;
         let show = ramp(&frame, 0.5);
         let slivers: Vec<Svgr> = (0..thin)
@@ -425,15 +427,15 @@ impl Scene for OrTrick {
             .collect();
         let digits = format_thousands(count);
         fframes::svgr!(<g opacity={scene_alpha(&frame, SCENES[4])}>
-            {heading("HOW IT WORKS · OR", "Fewer, wider MaxScore regions", &frame)}
+            {heading("HOW IT WORKS · ANY-WORD SEARCH", "Fewer chunks. Same answers.", &frame)}
             <text x="192" y="390" font-family={MONO} font-weight={W_MONO} font-size="56" fill={INK} opacity={show}>{digits}</text>
-            <text x="500" y="390" font-family={SANS} font-weight={W_SANS} font-size="38" fill={INK2} opacity={show}>"regions for one 21-term query"</text>
+            <text x="500" y="390" font-family={SANS} font-weight={W_SANS} font-size="40" fill={INK2} opacity={show}>{context}</text>
             <text x="1728" y="390" text-anchor="end" font-family={MONO} font-weight={W_MONO} font-size="26" fill={MUTED} opacity={show}>"schematic · not to scale"</text>
             {slivers}
             {blocks}
             <line x1={192.0 + 1536.0 * scan} y1="420" x2={192.0 + 1536.0 * scan} y2="610" stroke={AQUA} stroke-width="4" opacity={show * (1.0 - merge)} />
-            <text x="192" y="720" font-family={SANS} font-weight={W_SANS} font-size="42" fill={INK} opacity={ramp(&frame, 2.6)}>"Bounds from cached range maxima instead of every block."</text>
-            <text x="192" y="790" font-family={SANS} font-weight={W_SANS} font-size="42" fill={INK2} opacity={ramp(&frame, 2.9)}>"Candidates scored in Lucene-style bulk windows."</text>
+            <text x="192" y="720" font-family={SANS} font-weight={W_SANS} font-size="48" fill={INK} opacity={ramp(&frame, 2.6)}>"Bigger chunks mean fewer repeated checks."</text>
+            <text x="192" y="790" font-family={SANS} font-weight={W_SANS} font-size="48" fill={INK2} opacity={ramp(&frame, 2.9)}>"The engine still scores the possible matches."</text>
         </g>)
     }
 }
@@ -499,22 +501,22 @@ impl Scene for AndTrick {
             .collect();
         let windows = if morph < 0.5 { before.len() } else { after.len() }.to_string();
         fframes::svgr!(<g opacity={scene_alpha(&frame, SCENES[5])}>
-            {heading("HOW IT WORKS · AND", "Windows follow the rarest term", &frame)}
+            {heading("HOW IT WORKS · ALL-WORD SEARCH", "Start with the rare word", &frame)}
             <g opacity={show}>
-                <text x="192" y="418" font-family={SANS} font-weight={W_SANS} font-size="32" fill={INK2}>"rare term"</text>
+                <text x="192" y="418" font-family={SANS} font-weight={W_SANS} font-size="32" fill={INK2}>"rare word"</text>
                 <line x1={x0} y1="406" x2={x0 + span} y2="406" stroke={LINE} stroke-width="3" />
-                <text x="192" y="498" font-family={SANS} font-weight={W_SANS} font-size="32" fill={INK2}>"common term"</text>
+                <text x="192" y="498" font-family={SANS} font-weight={W_SANS} font-size="32" fill={INK2}>"common word"</text>
                 <line x1={x0} y1="488" x2={x0 + span} y2="488" stroke={LINE} stroke-width="3" />
                 {lanes}
-                <text x="192" y="604" font-family={SANS} font-weight={W_SANS} font-size="32" fill={INK}>"windows"</text>
+                <text x="192" y="604" font-family={SANS} font-weight={W_SANS} font-size="32" fill={INK}>"chunks"</text>
                 {before}
                 {after}
                 <text x="192" y="700" font-family={MONO} font-weight={W_MONO} font-size="52" fill={INK}>{windows}</text>
-                <text x="290" y="700" font-family={SANS} font-weight={W_SANS} font-size="36" fill={INK2}>"windows to check"</text>
+                <text x="290" y="700" font-family={SANS} font-weight={W_SANS} font-size="36" fill={INK2}>"chunks to check"</text>
                 <text x="1728" y="700" text-anchor="end" font-family={MONO} font-weight={W_MONO} font-size="26" fill={MUTED}>"illustrative example"</text>
             </g>
-            <text x="192" y="800" font-family={SANS} font-weight={W_SANS} font-size="42" fill={INK} opacity={ramp(&frame, 3.2)}>"Windows end at the rare term's blocks and start at its next posting."</text>
-            <text x="192" y="870" font-family={SANS} font-weight={W_SANS} font-size="42" fill={INK2} opacity={ramp(&frame, 3.5)}>"AND went from 1.2× slower than Tantivy to 1.35× faster."</text>
+            <text x="192" y="800" font-family={SANS} font-weight={W_SANS} font-size="48" fill={INK} opacity={ramp(&frame, 3.2)}>"Find the rare-word matches, then check the other words."</text>
+            <text x="192" y="870" font-family={SANS} font-weight={W_SANS} font-size="48" fill={INK2} opacity={ramp(&frame, 3.5)}>"All-word searches: 1.2× slower became 1.35× faster."</text>
         </g>)
     }
 }
@@ -545,9 +547,9 @@ impl Scene for Exact {
 
     fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
         let rows = [
-            ("Top-10, scores & counts match prior build", "3 × 1,227 queries"),
-            ("Pruned results equal exhaustive scoring", "4,800 random checks"),
-            ("New unsafe code", "0 lines"),
+            ("Results match the previous build", "3 × 1,227 searches"),
+            ("Checked against a full scan", "4,800 random checks"),
+            ("Compared with the Lucene Rust port", "1,227 searches"),
         ];
         let items: Vec<Svgr> = rows
             .iter()
@@ -561,7 +563,7 @@ impl Scene for Exact {
                     <path d={format!("M{} {} l18 18 l38 -42", 214.0, y - 16.0)} stroke={AQUA} stroke-width="8" fill="none"
                         stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="90" stroke-dashoffset={90.0 * (1.0 - draw)} />
                     <text x="320" y={y} font-family={SANS} font-weight={W_SANS} font-size="46" fill={INK}>{what}</text>
-                    <text x="1728" y={y} text-anchor="end" font-family={MONO} font-weight={W_MONO} font-size="38" fill={INK2}>{value}</text>
+                    <text x="1728" y={y} text-anchor="end" font-family={MONO} font-weight={W_MONO} font-size="44" fill={INK2}>{value}</text>
                 </g>)
             })
             .collect();
@@ -595,7 +597,7 @@ impl Scene for Outro {
                 <text x="250" y="540" fill={INK}>"git = "<tspan fill={INK2}>"\"https://github.com/Priyansh4444/tantivy-turbo\""</tspan></text>
             </g>
             <g opacity={ramp(&frame, 1.0)} transform={Transform::translate(0.0, rise(&frame, 1.0))}>
-                <text x="960" y="800" text-anchor="middle" font-family={SANS} font-weight={W_SANS} font-size="60" fill={INK}>"Drop-in. Your code keeps using tantivy::"</text>
+                <text x="960" y="800" text-anchor="middle" font-family={SANS} font-weight={W_SANS} font-size="60" fill={INK}>"For Rust apps: point Cargo at the fork."</text>
             </g>
         </g>)
     }

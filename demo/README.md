@@ -1,6 +1,6 @@
 # tantivy-turbo demo video
 
-A 54.5-second 1080p launch video for tantivy-turbo, written in Rust with
+A 56-second 1080p launch video for tantivy-turbo, written in Rust with
 [fframes](https://github.com/dmtrKovalenko/fframes): eight scenes, solid bars,
 and no audio. Benchmark figures are from the repository; the AND window-count
 animation is illustrative.

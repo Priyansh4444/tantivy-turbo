@@ -27,9 +27,9 @@ THEMES = {
     "light": dict(surface="#fcfcfb", band="#f4f3f0", border="#e4e2dd", grid="#e7e5e0", axis="#a9a7a0",
                   ink="#0b0b0b", ink2="#52514e", muted="#696863",
                   top10="#2a78d6", count="#1baf7a", slow="#e34948", neutral="#a9a7a0", track="#ebe9e4"),
-    "dark": dict(surface="#0d1522", band="#172334", border="#293a4f", grid="#26374a", axis="#75899e",
-                 ink="#edf3ff", ink2="#bbc9dc", muted="#9aacc1",
-                 top10="#79a8ff", count="#4ec8d7", slow="#e995a5", neutral="#75899e", track="#26374a"),
+    "dark": dict(surface="#000000", band="#141719", border="#2a3035", grid="#292e33", axis="#7b858e",
+                 ink="#f7f9f9", ink2="#ccd3da", muted="#aab5bf",
+                 top10="#329cff", count="#00d8c5", slow="#ff7a90", neutral="#7b858e", track="#292e33"),
 }
 
 
@@ -354,8 +354,8 @@ def lucene_rs_mobile(theme, rows):
     """A portrait version of the same measured TOP-10 data for narrow screens."""
     t = THEMES[theme]
     s = Svg(t, 480, 650)
-    s.header("vs lucene-rs · Oct 23", "TOP-10 search",
-             "1,201 queries · geometric mean of both orders")
+    s.header("vs lucene-rs · Oct 23", "Best 10 results",
+             "1,201 searches · geometric mean of both orders")
     s.description += "; " + "; ".join(f"{name}: {fmt_ratio(1 / r)}" for name, _, r in rows)
     left, right = 40, 430
     s.text(left, 139, "1× same speed", 14, t["ink2"])
@@ -378,17 +378,17 @@ def main():
     OUT.mkdir(exist_ok=True)
     up = json.loads((HERE / "turbo-vs-tantivy-0.27/summary.json").read_text())
     rs = json.loads((HERE / "turbo-vs-lucene-rs/summary.json").read_text())
-    groups = [("OR, 3+ terms", "103 queries", "OR3+"), ("OR, 2 terms", "198 queries", "OR2"),
-              ("Phrase", "300 queries", "PHRASE"), ("Single term", "300 queries", "TERM"),
-              ("AND", "300 queries", "AND"), ("All 1,201 queries", "port-style suite", "ALL")]
-    series = [("TOP-10", "top10"), ("COUNT", "count")]
+    groups = [("Any 3+ words", "103 searches", "OR3+"), ("Any 2 words", "198 searches", "OR2"),
+              ("Exact phrase", "300 searches", "PHRASE"), ("One word", "300 searches", "TERM"),
+              ("All words", "300 searches", "AND"), ("All 1,201 searches", "port-style suite", "ALL")]
+    series = [("BEST 10", "top10"), ("COUNT", "count")]
     rss = rs["rss"]["port"]["VmHWM"]
     for theme in THEMES:
         diverging(theme, "vs-tantivy", "vs Tantivy 0.27", "Every query type, faster in total",
                   "Summed query time, geometric mean of both orders. Same 1M Wikipedia docs and machine, identical counts.",
                   [(a, b, [ratio(up[f"top10/{g}"]), ratio(up[f"count/{g}"])]) for a, b, g in groups], series,
                   "Oct 23 run · log scale · bench-results/turbo-vs-tantivy-0.27", lo=0.8, hi=4.5, ticks=(1, 2, 4))
-        diverging(theme, "vs-lucene-rs", "vs lucene-rs (Rust port of Lucene 10)", "TOP-10 search",
+        diverging(theme, "vs-lucene-rs", "vs lucene-rs (Rust port of Lucene 10)", "Best 10 results",
                   "Summed query time, geometric mean of both orders. Identical top-10 IDs, score bits and counts on checked queries.",
                   [(a, b, [ratio(rs[f"top10/{g}"])]) for a, b, g in groups], [("TOP-10", "top10")],
                   "Oct 23 run · log scale · bench-results/turbo-vs-lucene-rs", lo=0.8, hi=2.5, ticks=(1, 1.5, 2))

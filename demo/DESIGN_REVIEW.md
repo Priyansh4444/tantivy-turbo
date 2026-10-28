@@ -17,3 +17,7 @@ The checked-in chart and video numbers remain the historical results labeled in 
 ## Cooler palette and motion pass
 
 The dark visuals now use a deeper navy surface, cool text, blue for TOP-10 and cyan for COUNT. The OR diagram includes a moving scan marker and growing region blocks; the AND windows grow into place, and the intro settles without an abrupt opacity change. The changing counters show the measured or illustrative endpoints rather than inventing intermediate observations. The chart values and their source dates are unchanged.
+
+## Black, social-feed pass
+
+The background is now black with bright blue and cyan accents. The opening explains what search does and defines the two measurements before presenting them. The query-type and algorithm scenes use everyday words, and the typography is larger. The animated diagrams still label illustrative material and identify the older fork in the region comparison. Historical benchmark sources and measured values have not changed.
