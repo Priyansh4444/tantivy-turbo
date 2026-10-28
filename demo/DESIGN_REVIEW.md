@@ -13,3 +13,7 @@ Self-review, October 28. The criteria are drawn from the referenced notes work: 
 Overall: **6/10 → 8/10**. I would not call this a 10: the rest of the benchmark charts need responsive layouts, and a video cannot offer pause, reduced-motion and scrub controls inside the frame itself. A next pass should build a responsive, accessible benchmark view around the source data and provide motion controls for the explanatory diagrams.
 
 The checked-in chart and video numbers remain the historical results labeled in the figures. This is a presentation change, not a new benchmark or a performance claim. Regenerate charts with `python3 bench-results/make_charts.py`; render the video with the commands in `demo/README.md`.
+
+## Cooler palette and motion pass
+
+The dark visuals now use a deeper navy surface, cool text, blue for TOP-10 and cyan for COUNT. The OR diagram includes a moving scan marker and growing region blocks; the AND windows grow into place, and the intro settles without an abrupt opacity change. The changing counters show the measured or illustrative endpoints rather than inventing intermediate observations. The chart values and their source dates are unchanged.

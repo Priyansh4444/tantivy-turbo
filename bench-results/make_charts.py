@@ -7,9 +7,8 @@ Inputs
 
 Outputs: assets/*-{light,dark}.svg.
 
-Style: series colors are categorical slots 1 and 3 of a palette validated for
-color-vision deficiency in both modes (blue = TOP-10, aqua = COUNT); "slower" is
-the red pole of a blue/red diverging pair. Text always uses text tokens, never a
+Style: blue = TOP-10 and cyan/green = COUNT; "slower" uses a contrasting red.
+Text always uses text tokens, never a
 series color. Bars are at most 16px thick with a 4px rounded data end and a
 square baseline; grids are 1px hairlines.
 """
@@ -28,9 +27,9 @@ THEMES = {
     "light": dict(surface="#fcfcfb", band="#f4f3f0", border="#e4e2dd", grid="#e7e5e0", axis="#a9a7a0",
                   ink="#0b0b0b", ink2="#52514e", muted="#696863",
                   top10="#2a78d6", count="#1baf7a", slow="#e34948", neutral="#a9a7a0", track="#ebe9e4"),
-    "dark": dict(surface="#1a1a19", band="#222220", border="#30302d", grid="#2c2c29", axis="#5f5e59",
-                 ink="#f0efec", ink2="#c3c2b7", muted="#8f8e86",
-                 top10="#3987e5", count="#199e70", slow="#e66767", neutral="#5f5e59", track="#2a2a27"),
+    "dark": dict(surface="#0d1522", band="#172334", border="#293a4f", grid="#26374a", axis="#75899e",
+                 ink="#edf3ff", ink2="#bbc9dc", muted="#9aacc1",
+                 top10="#79a8ff", count="#4ec8d7", slow="#e995a5", neutral="#75899e", track="#26374a"),
 }
 
 

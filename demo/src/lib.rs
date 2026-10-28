@@ -3,8 +3,8 @@
 //! Benchmark figures come from the repository (`bench-results/` and
 //! `doc/performance/`); the AND window count is an illustrative diagram.
 //! The look matches the README charts:
-//! solid rounded bars, blue for TOP-10 and aqua for COUNT (a pair validated for
-//! color-vision deficiency on dark surfaces), warm ink on a near-black surface.
+//! solid rounded bars, blue for TOP-10 and cyan for COUNT, and cool ink on a
+//! deep navy surface.
 use fframes::{
     AnimateRuntimeInput, AudioMap, Color, Duration, FFramesContext, Frame, Overlap, Scene, Scenes,
     Svgr, Transform, Video,
@@ -18,15 +18,15 @@ include_media_dir!(pub struct TantivyTurboDemoMedia, "media");
 pub const WIDTH: usize = 1920;
 pub const HEIGHT: usize = 1080;
 
-const BG: &str = "#121211";
-const PANEL: &str = "#1d1d1b";
-const LINE: &str = "#2e2e2b";
-const AXIS: &str = "#5f5e59";
-const INK: &str = "#f0efec";
-const INK2: &str = "#c3c2b7";
-const MUTED: &str = "#8f8e86";
-const BLUE: &str = "#3987e5";
-const AQUA: &str = "#199e70";
+const BG: &str = "#090f1a";
+const PANEL: &str = "#141f30";
+const LINE: &str = "#29394d";
+const AXIS: &str = "#75899e";
+const INK: &str = "#edf3ff";
+const INK2: &str = "#bbc9dc";
+const MUTED: &str = "#8e9fb4";
+const BLUE: &str = "#79a8ff";
+const AQUA: &str = "#4ec8d7";
 const SANS: &str = "DM Sans";
 const MONO: &str = "JetBrains Mono";
 const W_SANS: u16 = 500;
@@ -204,7 +204,7 @@ impl Scene for Intro {
                 if front == 0.0 {
                     return Svgr::empty();
                 }
-                let settle = if t > 2.4 { 0.35 } else { 1.0 };
+                let settle = 1.0 - 0.65 * ramp(&frame, 2.0);
                 let color = if i % 5 == 3 { AQUA } else { BLUE };
                 let x = 192.0 + i as f32 * 64.0;
                 let h = 40.0 + 70.0 * (((i * 7) % 9) as f32 / 8.0);
@@ -402,7 +402,9 @@ impl Scene for OrTrick {
     fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
         // Regions on one 21-term query: many thin slivers merge into a few wide regions.
         let merge = grow(&frame, 1.6);
-        let count = 30242.0 + (362.0 - 30242.0) * merge;
+        let scan = grow(&frame, 0.7);
+        // These are measured endpoints, not measurements during the animation.
+        let count = if merge < 0.5 { 30_242 } else { 362 };
         let thin = 120;
         let show = ramp(&frame, 0.5);
         let slivers: Vec<Svgr> = (0..thin)
@@ -414,13 +416,14 @@ impl Scene for OrTrick {
         let wide = [0.0, 0.14, 0.27, 0.45, 0.58, 0.76, 0.88, 1.0];
         let blocks: Vec<Svgr> = wide
             .windows(2)
-            .map(|edge| {
+            .filter_map(|edge| {
                 let x = 192.0 + edge[0] * 1536.0;
-                let w = (edge[1] - edge[0]) * 1536.0 - 8.0;
-                fframes::svgr!(<rect x={x} y="430" width={w} height="170" rx="14" fill={BLUE} opacity={merge} />)
+                let w = ((edge[1] - edge[0]) * 1536.0 - 8.0) * merge;
+                if w < 1.0 { return None; }
+                Some(fframes::svgr!(<rect x={x} y="430" width={w} height="170" rx="14" fill={BLUE} opacity={merge} />))
             })
             .collect();
-        let digits = format_thousands(count.round() as u64);
+        let digits = format_thousands(count);
         fframes::svgr!(<g opacity={scene_alpha(&frame, SCENES[4])}>
             {heading("HOW IT WORKS · OR", "Fewer, wider MaxScore regions", &frame)}
             <text x="192" y="390" font-family={MONO} font-weight={W_MONO} font-size="56" fill={INK} opacity={show}>{digits}</text>
@@ -428,6 +431,7 @@ impl Scene for OrTrick {
             <text x="1728" y="390" text-anchor="end" font-family={MONO} font-weight={W_MONO} font-size="26" fill={MUTED} opacity={show}>"schematic · not to scale"</text>
             {slivers}
             {blocks}
+            <line x1={192.0 + 1536.0 * scan} y1="420" x2={192.0 + 1536.0 * scan} y2="610" stroke={AQUA} stroke-width="4" opacity={show * (1.0 - merge)} />
             <text x="192" y="720" font-family={SANS} font-weight={W_SANS} font-size="42" fill={INK} opacity={ramp(&frame, 2.6)}>"Bounds from cached range maxima instead of every block."</text>
             <text x="192" y="790" font-family={SANS} font-weight={W_SANS} font-size="42" fill={INK2} opacity={ramp(&frame, 2.9)}>"Candidates scored in Lucene-style bulk windows."</text>
         </g>)
@@ -459,9 +463,9 @@ impl Scene for AndTrick {
             let x = x0 + c * span;
             lanes.push(fframes::svgr!(<line x1={x} y1="392" x2={x} y2="420" stroke={AXIS} stroke-width="3" />));
         }
-        for d in &rare {
+        for (i, d) in rare.iter().enumerate() {
             let x = x0 + d * span;
-            lanes.push(fframes::svgr!(<circle cx={x} cy="406" r="11" fill={INK} stroke={BG} stroke-width="4" />));
+            lanes.push(fframes::svgr!(<circle cx={x} cy="406" r="11" fill={INK} stroke={BG} stroke-width="4" opacity={ramp(&frame, 0.5 + i as f32 * 0.18)} />));
         }
         for i in 1..34 {
             let x = x0 + i as f32 / 34.0 * span;
@@ -488,14 +492,12 @@ impl Scene for AndTrick {
             .filter_map(|e| {
                 let start = rare.iter().copied().find(|&d| d >= e[0] && d < e[1])?;
                 let x = x0 + start * span - 12.0;
-                let w = (e[1] - start) * span + 6.0;
+                let w = ((e[1] - start) * span + 6.0) * morph;
+                if w < 1.0 { return None; }
                 Some(fframes::svgr!(<rect x={x} y="560" width={w} height="64" rx="14" fill={BLUE} opacity={morph} />))
             })
             .collect();
-        let windows = format!(
-            "{}",
-            (before.len() as f32 + (after.len() as f32 - before.len() as f32) * morph).round() as u32
-        );
+        let windows = if morph < 0.5 { before.len() } else { after.len() }.to_string();
         fframes::svgr!(<g opacity={scene_alpha(&frame, SCENES[5])}>
             {heading("HOW IT WORKS · AND", "Windows follow the rarest term", &frame)}
             <g opacity={show}>
