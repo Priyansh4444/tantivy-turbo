@@ -71,3 +71,19 @@ Reviewers of the first draft identified a misleading early match outline and
 an unclear shorter-time cue; the final cut reserves the bright outline for
 actual matches and explicitly says less time is better. The reported times
 were independently recalculated from the retained benchmark summary.
+
+## Continuous-motion cut
+
+This revision replaces the five separate scenes with one continuous 21-second
+timeline at 60 fps. The search signal travels into the document field; three
+illustrative matches gather while the other documents recede. The visual field
+then flows into the measured comparison and the full-scan check. Quintic easing
+brings moving elements to rest smoothly, and incoming and outgoing captions
+are timed separately to avoid overlapping text.
+
+Self-review after comparing the rendered drafts: **motion 7/10 → 8.5/10;
+reading load 8/10 → 8.5/10**. The first continuous draft had dark pauses and
+overlapping captions at transitions; a second pass holds the result cards
+longer, separates the captions, and bridges the graphics. Scores are subjective:
+the benchmark caveat still needs the accompanying report, and the video is a
+silent landscape export rather than a purpose-built vertical cut.

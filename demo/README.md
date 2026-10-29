@@ -1,15 +1,15 @@
 # tantivy-turbo demo video
 
-A 21.7-second 1080p launch video for tantivy-turbo: five scenes and no audio.
-The search example is illustrative; the comparison is from the expanded
-October 28 benchmark.
+A 21-second, 60-fps 1080p launch video for tantivy-turbo, with no audio.
+It uses one continuous timeline; the search example is illustrative and the
+comparison is from the expanded October 28 benchmark.
 
 ```bash
 cargo build --release                         # first build downloads prebuilt Skia/ffmpeg
 R() { cargo run --release -- "$@"; }
 R timeline                                    # scenes and timings
 R inspect --fail-on warning                   # checks every 0.25 s for layout problems
-R strip Comparison -n 8                       # contact sheet of one scene
+R strip all -n 8                              # contact sheet of the video
 R preview                                     # real-time GPU window
 R render -o demo.mkv                          # VP9 in Matroska
 ffmpeg -i demo.mkv -c:v libx264 -crf 20 -pix_fmt yuv420p demo.mp4
@@ -33,3 +33,6 @@ rendered outputs.
 - A separate full-scan differential test passed 14,400 randomized query and
   scoring-configuration checks. These are checks, not necessarily distinct
   queries, and do not prove correctness for all workloads.
+- The closing message highlights the fork's Tantivy API compatibility; the
+  benchmark is evidence for the displayed workload, not a guarantee that every
+  query will be faster.
