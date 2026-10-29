@@ -113,7 +113,7 @@ fn term(text: Field, rank: usize) -> Box<dyn Query> {
 
 fn random_query(rng: &mut Rng, text: Field) -> Box<dyn Query> {
     let rank = |rng: &mut Rng| rng.below(VOCABULARY as u64) as usize;
-    match rng.below(5) {
+    match rng.below(7) {
         0 => term(text, rank(rng)),
         1 => {
             // Two to eight terms, possibly repeated.
@@ -134,11 +134,27 @@ fn random_query(rng: &mut Rng, text: Field) -> Box<dyn Query> {
                 .collect();
             Box::new(PhraseQuery::new(terms))
         }
-        _ => {
+        4 => {
             let clauses = vec![
                 (Occur::Must, term(text, rank(rng))),
                 (Occur::Should, term(text, rank(rng))),
                 (Occur::Should, term(text, rank(rng))),
+            ];
+            Box::new(BooleanQuery::new(clauses))
+        }
+        5 => {
+            // Exercise longer ORs, including duplicate and sparse terms.
+            let clauses = (0..9 + rng.below(12))
+                .map(|_| (Occur::Should, term(text, rank(rng))))
+                .collect();
+            Box::new(BooleanQuery::new(clauses))
+        }
+        _ => {
+            // A required positive clause keeps the exclusion query well formed.
+            let clauses = vec![
+                (Occur::Must, term(text, rank(rng))),
+                (Occur::Should, term(text, rank(rng))),
+                (Occur::MustNot, term(text, rank(rng))),
             ];
             Box::new(BooleanQuery::new(clauses))
         }
@@ -172,6 +188,10 @@ fn pruned_top_k_and_counts_match_exhaustive_scoring() -> tantivy::Result<()> {
         (0x0fed_cba9_8765_4321, true),
         (0x9e37_79b9_7f4a_7c15, false),
         (0x2545_f491_4f6c_dd1d, true),
+        (0xd1b5_4a32_d192_ed03, false),
+        (0x94d0_49bb_1331_11eb, true),
+        (0xbf58_476d_1ce4_e5b9, false),
+        (0x369d_ea0f_31a5_3f85, true),
     ] {
         let (index, text) = build_index(seed, delete)?;
         let base = index.reader()?.searcher();
@@ -183,7 +203,7 @@ fn pruned_top_k_and_counts_match_exhaustive_scoring() -> tantivy::Result<()> {
         ];
         let mut rng = Rng(seed ^ 0x5555);
         // Fewer rounds when assertions and overflow checks slow every query.
-        let rounds = if cfg!(debug_assertions) { 100 } else { 400 };
+        let rounds = if cfg!(debug_assertions) { 150 } else { 600 };
         for round in 0..rounds {
             let query = random_query(&mut rng, text);
             for (index, searcher) in searchers.iter().enumerate() {

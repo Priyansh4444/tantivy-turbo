@@ -31,6 +31,7 @@ rendered outputs.
   skip-reader fix, with both run orders combined.
 - In an illustrative search for “quokka AND animal,” start with the rarer
   word and retain documents containing both words.
-- Results were checked against a previous build, a full scan, and the
-  lucene-rs port on the specified test workloads. The full benchmark details
-  and limitations are in `../BENCHMARKS.md`.
+- The lucene-rs comparison checked results on 1,227 searches. A separate
+  full-scan differential test passed 14,400 randomized query and scoring
+  configuration checks. The full benchmark details and limitations are in
+  `../BENCHMARKS.md`.

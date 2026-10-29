@@ -165,7 +165,7 @@ fn heading<'a>(kicker: &'a str, title: &'a str, frame: &Frame) -> Svgr<'a> {
     fframes::svgr!(<g opacity={ramp(frame, 0.1)} transform={Transform::translate(0.0, rise(frame, 0.1))}>
         <rect x="192" y="152" width="48" height="6" rx="3" fill={BLUE} />
         <text x="256" y="162" font-family={MONO} font-weight={W_MONO} font-size="40" letter-spacing="1" fill={INK2}>{kicker}</text>
-        <text x="186" y="262" font-family={SANS} font-weight={W_SANS} font-size="88" letter-spacing="-3" fill={INK}>{title}</text>
+        <text x="186" y="262" font-family={SANS} font-weight={W_SANS} font-size="72" letter-spacing="-2" fill={INK}>{title}</text>
     </g>)
 }
 
@@ -179,33 +179,37 @@ impl Scene for Intro {
 
     fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
         let t = frame.seconds();
-        // Posting-list blocks light up left to right, then settle behind the title.
-        let tiles: Vec<Svgr> = (0..24)
-            .map(|i| {
-                let front = (t * 9.0 - i as f32).clamp(0.0, 1.0);
-                if front == 0.0 {
-                    return Svgr::empty();
-                }
-                let settle = 1.0 - 0.65 * ramp(&frame, 2.0);
-                let color = if i % 5 == 3 { AQUA } else { BLUE };
-                let x = 192.0 + i as f32 * 64.0;
-                let h = 40.0 + 70.0 * (((i * 7) % 9) as f32 / 8.0);
-                fframes::svgr!(<rect x={x} y={300.0 - h * front} width="52" height={h * front} rx="8" fill={color} opacity={front * settle} />)
-            })
-            .collect();
+        let matched = ramp(&frame, 2.0);
+        let documents: Vec<Svgr> = (0..4).map(|i| {
+            let start = 0.45 + i as f32 * 0.16;
+            let p = grow(&frame, start);
+            let x = 850.0 + i as f32 * 195.0;
+            let y = 430.0 + (1.0 - p) * 58.0;
+            let hit = i == 0 || i == 2;
+            fframes::svgr!(<g opacity={ramp(&frame, start)}>
+                <rect x={x} y={y} width="158" height="214" rx="16" fill={PANEL} stroke={LINE} stroke-width="2" />
+                <rect x={x} y={y} width="158" height="214" rx="16" fill="none" stroke={BLUE} stroke-width="4" opacity={if hit { matched } else { 0.0 }} />
+                <line x1={x + 24.0} y1={y + 56.0} x2={x + 128.0} y2={y + 56.0} stroke={INK2} stroke-width="6" stroke-linecap="round" />
+                <line x1={x + 24.0} y1={y + 90.0} x2={x + 113.0} y2={y + 90.0} stroke={MUTED} stroke-width="5" stroke-linecap="round" />
+                <line x1={x + 24.0} y1={y + 122.0} x2={x + 120.0} y2={y + 122.0} stroke={MUTED} stroke-width="5" stroke-linecap="round" />
+                <circle cx={x + 124.0} cy={y + 180.0} r="14" fill={AQUA} opacity={if hit { matched } else { 0.0 }} />
+            </g>)
+        }).collect();
         let alpha = (t / 0.2).min((SCENES[0] - XFADE / 2.0 - t) / 0.2).clamp(0.0, 1.0);
-        let title = ramp(&frame, 0.35);
-        let sub = ramp(&frame, 0.9);
+        let sweep = grow(&frame, 1.2);
         fframes::svgr!(<g opacity={alpha}>
-            {tiles}
-            <g opacity={title} transform={Transform::translate(0.0, rise(&frame, 0.35))}>
-                <text x="186" y="520" font-family={SANS} font-weight={W_SANS} font-size="170" letter-spacing="-6" fill={INK}>"Search. "<tspan fill={BLUE}>"Faster."</tspan></text>
+            <text x="192" y="170" font-family={MONO} font-weight={W_MONO} font-size="34" fill={MUTED} opacity={ramp(&frame, 0.1)}>"TANTIVY-TURBO · RUST SEARCH"</text>
+            <text x="192" y="300" font-family={SANS} font-weight={W_SANS} font-size="100" fill={INK} opacity={ramp(&frame, 0.2)}>"Find what matters."</text>
+            <g opacity={ramp(&frame, 0.45)}>
+                <rect x="192" y="475" width="550" height="110" rx="22" fill={PANEL} stroke={LINE} stroke-width="2" />
+                <circle cx="244" cy="526" r="16" fill="none" stroke={BLUE} stroke-width="6" />
+                <line x1="256" y1="538" x2="269" y2="551" stroke={BLUE} stroke-width="6" stroke-linecap="round" />
+                <text x="300" y="544" font-family={SANS} font-weight={W_SANS} font-size="48" fill={INK}>"quokka animal"</text>
+                <line x1="760" y1="530" x2={760.0 + 68.0 * sweep} y2="530" stroke={BLUE} stroke-width="6" stroke-linecap="round" />
             </g>
-            <g opacity={sub} transform={Transform::translate(0.0, rise(&frame, 0.9))}>
-                <text x="192" y="625" font-family={SANS} font-weight={W_SANS} font-size="48" fill={INK2}>"Find the best matches in a collection."</text>
-                <text x="192" y="700" font-family={SANS} font-weight={W_SANS} font-size="48" fill={INK2}>"Faster search. Results checked."</text>
-                <text x="192" y="775" font-family={SANS} font-weight={W_SANS} font-size="40" fill={MUTED}>"BEST 10: top matches  ·  COUNT: number of matches"</text>
-            </g>
+            {documents}
+            <text x="192" y="790" font-family={SANS} font-weight={W_SANS} font-size="52" fill={INK2} opacity={ramp(&frame, 1.0)}>"Search a collection. Return the best matches."</text>
+            <text x="1728" y="930" text-anchor="end" font-family={MONO} font-weight={W_MONO} font-size="26" fill={MUTED} opacity={ramp(&frame, 1.0)}>"illustrative"</text>
         </g>)
     }
 }
@@ -218,16 +222,20 @@ impl Scene for VsUpstream {
     fn overlap(&self) -> Overlap { Overlap::Previous(XFADE) }
 
     fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
-        let sweep = grow(&frame, 0.45);
+        let baseline = grow(&frame, 0.55);
+        let turbo = grow(&frame, 0.95);
         fframes::svgr!(<g opacity={scene_alpha(&frame, SCENES[1])}>
-            {heading("VS TANTIVY 0.27 · 1,201 SEARCHES", "Same searches. Less time.", &frame)}
-            <g opacity={ramp(&frame, 0.4)} transform={Transform::translate(0.0, rise(&frame, 0.4))}>
-                <text x="192" y="510" font-family={SANS} font-weight={W_SANS} font-size="188" letter-spacing="-6" fill={BLUE}>"1.79×"</text>
-                <text x="192" y="600" font-family={SANS} font-weight={W_SANS} font-size="60" fill={INK}>"faster to find the best 10 results"</text>
-                {bar(192.0, 640.0, 1120.0 * sweep, 12.0, BLUE)}
-            </g>
-            <text x="192" y="775" font-family={SANS} font-weight={W_SANS} font-size="52" fill={INK2} opacity={ramp(&frame, 1.25)}><tspan fill={AQUA}>"1.59×"</tspan>" faster to count all matches"</text>
-            <text x="192" y="940" font-family={MONO} font-weight={W_MONO} font-size="40" fill={INK2} opacity={ramp(&frame, 1.25)}>"Historical · Oct 23 · before skip-reader fix"</text>
+            {heading("VS TANTIVY 0.27 · 1,201 SEARCHES", "Finding the best 10", &frame)}
+            <text x="192" y="385" font-family={SANS} font-weight={W_SANS} font-size="102" fill={BLUE} opacity={ramp(&frame, 0.3)}>"1.79× faster"</text>
+            <text x="192" y="475" font-family={SANS} font-weight={W_SANS} font-size="38" fill={INK2} opacity={ramp(&frame, 0.4)}>"Relative search time · less is better"</text>
+            <text x="192" y="565" font-family={SANS} font-weight={W_SANS} font-size="42" fill={INK2} opacity={ramp(&frame, 0.55)}>"Tantivy 0.27"</text>
+            {bar(620.0, 522.0, 900.0 * baseline, 56.0, MUTED)}
+            <text x="1540" y="565" font-family={MONO} font-weight={W_MONO} font-size="36" fill={INK2} opacity={ramp(&frame, 1.2)}>"1.00×"</text>
+            <text x="192" y="690" font-family={SANS} font-weight={W_SANS} font-size="42" fill={INK} opacity={ramp(&frame, 0.95)}>"tantivy-turbo"</text>
+            {bar(620.0, 647.0, (900.0 / 1.79) * turbo, 56.0, BLUE)}
+            <text x="1540" y="690" font-family={MONO} font-weight={W_MONO} font-size="36" fill={INK} opacity={ramp(&frame, 1.6)}>"~0.56×"</text>
+            <text x="192" y="805" font-family={SANS} font-weight={W_SANS} font-size="44" fill={INK2} opacity={ramp(&frame, 1.4)}><tspan fill={AQUA}>"1.59×"</tspan>" faster to count all matches"</text>
+            <text x="192" y="940" font-family={MONO} font-weight={W_MONO} font-size="36" fill={INK2} opacity={ramp(&frame, 1.25)}>"Historical · Oct 23 · before skip-reader fix"</text>
         </g>)
     }
 }
@@ -240,16 +248,20 @@ impl Scene for VsLuceneRs {
     fn overlap(&self) -> Overlap { Overlap::Previous(XFADE) }
 
     fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
-        let sweep = grow(&frame, 0.45);
+        let baseline = grow(&frame, 0.55);
+        let turbo = grow(&frame, 0.95);
         fframes::svgr!(<g opacity={scene_alpha(&frame, SCENES[2])}>
-            {heading("VS LUCENE-RS · 1,201 SEARCHES", "Against another Rust library", &frame)}
-            <g opacity={ramp(&frame, 0.4)} transform={Transform::translate(0.0, rise(&frame, 0.4))}>
-                <text x="192" y="510" font-family={SANS} font-weight={W_SANS} font-size="188" letter-spacing="-6" fill={BLUE}>"1.25×"</text>
-                <text x="192" y="600" font-family={SANS} font-weight={W_SANS} font-size="60" fill={INK}>"faster to find the best 10 results"</text>
-                {bar(192.0, 640.0, 1000.0 * sweep, 12.0, BLUE)}
-            </g>
-            <text x="192" y="775" font-family={SANS} font-weight={W_SANS} font-size="50" fill={INK2} opacity={ramp(&frame, 1.25)}>"Match any of 3+ words: 1.04× faster"</text>
-            <text x="192" y="940" font-family={MONO} font-weight={W_MONO} font-size="40" fill={INK2} opacity={ramp(&frame, 1.25)}>"Historical · Oct 23 · before skip-reader fix"</text>
+            {heading("VS LUCENE-RS · 1,201 SEARCHES", "Finding the best 10", &frame)}
+            <text x="192" y="385" font-family={SANS} font-weight={W_SANS} font-size="102" fill={BLUE} opacity={ramp(&frame, 0.3)}>"1.25× faster"</text>
+            <text x="192" y="475" font-family={SANS} font-weight={W_SANS} font-size="38" fill={INK2} opacity={ramp(&frame, 0.4)}>"Relative search time · less is better"</text>
+            <text x="192" y="565" font-family={SANS} font-weight={W_SANS} font-size="42" fill={INK2} opacity={ramp(&frame, 0.55)}>"lucene-rs"</text>
+            {bar(620.0, 522.0, 900.0 * baseline, 56.0, MUTED)}
+            <text x="1540" y="565" font-family={MONO} font-weight={W_MONO} font-size="36" fill={INK2} opacity={ramp(&frame, 1.2)}>"1.00×"</text>
+            <text x="192" y="690" font-family={SANS} font-weight={W_SANS} font-size="42" fill={INK} opacity={ramp(&frame, 0.95)}>"tantivy-turbo"</text>
+            {bar(620.0, 647.0, (900.0 / 1.25) * turbo, 56.0, BLUE)}
+            <text x="1540" y="690" font-family={MONO} font-weight={W_MONO} font-size="36" fill={INK} opacity={ramp(&frame, 1.6)}>"~0.80×"</text>
+            <text x="192" y="805" font-family={SANS} font-weight={W_SANS} font-size="44" fill={INK2} opacity={ramp(&frame, 1.4)}>"Match any of 3+ words: 1.04× faster"</text>
+            <text x="192" y="940" font-family={MONO} font-weight={W_MONO} font-size="36" fill={INK2} opacity={ramp(&frame, 1.25)}>"Historical · Oct 23 · before skip-reader fix"</text>
         </g>)
     }
 }
@@ -267,8 +279,7 @@ impl Scene for AndTrick {
     }
 
     fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
-        // A concrete, intentionally small illustration. The highlighted rows
-        // are documents containing the rare word; the final check keeps both.
+        // Illustrative documents: A and C contain both words, E only the rare word.
         let rare = ramp(&frame, 1.4);
         let both = ramp(&frame, 3.6);
         let rows = [
@@ -279,27 +290,31 @@ impl Scene for AndTrick {
             ("E", "quokka", "—", true, false),
         ];
         let documents: Vec<Svgr> = rows.iter().enumerate().map(|(i, &(id, first, second, has_rare, has_both))| {
-            let y = 405.0 + i as f32 * 92.0;
-            let dim = if has_rare { 1.0 } else { 1.0 - 0.48 * rare };
-            let keep = if has_both { 1.0 } else { 1.0 - 0.48 * both };
-            let highlight = if has_rare { rare * keep } else { 0.0 };
-            fframes::svgr!(<g opacity={ramp(&frame, 0.35 + i as f32 * 0.08)}>
-                <rect x="192" y={y - 52.0} width="1536" height="76" rx="14" fill={PANEL} />
-                <rect x="192" y={y - 52.0} width="8" height="76" rx="4" fill={BLUE} opacity={highlight} />
+            let x = 192.0 + i as f32 * 312.0;
+            let lift = if has_both { 22.0 * both } else { 0.0 };
+            let dim = if has_rare { 1.0 } else { 1.0 - 0.38 * rare };
+            let keep = if has_both { 1.0 } else { 1.0 - 0.38 * both };
+            let highlight = if has_rare { rare * if has_both { 1.0 } else { 1.0 - both } } else { 0.0 };
+            fframes::svgr!(<g opacity={ramp(&frame, 0.3 + i as f32 * 0.1)} transform={Transform::translate(0.0, -lift)}>
+                <rect x={x} y="395" width="280" height="324" rx="20" fill={PANEL} stroke={LINE} stroke-width="2" />
+                <rect x={x} y="395" width="280" height="324" rx="20" fill="none" stroke={BLUE} stroke-width="4" opacity={highlight} />
                 <g opacity={dim * keep}>
-                    <text x="224" y={y} font-family={MONO} font-weight={W_MONO} font-size="34" fill={INK2}>{id}</text>
-                    <text x="455" y={y} font-family={SANS} font-weight={W_SANS} font-size="44" fill={if has_rare { INK } else { MUTED }}>{first}</text>
-                    <text x="940" y={y} font-family={SANS} font-weight={W_SANS} font-size="44" fill={INK2}>{second}</text>
+                    <rect x={x + 24.0} y="424" width="36" height="44" rx="4" fill="none" stroke={MUTED} stroke-width="3" />
+                    <line x1={x + 32.0} y1="439" x2={x + 52.0} y2="439" stroke={MUTED} stroke-width="3" />
+                    <line x1={x + 32.0} y1="450" x2={x + 52.0} y2="450" stroke={MUTED} stroke-width="3" />
+                    <text x={x + 75.0} y="456" font-family={MONO} font-weight={W_MONO} font-size="30" fill={INK2}>{format!("DOC {id}")}</text>
+                    <text x={x + 24.0} y="540" font-family={SANS} font-weight={W_SANS} font-size="42" fill={if has_rare { INK } else { MUTED }}>{first}</text>
+                    <text x={x + 24.0} y="604" font-family={SANS} font-weight={W_SANS} font-size="42" fill={INK2}>{second}</text>
                 </g>
-                <text x="1650" y={y} text-anchor="end" font-family={SANS} font-weight={W_SANS} font-size="36" fill={AQUA} opacity={if has_both { both } else { 0.0 }}>"MATCH"</text>
+                <text x={x + 24.0} y="678" font-family={MONO} font-weight={W_MONO} font-size="30" fill={AQUA} opacity={if has_both { both } else { 0.0 }}>"MATCH"</text>
             </g>)
         }).collect();
         fframes::svgr!(<g opacity={scene_alpha(&frame, SCENES[3])}>
-            {heading("HOW IT WORKS · ILLUSTRATIVE EXAMPLE", "Find both words", &frame)}
-            <text x="192" y="326" font-family={SANS} font-weight={W_SANS} font-size="38" fill={INK2}>"Search: "<tspan fill={BLUE}>"quokka"</tspan>" AND animal"</text>
+            {heading("ILLUSTRATIVE SEARCH", "Find both words", &frame)}
+            <text x="192" y="326" font-family={SANS} font-weight={W_SANS} font-size="42" fill={INK2}>"quokka "<tspan fill={BLUE}>"AND"</tspan>" animal"</text>
             {documents}
-            <text x="192" y="895" font-family={SANS} font-weight={W_SANS} font-size="44" fill={INK} opacity={ramp(&frame, 1.4)}>"1. Start with the rare word: fewer documents to check."</text>
-            <text x="192" y="955" font-family={SANS} font-weight={W_SANS} font-size="44" fill={INK2} opacity={ramp(&frame, 3.6)}>"2. Keep the documents that also contain animal."</text>
+            <text x="192" y="850" font-family={SANS} font-weight={W_SANS} font-size="44" fill={INK} opacity={ramp(&frame, 1.4)}>"1  Find the rare word."</text>
+            <text x="192" y="920" font-family={SANS} font-weight={W_SANS} font-size="44" fill={INK2} opacity={ramp(&frame, 3.6)}>"2  Keep documents with both words."</text>
         </g>)
     }
 }
@@ -318,9 +333,8 @@ impl Scene for Exact {
 
     fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
         let rows = [
-            ("Results match the previous build", "3 × 1,227 searches"),
-            ("Checked against a full scan", "4,800 random checks"),
-            ("Compared with the Lucene Rust port", "1,227 searches"),
+            ("Results match lucene-rs", "1,227 searches"),
+            ("Checked against a full scan", "14,400 random checks"),
         ];
         let items: Vec<Svgr> = rows
             .iter()

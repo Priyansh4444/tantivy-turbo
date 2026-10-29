@@ -38,3 +38,17 @@ third reviewer reported missing glyphs in preview images; OCR of the actual
 encoded draft at those timestamps found the complete text, indicating the
 preview display rather than the encoded images was unreliable there. The
 final export should still be checked independently.
+
+## Search-story pass
+
+The revised cut replaces decorative text with an animated collection of
+documents: the opening finds matching cards, and the example follows a rare
+word through to documents containing both words. Benchmark screens use
+proportional time bars and smaller labels. The older October 23 benchmark
+figures remain identified as historical. The full-scan check now reports the
+expanded 14,400 query/configuration checks, which passed in release mode.
+
+Self-review: **8/10 for visual explanation, 7/10 for small-screen reading**.
+The search example now has a visible sequence and less text, while the source
+date and methodology still need small type on the benchmark screens. The
+32.5-second cut remains silent and viewers can pause for details.
