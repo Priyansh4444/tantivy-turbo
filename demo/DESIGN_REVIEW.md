@@ -103,3 +103,12 @@ I fixed a title/document collision, a layering issue that put background cards
 over result text, and overlapping placeholder lines during the result reveal.
 The score remains subjective; it needs real viewer feedback to establish
 whether the clip meets the intended impact on a small screen.
+
+## Apache Lucene context
+
+The cut now includes a separate Apache Lucene (Java) comparison and names
+Elasticsearch, OpenSearch and Solr as products with Lucene at their search
+core. It labels the October 4 result as a 20-query, older-build comparison
+and shows the geometric-mean range across process orders. This is distinct
+from the newer 1,201-query lucene-rs (Rust) comparison. GitHub's code-search
+engine is Blackbird, so the video does not attribute that engine to Lucene.

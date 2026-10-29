@@ -4,7 +4,7 @@ use fframes::{AudioMap, Color, Duration, FFramesContext, Frame, Svgr, Video, inc
 include_media_dir!(pub struct TantivyTurboDemoMedia, "media");
 pub const WIDTH: usize = 1920;
 pub const HEIGHT: usize = 1080;
-const DURATION: f32 = 21.0;
+const DURATION: f32 = 26.0;
 const BLACK: &str = "#000000";
 const WHITE: &str = "#f4f9ff";
 const MUTED: &str = "#b0c0d4";
@@ -60,10 +60,12 @@ impl Video for TantivyTurboDemoVideo<'_> {
         let focused = window(t, (3.6, 4.4), (7.5, 8.6));
         let bench = window(t, (7.7, 8.9), (12.85, 13.55));
         let bench_copy = ease(t, 8.35, 9.05);
-        let proof = window(t, (12.85, 13.55), (16.8, 17.7));
-        let proof_copy = window(t, (13.65, 14.35), (16.55, 17.15));
-        let end = ease(t, 16.8, 17.7);
-        let end_copy = ease(t, 17.35, 18.05);
+        let lucene = window(t, (12.85, 13.55), (17.85, 18.55));
+        let lucene_copy = ease(t, 13.5, 14.15);
+        let proof = window(t, (17.85, 18.55), (21.8, 22.7));
+        let proof_copy = window(t, (18.65, 19.35), (21.55, 22.15));
+        let end = ease(t, 21.8, 22.7);
+        let end_copy = ease(t, 22.35, 23.05);
         let gather = ease(t, 3.8, 5.6);
         let scan = ease(t, 1.45, 3.65);
         let origin_x = 750.0 + scan * 870.0;
@@ -140,14 +142,14 @@ impl Video for TantivyTurboDemoVideo<'_> {
         let base_width = (730.0 * baseline).max(0.1);
         let fast_width = (730.0 * (136.2 / 168.5) * turbo).max(0.1);
         let result = ease(t, 11.0, 11.8);
-        let check = ease(t, 14.05, 15.2);
-        let converge = ease(t, 13.35, 14.55);
+        let check = ease(t, 19.05, 20.2);
+        let converge = ease(t, 18.35, 19.55);
         let streams: Vec<Svgr> = (0..3)
             .map(|i| {
                 let y = 323.0 + 52.0 * i as f32;
                 let a = mix(490.0, 850.0, converge);
                 let b = mix(1320.0, 1010.0, converge);
-                let opacity = proof * (1.0 - ease(t, 14.15, 14.75));
+                let opacity = proof * (1.0 - ease(t, 19.15, 19.75));
                 fframes::svgr!(<g opacity={opacity}>
                 <rect x={a} y={y} width="110" height="29" rx="14" fill={BLUE} opacity="0.35" />
                 <rect x={b} y={y} width="110" height="29" rx="14" fill={CYAN} opacity="0.35" />
@@ -205,6 +207,18 @@ impl Video for TantivyTurboDemoVideo<'_> {
             </g>
             <text x="160" y="810" font-family={MONO} font-size="31" fill={MUTED} opacity={bench_copy}>"1,201 searches · warm · 1 core · Oct 28"</text>
             <text x="160" y="855" font-family={MONO} font-size="25" fill={MUTED} opacity={bench_copy}>"mean query medians · animated comparison"</text>
+          </g>
+          <g opacity={lucene}>
+            <text x="160" y="170" font-family={MONO} font-size="27" fill={CYAN} opacity={lucene_copy}>"APACHE LUCENE 10.4 / JAVA"</text>
+            <text x="160" y="280" font-family={SANS} font-weight="600" font-size="76" fill={WHITE} opacity={lucene_copy}>"The core behind search."</text>
+            <text x="160" y="360" font-family={SANS} font-size="42" fill={MUTED} opacity={lucene_copy}>"Elasticsearch · OpenSearch · Solr"</text>
+            <circle cx="1390" cy="530" r={mix(120.0, 195.0, lucene_copy)} fill={BLUE} opacity="0.08" />
+            <circle cx="1390" cy="530" r={mix(105.0, 168.0, lucene_copy)} fill={PANEL} stroke={BLUE} stroke-width="4" />
+            <text x="1390" y="527" text-anchor="middle" font-family={SANS} font-weight="600" font-size="61" fill={WHITE} opacity={lucene_copy}>"1.82–2.09×"</text>
+            <text x="1390" y="581" text-anchor="middle" font-family={SANS} font-size="36" fill={CYAN} opacity={lucene_copy}>"faster"</text>
+            <text x="160" y="595" font-family={SANS} font-size="48" fill={WHITE} opacity={lucene_copy}>"Typical top-10 search"</text>
+            <text x="160" y="810" font-family={MONO} font-size="31" fill={MUTED} opacity={lucene_copy}>"20 queries · older build · Oct 4"</text>
+            <text x="160" y="855" font-family={MONO} font-size="25" fill={MUTED} opacity={lucene_copy}>"geometric mean · two process orders"</text>
           </g>
           {streams}
           <g opacity={proof}>
