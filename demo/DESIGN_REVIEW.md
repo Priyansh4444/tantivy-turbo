@@ -87,3 +87,19 @@ overlapping captions at transitions; a second pass holds the result cards
 longer, separates the captions, and bridges the graphics. Scores are subjective:
 the benchmark caveat still needs the accompanying report, and the video is a
 silent landscape export rather than a purpose-built vertical cut.
+
+## Ranked-results pass
+
+I compared two visual sketches: a glowing orbit around matching documents and
+a ranked search-results interface. The interface is easier to understand
+without search-engine knowledge, so the new cut types the query, gathers the
+matching documents into numbered results, then brings two visual result
+streams together for the full-scan check. The documents and titles are
+illustrative. The earlier benchmark and its scope remain unchanged.
+
+Self-review against the preceding cut: the outcome is clearer, and the text
+is less crowded, although the visual still has a quiet, technical aesthetic.
+I fixed a title/document collision, a layering issue that put background cards
+over result text, and overlapping placeholder lines during the result reveal.
+The score remains subjective; it needs real viewer feedback to establish
+whether the clip meets the intended impact on a small screen.

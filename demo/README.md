@@ -22,8 +22,9 @@ rendered outputs.
 
 ## Transcript
 
-- An illustrative search finds documents containing both “quokka” and
-  “animal.” The visual sequence simplifies how the index performs that work.
+- An illustrative search finds and ranks documents containing both “quokka”
+  and “animal.” The document titles are fictional; the visual sequence
+  simplifies how the index performs that work.
 - For the best ten results on 1,201 warm port-style searches, the October 28
   comparison measured an average of the two order-specific mean query medians
   of about 136.2 µs for tantivy-turbo and 168.5 µs for lucene-rs: about 1.24×

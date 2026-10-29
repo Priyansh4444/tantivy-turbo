@@ -65,8 +65,10 @@ impl Video for TantivyTurboDemoVideo<'_> {
         let end = ease(t, 16.8, 17.7);
         let end_copy = ease(t, 17.35, 18.05);
         let gather = ease(t, 3.8, 5.6);
-        let scan = ease(t, 1.0, 3.65);
+        let scan = ease(t, 1.45, 3.65);
         let origin_x = 750.0 + scan * 870.0;
+        let query = "quokka + animal";
+        let typed = (query.len() as f32 * ease(t, 0.35, 1.45)) as usize;
         let ambiance: Vec<Svgr> = (0..48).map(|i| {
             let x = 118.0 + ((i * 239) % 1650) as f32;
             let y = 102.0 + ((i * 163) % 850) as f32;
@@ -79,13 +81,16 @@ impl Video for TantivyTurboDemoVideo<'_> {
         }).collect();
         let routes: Vec<Svgr> = (0..3)
             .map(|i| {
-                let x = 850.0 + i as f32 * 290.0;
+                let x = 860.0;
+                let y = 390.0 + i as f32 * 145.0;
                 let guide = window(t, (3.9, 4.6), (6.6, 7.6));
                 let travel = ease(t, 4.0 + i as f32 * 0.12, 5.55 + i as f32 * 0.12);
                 let px = mix(685.0, x, travel);
                 let control_y = 280.0 - 96.0 * i as f32;
-                let py = 481.0 - 2.0 * (481.0 - control_y) * travel * (1.0 - travel);
-                let arc = format!("M685 481 Q{} {control_y} {x} 481", mix(685.0, x, 0.5));
+                let py = 481.0 * (1.0 - travel).powi(2)
+                    + 2.0 * control_y * travel * (1.0 - travel)
+                    + y * travel * travel;
+                let arc = format!("M685 481 Q{} {control_y} {x} {y}", mix(685.0, x, 0.5));
                 fframes::svgr!(<g opacity={guide * field}>
                 <path d={arc} fill="none" stroke={BLUE} stroke-width="2" opacity="0.46" />
                 <circle cx={px} cy={py} r="24" fill={BLUE} opacity="0.16" />
@@ -93,32 +98,41 @@ impl Video for TantivyTurboDemoVideo<'_> {
             </g>)
             })
             .collect();
-        let docs: Vec<Svgr> = (0..24).map(|i| {
+        // Background cards render first, so they cannot obscure result text.
+        let doc_order = (0..24)
+            .filter(|i| ![3, 10, 20].contains(i))
+            .chain([3, 10, 20]);
+        let docs: Vec<Svgr> = doc_order.map(|i| {
             let col = i % 6; let row = i / 6;
             let base_x = 750.0 + col as f32 * 143.0;
             let base_y = 255.0 + row as f32 * 143.0;
             let order = match i { 3 => Some(0), 10 => Some(1), 20 => Some(2), _ => None };
             let is_hit = order.is_some();
-            let rank = order.unwrap_or(0) as f32;
-            let selected = if is_hit { ease(t, 1.15 + col as f32 * 0.34, 1.65 + col as f32 * 0.34) } else { 0.0 };
-            let x = if is_hit { mix(base_x, 850.0 + rank * 290.0, gather) } else { base_x + (base_x - 1130.0) * 0.13 * gather };
-            let y = if is_hit { mix(base_y, 390.0, gather) } else { base_y + 100.0 * gather };
-            let w = if is_hit { mix(112.0, 224.0, gather) } else { 112.0 };
-            let h = if is_hit { mix(118.0, 246.0, gather) } else { 118.0 };
+            let rank_index = order.unwrap_or(0);
+            let rank = rank_index as f32;
+            let label = ["Quokka habitat", "Quokka animal facts", "Quokka field notes"][rank_index];
+            let selected = if is_hit { ease(t, 1.55 + col as f32 * 0.30, 2.05 + col as f32 * 0.30) } else { 0.0 };
+            let arrival = if is_hit { ease(t, 3.7 + rank * 0.12, 5.45 + rank * 0.12) } else { gather };
+            let x = if is_hit { mix(base_x, 860.0, arrival) } else { base_x + (base_x - 1130.0) * 0.13 * gather };
+            let y = if is_hit { mix(base_y, 330.0 + rank * 145.0, arrival) } else { base_y + 100.0 * gather };
+            let w = if is_hit { mix(112.0, 720.0, arrival) } else { 112.0 };
+            let h = if is_hit { mix(118.0, 120.0, arrival) } else { 118.0 };
             let opacity = if is_hit { field } else { field * (1.0 - 0.92 * gather) };
-            let text_alpha = ease(t, 5.2, 5.7) * selected;
+            let text_alpha = ease(t, 5.3 + rank * 0.12, 5.8 + rank * 0.12) * selected;
+            let line_alpha = if is_hit { 1.0 - ease(t, 4.9 + rank * 0.12, 5.2 + rank * 0.12) } else { 1.0 };
             let sparkle = (1.0 - ease(t, 5.15, 6.2)) * gather * selected;
             fframes::svgr!(<g opacity={opacity}>
                 <rect x={x - 7.0} y={y - 7.0} width={w + 14.0} height={h + 14.0} rx="19" fill={BLUE} opacity={selected * 0.18} />
                 <rect x={x} y={y} width={w} height={h} rx="14" fill={PANEL} stroke={GRID} stroke-width="2" />
                 <rect x={x} y={y} width={w} height={h} rx="14" fill="none" stroke={BLUE} stroke-width="3" opacity={selected} />
-                <line x1={x + 20.0} y1={y + 34.0} x2={x + w * 0.68} y2={y + 34.0} stroke={if is_hit { CYAN } else { MUTED }} stroke-width="5" stroke-linecap="round" opacity={0.34 + selected * 0.66} />
-                <line x1={x + 20.0} y1={y + 56.0} x2={x + w * 0.76} y2={y + 56.0} stroke={MUTED} stroke-width="4" stroke-linecap="round" opacity="0.30" />
-                <line x1={x + 20.0} y1={y + 78.0} x2={x + w * 0.58} y2={y + 78.0} stroke={MUTED} stroke-width="4" stroke-linecap="round" opacity="0.30" />
-                <text x={x + 20.0} y={y + 132.0} font-family={SANS} font-size="29" fill={WHITE} opacity={text_alpha}>"quokka"</text>
-                <text x={x + 20.0} y={y + 170.0} font-family={SANS} font-size="29" fill={MUTED} opacity={text_alpha}>"animal"</text>
-                <circle cx={x + w - 26.0} cy={y + h - 25.0} r="7" fill={CYAN} opacity={selected} />
-                <circle cx={x + w - 26.0} cy={y + h - 25.0} r={15.0 + 20.0 * gather} fill="none" stroke={CYAN} stroke-width="3" opacity={sparkle} />
+                <line x1={x + 20.0} y1={y + 34.0} x2={x + w * 0.68} y2={y + 34.0} stroke={if is_hit { CYAN } else { MUTED }} stroke-width="5" stroke-linecap="round" opacity={(0.34 + selected * 0.66) * line_alpha} />
+                <line x1={x + 20.0} y1={y + 56.0} x2={x + w * 0.76} y2={y + 56.0} stroke={MUTED} stroke-width="4" stroke-linecap="round" opacity={0.30 * line_alpha} />
+                <line x1={x + 20.0} y1={y + 78.0} x2={x + w * 0.58} y2={y + 78.0} stroke={MUTED} stroke-width="4" stroke-linecap="round" opacity={0.30 * line_alpha} />
+                <text x={x + 24.0} y={y + 72.0} font-family={MONO} font-size="29" fill={CYAN} opacity={text_alpha}>{format!("0{}", rank_index + 1)}</text>
+                <text x={x + 105.0} y={y + 49.0} font-family={SANS} font-size="31" fill={WHITE} opacity={text_alpha}>{label}</text>
+                <text x={x + 105.0} y={y + 86.0} font-family={SANS} font-size="24" fill={MUTED} opacity={text_alpha}>"quokka · animal"</text>
+                <circle cx={x + w - 34.0} cy={y + h / 2.0} r="7" fill={CYAN} opacity={selected} />
+                <circle cx={x + w - 34.0} cy={y + h / 2.0} r={15.0 + 20.0 * gather} fill="none" stroke={CYAN} stroke-width="3" opacity={sparkle} />
             </g>)
         }).collect();
         let baseline = ease(t, 9.15, 11.55);
@@ -127,6 +141,19 @@ impl Video for TantivyTurboDemoVideo<'_> {
         let fast_width = (730.0 * (136.2 / 168.5) * turbo).max(0.1);
         let result = ease(t, 11.0, 11.8);
         let check = ease(t, 14.05, 15.2);
+        let converge = ease(t, 13.35, 14.55);
+        let streams: Vec<Svgr> = (0..3)
+            .map(|i| {
+                let y = 323.0 + 52.0 * i as f32;
+                let a = mix(490.0, 850.0, converge);
+                let b = mix(1320.0, 1010.0, converge);
+                let opacity = proof * (1.0 - ease(t, 14.15, 14.75));
+                fframes::svgr!(<g opacity={opacity}>
+                <rect x={a} y={y} width="110" height="29" rx="14" fill={BLUE} opacity="0.35" />
+                <rect x={b} y={y} width="110" height="29" rx="14" fill={CYAN} opacity="0.35" />
+            </g>)
+            })
+            .collect();
         let intro_y = 290.0 - 25.0 * ease(t, 0.1, 0.9);
         fframes::svgr!(<svg xmlns="http://www.w3.org/2000/svg" width={WIDTH} height={HEIGHT} viewBox="0 0 1920 1080">
           <rect width="1920" height="1080" fill={BLACK} />
@@ -135,19 +162,24 @@ impl Video for TantivyTurboDemoVideo<'_> {
           {ambiance}
           <g opacity={field_copy}>
             <text x="160" y="153" font-family={MONO} font-size="26" fill={CYAN}>"TANTIVY-TURBO / SEARCH"</text>
-            <text x="160" y={intro_y} font-family={SANS} font-weight="600" font-size="82" fill={WHITE} opacity={opening}>"Find the signal."</text>
-            <text x="160" y="265" font-family={SANS} font-weight="600" font-size="82" fill={WHITE} opacity={focused}>"Keep the matches."</text>
-            <text x="160" y="345" font-family={SANS} font-size="39" fill={MUTED} opacity={opening}>"Search, without the wait."</text>
+            <text x="160" y={intro_y} font-family={SANS} font-weight="600" font-size="82" fill={WHITE} opacity={opening}>"Search, faster."</text>
+            <text x="160" y="265" font-family={SANS} font-weight="600" font-size="82" fill={WHITE} opacity={focused}>"Your top results."</text>
             <rect x="160" y="425" width="510" height="112" rx="22" fill={BLUE} opacity="0.14" />
             <rect x="164" y="429" width="502" height="104" rx="20" fill={PANEL} stroke={BLUE} stroke-width="3" />
             <circle cx="220" cy="476" r="15" fill="none" stroke={CYAN} stroke-width="5" />
             <line x1="231" y1="487" x2="244" y2="500" stroke={CYAN} stroke-width="5" stroke-linecap="round" />
-            <text x="272" y="493" font-family={SANS} font-size="42" fill={WHITE}>"quokka + animal"</text>
+            <text x="272" y="493" font-family={SANS} font-size="42" fill={WHITE}>{&query[..typed]}</text>
             <path d={format!("M680 481 H{origin_x}")} fill="none" stroke={BLUE} stroke-width="4" opacity={(1.0 - gather) * 0.85} />
             <circle cx={origin_x} cy="481" r="25" fill={BLUE} opacity={(1.0 - gather) * 0.22} />
             <circle cx={origin_x} cy="481" r="7" fill={CYAN} opacity={1.0 - gather} />
             <line x1={origin_x} y1="210" x2={origin_x} y2="860" stroke={CYAN} stroke-width="2" opacity={(1.0 - gather) * 0.55} />
             <text x="160" y="850" font-family={MONO} font-size="26" fill={MUTED}>"ILLUSTRATIVE SEARCH"</text>
+          </g>
+          <g opacity={field * gather}>
+            <rect x="824" y="245" width="792" height="580" rx="24" fill={PANEL} stroke={GRID} stroke-width="2" opacity="0.78" />
+            <circle cx="866" cy="291" r="5" fill={CYAN} />
+            <circle cx="888" cy="291" r="5" fill={BLUE} opacity="0.6" />
+            <circle cx="910" cy="291" r="5" fill={MUTED} opacity="0.5" />
           </g>
           {routes}
           {docs}
@@ -174,6 +206,7 @@ impl Video for TantivyTurboDemoVideo<'_> {
             <text x="160" y="810" font-family={MONO} font-size="31" fill={MUTED} opacity={bench_copy}>"1,201 searches · warm · 1 core · Oct 28"</text>
             <text x="160" y="855" font-family={MONO} font-size="25" fill={MUTED} opacity={bench_copy}>"mean query medians · animated comparison"</text>
           </g>
+          {streams}
           <g opacity={proof}>
             <circle cx="960" cy="385" r="205" fill={BLUE} opacity="0.09" />
             <circle cx="960" cy="385" r="150" fill={PANEL} stroke={BLUE} stroke-width="3" />
