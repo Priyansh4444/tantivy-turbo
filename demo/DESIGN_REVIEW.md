@@ -135,3 +135,10 @@ process-order ratios. Memory is shown as measured RSS with the default JVM
 heap and mapped pages, not as a universal memory ratio. Both Lucene scenes
 identify the October 4 older build; the lucene-rs scene identifies the later
 1,201-query run. No storage comparison is shown.
+
+## Restored animated introduction
+
+The earlier document-field introduction returns before the Lucene-first
+comparison. It is sped up to fit the cut, and the two title fades are separated
+so they do not overlap. The search and result titles remain illustrative;
+the Lucene speed, resident-memory and lucene-rs measurements are unchanged.

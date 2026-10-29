@@ -31,19 +31,125 @@ fn smooth(t: f32, a: f32, b: f32) -> f32 {
 fn window(t: f32, a: f32, b: f32, c: f32, d: f32) -> f32 {
     smooth(t, a, b) * (1.0 - smooth(t, c, d))
 }
+// The earlier illustrative document-field sequence, sped up to fit the short cut.
+fn intro_ease(t: f32, a: f32, b: f32) -> f32 {
+    smooth(t, a, b)
+}
+fn intro_window(t: f32, a: (f32, f32), b: (f32, f32)) -> f32 {
+    window(t, a.0, a.1, b.0, b.1)
+}
+fn intro_mix(a: f32, b: f32, p: f32) -> f32 {
+    a + (b - a) * p
+}
+fn intro<'a>(seconds: f32) -> Svgr<'a> {
+    let t = seconds / 0.75;
+    let field = intro_window(t, (0.0, 0.45), (8.35, 9.15));
+    let field_copy = intro_window(t, (0.0, 0.45), (7.35, 8.1));
+    let opening = intro_window(t, (0.15, 0.8), (3.45, 3.85));
+    let focused = intro_window(t, (3.85, 4.25), (7.5, 8.6));
+    let gather = intro_ease(t, 3.8, 5.6);
+    let scan = intro_ease(t, 1.45, 3.65);
+    let origin_x = 750.0 + scan * 870.0;
+    let query = "quokka + animal";
+    let typed = (query.len() as f32 * intro_ease(t, 0.35, 1.45)) as usize;
+    let routes: Vec<Svgr> = (0..3)
+        .map(|i| {
+            let x = 860.0;
+            let y = 390.0 + i as f32 * 145.0;
+            let guide = intro_window(t, (3.9, 4.6), (6.6, 7.6));
+            let travel = intro_ease(t, 4.0 + i as f32 * 0.12, 5.55 + i as f32 * 0.12);
+            let px = intro_mix(685.0, x, travel);
+            let control_y = 280.0 - 96.0 * i as f32;
+            let py = 481.0 * (1.0 - travel).powi(2)
+                + 2.0 * control_y * travel * (1.0 - travel)
+                + y * travel * travel;
+            let arc = format!("M685 481 Q{} {control_y} {x} {y}", intro_mix(685.0, x, 0.5));
+            fframes::svgr!(<g opacity={guide * field}>
+                <path d={arc} fill="none" stroke={BLUE} stroke-width="2" opacity="0.46" />
+                <circle cx={px} cy={py} r="24" fill={BLUE} opacity="0.16" />
+                <circle cx={px} cy={py} r="5" fill={AQUA} />
+            </g>)
+        })
+        .collect();
+    // Background cards render first, so they cannot obscure result text.
+    let doc_order = (0..24)
+        .filter(|i| ![3, 10, 20].contains(i))
+        .chain([3, 10, 20]);
+    let docs: Vec<Svgr> = doc_order.map(|i| {
+            let col = i % 6; let row = i / 6;
+            let base_x = 750.0 + col as f32 * 143.0;
+            let base_y = 255.0 + row as f32 * 143.0;
+            let order = match i { 3 => Some(0), 10 => Some(1), 20 => Some(2), _ => None };
+            let is_hit = order.is_some();
+            let rank_index = order.unwrap_or(0);
+            let rank = rank_index as f32;
+            let label = ["Quokka habitat", "Quokka animal facts", "Quokka field notes"][rank_index];
+            let selected = if is_hit { intro_ease(t, 1.55 + col as f32 * 0.30, 2.05 + col as f32 * 0.30) } else { 0.0 };
+            let arrival = if is_hit { intro_ease(t, 3.7 + rank * 0.12, 5.45 + rank * 0.12) } else { gather };
+            let x = if is_hit { intro_mix(base_x, 860.0, arrival) } else { base_x + (base_x - 1130.0) * 0.13 * gather };
+            let y = if is_hit { intro_mix(base_y, 330.0 + rank * 145.0, arrival) } else { base_y + 100.0 * gather };
+            let w = if is_hit { intro_mix(112.0, 720.0, arrival) } else { 112.0 };
+            let h = if is_hit { intro_mix(118.0, 120.0, arrival) } else { 118.0 };
+            let opacity = if is_hit { field } else { field * (1.0 - 0.92 * gather) };
+            let text_alpha = intro_ease(t, 5.3 + rank * 0.12, 5.8 + rank * 0.12) * selected;
+            let line_alpha = if is_hit { 1.0 - intro_ease(t, 4.9 + rank * 0.12, 5.2 + rank * 0.12) } else { 1.0 };
+            let sparkle = (1.0 - intro_ease(t, 5.15, 6.2)) * gather * selected;
+            fframes::svgr!(<g opacity={opacity}>
+                <rect x={x - 7.0} y={y - 7.0} width={w + 14.0} height={h + 14.0} rx="19" fill={BLUE} opacity={selected * 0.18} />
+                <rect x={x} y={y} width={w} height={h} rx="14" fill={PANEL} stroke={BORDER} stroke-width="2" />
+                <rect x={x} y={y} width={w} height={h} rx="14" fill="none" stroke={BLUE} stroke-width="3" opacity={selected} />
+                <line x1={x + 20.0} y1={y + 34.0} x2={x + w * 0.68} y2={y + 34.0} stroke={if is_hit { AQUA } else { DIM }} stroke-width="5" stroke-linecap="round" opacity={(0.34 + selected * 0.66) * line_alpha} />
+                <line x1={x + 20.0} y1={y + 56.0} x2={x + w * 0.76} y2={y + 56.0} stroke={DIM} stroke-width="4" stroke-linecap="round" opacity={0.30 * line_alpha} />
+                <line x1={x + 20.0} y1={y + 78.0} x2={x + w * 0.58} y2={y + 78.0} stroke={DIM} stroke-width="4" stroke-linecap="round" opacity={0.30 * line_alpha} />
+                <text x={x + 24.0} y={y + 72.0} font-family={MONO} font-size="29" fill={AQUA} opacity={text_alpha}>{format!("0{}", rank_index + 1)}</text>
+                <text x={x + 105.0} y={y + 49.0} font-family={SANS} font-size="31" fill={INK} opacity={text_alpha}>{label}</text>
+                <text x={x + 105.0} y={y + 86.0} font-family={SANS} font-size="24" fill={DIM} opacity={text_alpha}>"quokka · animal"</text>
+                <circle cx={x + w - 34.0} cy={y + h / 2.0} r="7" fill={AQUA} opacity={selected} />
+                <circle cx={x + w - 34.0} cy={y + h / 2.0} r={15.0 + 20.0 * gather} fill="none" stroke={AQUA} stroke-width="3" opacity={sparkle} />
+            </g>)
+        }).collect();
+    let intro_y = 290.0 - 25.0 * intro_ease(t, 0.1, 0.9);
+    fframes::svgr!(<g>
+          <g opacity={field_copy}>
+            <text x="160" y="153" font-family={MONO} font-size="26" fill={AQUA}>"TANTIVY-TURBO / SEARCH"</text>
+            <text x="160" y={intro_y} font-family={SANS} font-weight="600" font-size="82" fill={INK} opacity={opening}>"Search, faster."</text>
+            <text x="160" y="265" font-family={SANS} font-weight="600" font-size="82" fill={INK} opacity={focused}>"Your top results."</text>
+            <rect x="160" y="425" width="510" height="112" rx="22" fill={BLUE} opacity="0.14" />
+            <rect x="164" y="429" width="502" height="104" rx="20" fill={PANEL} stroke={BLUE} stroke-width="3" />
+            <circle cx="220" cy="476" r="15" fill="none" stroke={AQUA} stroke-width="5" />
+            <line x1="231" y1="487" x2="244" y2="500" stroke={AQUA} stroke-width="5" stroke-linecap="round" />
+            <text x="272" y="493" font-family={SANS} font-size="42" fill={INK}>{&query[..typed]}</text>
+            <path d={format!("M680 481 H{origin_x}")} fill="none" stroke={BLUE} stroke-width="4" opacity={(1.0 - gather) * 0.85} />
+            <circle cx={origin_x} cy="481" r="25" fill={BLUE} opacity={(1.0 - gather) * 0.22} />
+            <circle cx={origin_x} cy="481" r="7" fill={AQUA} opacity={1.0 - gather} />
+            <line x1={origin_x} y1="210" x2={origin_x} y2="860" stroke={AQUA} stroke-width="2" opacity={(1.0 - gather) * 0.55} />
+            <text x="160" y="850" font-family={MONO} font-size="26" fill={DIM}>"ILLUSTRATIVE SEARCH"</text>
+          </g>
+          <g opacity={field * gather}>
+            <rect x="824" y="245" width="792" height="580" rx="24" fill={PANEL} stroke={BORDER} stroke-width="2" opacity="0.78" />
+            <circle cx="866" cy="291" r="5" fill={AQUA} />
+            <circle cx="888" cy="291" r="5" fill={BLUE} opacity="0.6" />
+            <circle cx="910" cy="291" r="5" fill={DIM} opacity="0.5" />
+          </g>
+          {routes}
+          {docs}
+        </g>)
+}
+
 impl Video for TantivyTurboDemoVideo<'_> {
     const FPS: usize = 60;
     const WIDTH: usize = WIDTH;
     const HEIGHT: usize = HEIGHT;
     const BACKGROUND_COLOR: Color = Color::BLACK;
     fn duration(&self) -> Duration<'_> {
-        Duration::Seconds(23.0)
+        Duration::Seconds(29.5)
     }
     fn audio(&self) -> AudioMap<'_> {
         AudioMap::none()
     }
     fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
-        let t = frame.seconds();
+        let absolute_time = frame.seconds();
+        let t = absolute_time - 6.5;
         let java = window(t, 0.0, 0.55, 5.0, 5.65);
         let memory = window(t, 5.65, 6.25, 10.3, 10.95);
         let proof = window(t, 10.95, 11.55, 13.8, 14.45);
@@ -73,6 +179,7 @@ impl Video for TantivyTurboDemoVideo<'_> {
         fframes::svgr!(<svg xmlns="http://www.w3.org/2000/svg" width={WIDTH} height={HEIGHT} viewBox="0 0 1920 1080">
    <rect width="1920" height="1080" fill="#000000" />{glow}{stars}
    <path d="M140 948 H1780" stroke={BORDER} stroke-width="1" opacity="0.48"/>
+   {intro(absolute_time)}
    <g opacity={java}>
     <text x="160" y="150" font-family={MONO} font-size="27" fill={AQUA}>"APACHE LUCENE 10.4 / JAVA"</text>
     <text x="160" y="255" font-family={SANS} font-weight="600" font-size="70" fill={INK}>"Search, faster."</text>

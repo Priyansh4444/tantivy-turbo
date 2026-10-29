@@ -1,8 +1,8 @@
 # tantivy-turbo demo video
 
-A 23-second, 60-fps 1080p launch video for tantivy-turbo, with no audio.
-It presents the earlier Java Lucene speed and memory comparison first, then
-the newer lucene-rs comparison at the end.
+A 29.5-second, 60-fps 1080p launch video for tantivy-turbo, with no audio.
+An illustrative animated search opens the video, followed by the earlier
+Java Lucene speed and memory comparison and the newer lucene-rs comparison.
 
 ```bash
 cargo build --release                         # first build downloads prebuilt Skia/ffmpeg
@@ -22,6 +22,9 @@ rendered outputs.
 
 ## Transcript
 
+- An illustrative search animates a query through a field of documents and
+  gathers fictional results. The visuals simplify how the index performs the
+  search.
 - The October 4 warmed query-process comparison measured about 14.9 MiB
   resident for the earlier fork build and 346.27 MiB for Lucene with the
   default JVM heap, including mapped pages. RSS depends on warmup and JVM
