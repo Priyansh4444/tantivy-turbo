@@ -47,7 +47,7 @@ Back to the [README](README.md).
 - **Results are checked during timing.** Every timed call's checksum is compared against a frozen correctness dump.
 - **Machine:** Intel Core Ultra 7 255H laptop on AC power, Rust 1.99, `-C target-cpu=native`, fat LTO.
 
-Absolute microseconds are only comparable within one table, because each table is a separate run. The current tables were measured on battery, and ratios between separate runs vary by a few percent; typical-query ratios of very short queries (a few microseconds) vary the most. tantivy-turbo's index is the same 1M-document index re-encoded by a single-segment merge to add level-1 skip data; documents and doc IDs are unchanged.
+Absolute microseconds are only comparable within one table, because each table is a separate run. The saved comparisons with Tantivy and lucene-rs were measured on October 23, before the October 26 skip-reader fix, and have not been remeasured at the current HEAD. The tables were measured on battery, and ratios between separate runs vary by a few percent; typical-query ratios of very short queries (a few microseconds) vary the most. tantivy-turbo's index is the same 1M-document index re-encoded by a single-segment merge to add level-1 skip data; documents and doc IDs are unchanged.
 
 <br>
 
@@ -102,6 +102,8 @@ Data: [`bench-results/turbo-vs-tantivy-0.27`](bench-results/turbo-vs-tantivy-0.2
 
 <p align="center">
   <picture>
+    <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/vs-lucene-rs-mobile-dark.svg">
+    <source media="(max-width: 600px)" srcset="assets/vs-lucene-rs-mobile-light.svg">
     <source media="(prefers-color-scheme: dark)" srcset="assets/vs-lucene-rs-dark.svg">
     <img alt="tantivy-turbo vs lucene-rs, TOP-10" src="assets/vs-lucene-rs-light.svg" width="860">
   </picture>
@@ -150,7 +152,7 @@ COUNT is lopsided because lucene-rs counts by visiting every match. tantivy-turb
 
 ### vs Apache Lucene 10.4
 
-This comparison uses the search-benchmark-game Wikipedia 1M index and its 20 queries. **Both engines use native BM25 (k1 1.2, b 0.75) with their own collection statistics.** Full sorted term statistics, stored IDs, norms and raw top-10 scores were cross-checked as identical before timing.
+This comparison uses the search-benchmark-game Wikipedia 1M index and its 20 queries. **Both engines use native BM25 (k1 1.2, b 0.75) with their own collection statistics.** Sorted term statistics, stored IDs and encoded norms matched. The top-ten document ID sets matched, with order differences permitted for ties; common top-100 scores differed by at most 5.72×10⁻⁸ relative, within the 2×10⁻⁶ tolerance.
 
 <p align="center">
   <picture>
@@ -173,7 +175,7 @@ This comparison uses the search-benchmark-game Wikipedia 1M index and its 20 que
 </p>
 
 - **Memory:** a warmed tantivy-turbo query process is about **15 MiB resident, against 346 MiB for Lucene** with the default JVM heap (387 MiB peak). That includes mapped index pages. A JVM with a deliberately constrained heap would use less, and that wasn't measured.
-- **When this was measured:** 2026-10-04, on the fork before the OR work in this release, so the current build should be at least this fast. The full report has correctness gates and raw samples: [native comparison](doc/performance/lucene-10.4/results/2026-10-04-native/README.md). See also [COUNT, storage and memory](doc/performance/lucene-10.4/results/2026-10-03-followup/README.md).
+- **When this was measured:** 2026-10-04, on an earlier fork build before the OR work in this release. These numbers have not been remeasured for the current build. The full report has correctness gates and raw samples: [native comparison](doc/performance/lucene-10.4/results/2026-10-04-native/README.md). See also [COUNT, storage and memory](doc/performance/lucene-10.4/results/2026-10-03-followup/README.md).
 
 <br>
 
@@ -193,7 +195,7 @@ Top-k disjunctions use **MaxScore**. Terms are ordered by how much they can cont
 - **MaxScore for 3–32 terms** with compact per-clause state, certified global prefixes, an exact cached threshold cutoff, and batched scoring when a single term drives the candidates.
 - **Two-term OR** pruned by its essential term in fixed local score regions.
 - **Adaptive coarse regions:**
-  - **The problem:** MaxScore splits the doc-ID space into regions and re-derives each term's score bound per region. Tantivy ends a region at every term's 128-document block boundary. For a 21-term query that means 30,242 regions, each costing work for every term.
+  - **The problem:** MaxScore splits the doc-ID space into regions and re-derives each term's score bound per region. An earlier turbo build ended a region at every term's 128-document block boundary. For a 21-term query that meant 30,242 regions, each costing work for every term.
   - **The probe:** tantivy-turbo starts each query on that fine geometry and measures it. If region bookkeeping outweighs candidate work (fewer than 16 candidates per term per region), it tries wide regions, then keeps whichever geometry measures cheaper.
   - **The bounds:** wide regions are bounded by **cached range maxima over the skip data the index already stores**, so no format change is needed. Non-leading terms are capped at 256-block groups, and a region shrinks again when looser bounds would promote a term to essential.
   - **The result:** the 21-term query drops to 362 regions and runs **2× faster**. Long OR queries overall take **15% less time** than before this change, with identical results.
@@ -210,6 +212,13 @@ New in this release, and all exact: results are bit-identical to the previous bu
 - **Repeated terms are scored once:** like Lucene's rewrite of repeated SHOULD clauses, `to be or not to be` scores 4 terms instead of 6. The published sum still adds each leaf at every original clause position.
 
 ### AND queries: windows that follow the rarest term
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/and-windows-dark.svg">
+    <img alt="AND windows: per-block windows vs windows that follow the rarest term" src="assets/and-windows-light.svg" width="860">
+  </picture>
+</p>
 
 Block-max conjunctions (Tantivy's and Lucene's) end each window at the nearest block boundary of *any* term, so a dense term chops the rare term's range into many tiny windows that each pay for bound checks. tantivy-turbo instead:
 
@@ -263,7 +272,7 @@ Speed changes are only accepted if results are **bit-identical**:
 
 - **Exact gates:** top-10 document IDs, f32 score bits and match counts are compared against the previous accepted build on three 1,227-query gates (default BM25, k1 0.9/b 0.4, and k1 2/b 1). They are also compared against an exhaustive scorer. The level-1 build passes them on the re-encoded index against results recorded on the original index.
 - **Tests:** the full workspace suite passes (2,185 tests with every feature enabled, 9 ignored). That includes exhaustive-equality fixtures that force the coarse-region path, and forced hand-backs to fine regions, on every OR fixture, plus fixtures with repeated terms.
-- **End-to-end differential test** ([`tests/pruning_exactness.rs`](tests/pruning_exactness.rs)): on random multi-segment indexes with dense and sparse terms, deletions, repeated query terms and three BM25 parameter sets, the pruned top-1/10/100 of random term, OR, AND, phrase and mixed queries must equal scoring every match, document for document and bit for bit, and both count paths must equal the match count. Deliberately planted pruning bugs in the OR and AND paths make it fail.
+- **End-to-end differential test** ([`tests/pruning_exactness.rs`](tests/pruning_exactness.rs)): eight generated multi-segment indexes, with and without deletions, exercise dense and sparse terms, duplicates, longer ORs, exclusions, and three BM25 parameter sets. In release mode, 14,400 query/configuration checks compare pruned top-1/10/100 results and score bits with a full scan, and both count paths with the match count. Deliberately planted pruning bugs in the OR and AND paths make it fail.
 - **Index robustness:** level-1 skip records are only used when their offsets move forward and stay inside the term's postings; corrupted offsets fall back to block-by-block skipping (tested).
 - **Upstream CI:** all of Tantivy's CI workflows (unit tests across feature sets, long-running tests, coverage) pass on this repository.
 - **Security:** the fork adds no `unsafe` code to Tantivy 0.27. `cargo audit` reports no vulnerabilities; its only warnings are unmaintained crates inherited from upstream's optional or dev dependencies (`atty`, `proc-macro-error`, `paste`).
@@ -297,7 +306,7 @@ What you need to know to rerun them:
 
 ## Demo video
 
-The demo is a 32-second, six-scene video written in Rust with [fframes](https://github.com/dmtrKovalenko/fframes). It uses Bayer-dithered bars and every number in it comes from the tables above.
+The demo is a 32.5-second video. Its benchmark figures come from the tables above; the search example is illustrative.
 
 ```bash
 cd demo

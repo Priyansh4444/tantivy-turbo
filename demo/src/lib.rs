@@ -1,436 +1,249 @@
-//! tantivy-turbo launch video: six short scenes rendered with fframes.
-//!
-//! Every number on screen comes from the benchmarks in the repository README
-//! (`bench/` and `doc/performance/`). Bars and backgrounds use ordered (Bayer)
-//! dithering: 16 fill levels per color, defined once as SVG patterns, so a fill can
-//! "dissolve" in by stepping through the levels.
-use fframes::{
-    AnimateRuntimeInput, AudioMap, Color, Duration, FFramesContext, Frame, Overlap, Scene, Scenes,
-    Svgr, Transform, Video,
-    animation::{AnimationRuntime, Easing},
-    include_media_dir,
-};
-use std::sync::LazyLock;
-
+//! Measured Lucene comparison. Values and limitations are documented in the benchmark reports.
+use fframes::{AudioMap, Color, Duration, FFramesContext, Frame, Svgr, Video, include_media_dir};
 include_media_dir!(pub struct TantivyTurboDemoMedia, "media");
-
 pub const WIDTH: usize = 1920;
 pub const HEIGHT: usize = 1080;
-
-const BG: &str = "#0c0e12";
-const INK: &str = "#ecebe4";
-const MUTED: &str = "#8b919c";
-const LIME: &str = "#c6f35a";
-const TEAL: &str = "#5cc8b8";
-const SLATE: &str = "#5a606b";
+const INK: &str = "#f5f8ff";
+const DIM: &str = "#aebed3";
+const BLUE: &str = "#568cff";
+const AQUA: &str = "#4cf4df";
+const PANEL: &str = "#0c1422";
+const BORDER: &str = "#314762";
 const SANS: &str = "DM Sans";
 const MONO: &str = "JetBrains Mono";
-const W_SANS: u16 = 500;
-const W_MONO: u16 = 400;
-
-/// Seconds of cross-fade between scenes.
-const XFADE: f32 = 0.4;
-const SCENES: [f32; 6] = [4.0, 7.0, 5.5, 6.5, 4.5, 4.5];
-
-static EASE: LazyLock<AnimationRuntime> =
-    LazyLock::new(|| AnimationRuntime::new(0.8, &Easing::CubicBezier(0.16, 1.0, 0.3, 1.0)));
-static GROW: LazyLock<AnimationRuntime> =
-    LazyLock::new(|| AnimationRuntime::new(1.1, &Easing::CubicBezier(0.65, 0.0, 0.35, 1.0)));
-static SPRING: LazyLock<AnimationRuntime> = LazyLock::new(|| {
-    AnimationRuntime::new(3.0, &Easing::Spring { mass: 1.0, stiffness: 180.0, damping: 20.0 })
-});
-
-/// 4x4 Bayer thresholds: a cell is inked at level L when its value is below L.
-const BAYER: [[u8; 4]; 4] = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
-
 pub struct TantivyTurboDemoVideo<'a> {
     pub media: &'a TantivyTurboDemoMedia,
-    intro: Intro,
-    upstream: VsUpstream,
-    lucene: VsLucene,
-    trick: Trick,
-    exact: Exact,
-    outro: Outro,
 }
-
 impl<'a> TantivyTurboDemoVideo<'a> {
     pub fn new(media: &'a TantivyTurboDemoMedia) -> Self {
-        Self { media, intro: Intro, upstream: VsUpstream, lucene: VsLucene, trick: Trick, exact: Exact, outro: Outro }
+        Self { media }
     }
 }
-
 impl std::fmt::Debug for TantivyTurboDemoVideo<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TantivyTurboDemoVideo").finish()
     }
 }
-
-/// Overlap::Previous adds the cross-fade in front of a scene, so scenes simply add up.
-fn total_seconds() -> f32 {
-    SCENES.iter().sum::<f32>()
+fn smooth(t: f32, a: f32, b: f32) -> f32 {
+    let x = ((t - a) / (b - a)).clamp(0.0, 1.0);
+    x * x * x * (x * (x * 6.0 - 15.0) + 10.0)
+}
+fn window(t: f32, a: f32, b: f32, c: f32, d: f32) -> f32 {
+    smooth(t, a, b) * (1.0 - smooth(t, c, d))
+}
+// The earlier illustrative document-field sequence, sped up to fit the short cut.
+fn lerp(a: f32, b: f32, p: f32) -> f32 {
+    a + (b - a) * p
+}
+fn intro<'a>(seconds: f32) -> Svgr<'a> {
+    // The last intro element has faded out by this point.
+    if seconds >= 7.0 {
+        return Svgr::empty();
+    }
+    let t = seconds / 0.75;
+    let field = window(t, 0.0, 0.45, 8.35, 9.15);
+    let field_copy = window(t, 0.0, 0.45, 7.35, 8.1);
+    let opening = window(t, 0.15, 0.8, 3.45, 3.85);
+    let focused = window(t, 3.85, 4.25, 7.5, 8.6);
+    let gather = smooth(t, 3.8, 5.6);
+    let scan = smooth(t, 1.45, 3.65);
+    let origin_x = 750.0 + scan * 870.0;
+    let query = "quokka + animal";
+    let typed = (query.len() as f32 * smooth(t, 0.35, 1.45)) as usize;
+    let routes: Vec<Svgr> = (0..3)
+        .map(|i| {
+            let x = 860.0;
+            let y = 390.0 + i as f32 * 145.0;
+            let guide = window(t, 3.9, 4.6, 6.6, 7.6);
+            let travel = smooth(t, 4.0 + i as f32 * 0.12, 5.55 + i as f32 * 0.12);
+            let px = lerp(685.0, x, travel);
+            let control_y = 280.0 - 96.0 * i as f32;
+            let py = 481.0 * (1.0 - travel).powi(2)
+                + 2.0 * control_y * travel * (1.0 - travel)
+                + y * travel * travel;
+            let arc = format!("M685 481 Q{} {control_y} {x} {y}", lerp(685.0, x, 0.5));
+            fframes::svgr!(<g opacity={guide * field}>
+                <path d={arc} fill="none" stroke={BLUE} stroke-width="2" opacity="0.46" />
+                <circle cx={px} cy={py} r="24" fill={BLUE} opacity="0.16" />
+                <circle cx={px} cy={py} r="5" fill={AQUA} />
+            </g>)
+        })
+        .collect();
+    // Background cards render first, so they cannot obscure result text.
+    let doc_order = (0..24)
+        .filter(|i| ![3, 10, 20].contains(i))
+        .chain([3, 10, 20]);
+    let docs: Vec<Svgr> = doc_order.map(|i| {
+            let col = i % 6; let row = i / 6;
+            let base_x = 750.0 + col as f32 * 143.0;
+            let base_y = 255.0 + row as f32 * 143.0;
+            let order = match i { 3 => Some(0), 10 => Some(1), 20 => Some(2), _ => None };
+            let is_hit = order.is_some();
+            let rank_index = order.unwrap_or(0);
+            let rank = rank_index as f32;
+            let label = ["Quokka habitat", "Quokka animal facts", "Quokka field notes"][rank_index];
+            let selected = if is_hit { smooth(t, 1.55 + col as f32 * 0.30, 2.05 + col as f32 * 0.30) } else { 0.0 };
+            let arrival = if is_hit { smooth(t, 3.7 + rank * 0.12, 5.45 + rank * 0.12) } else { gather };
+            let x = if is_hit { lerp(base_x, 860.0, arrival) } else { base_x + (base_x - 1130.0) * 0.13 * gather };
+            let y = if is_hit { lerp(base_y, 330.0 + rank * 145.0, arrival) } else { base_y + 100.0 * gather };
+            let w = if is_hit { lerp(112.0, 720.0, arrival) } else { 112.0 };
+            let h = if is_hit { lerp(118.0, 120.0, arrival) } else { 118.0 };
+            let opacity = if is_hit { field } else { field * (1.0 - 0.92 * gather) };
+            let text_alpha = smooth(t, 5.3 + rank * 0.12, 5.8 + rank * 0.12) * selected;
+            let line_alpha = if is_hit { 1.0 - smooth(t, 4.9 + rank * 0.12, 5.2 + rank * 0.12) } else { 1.0 };
+            let sparkle = (1.0 - smooth(t, 5.15, 6.2)) * gather * selected;
+            fframes::svgr!(<g opacity={opacity}>
+                <rect x={x - 7.0} y={y - 7.0} width={w + 14.0} height={h + 14.0} rx="19" fill={BLUE} opacity={selected * 0.18} />
+                <rect x={x} y={y} width={w} height={h} rx="14" fill={PANEL} stroke={BORDER} stroke-width="2" />
+                <rect x={x} y={y} width={w} height={h} rx="14" fill="none" stroke={BLUE} stroke-width="3" opacity={selected} />
+                <line x1={x + 20.0} y1={y + 34.0} x2={x + w * 0.68} y2={y + 34.0} stroke={if is_hit { AQUA } else { DIM }} stroke-width="5" stroke-linecap="round" opacity={(0.34 + selected * 0.66) * line_alpha} />
+                <line x1={x + 20.0} y1={y + 56.0} x2={x + w * 0.76} y2={y + 56.0} stroke={DIM} stroke-width="4" stroke-linecap="round" opacity={0.30 * line_alpha} />
+                <line x1={x + 20.0} y1={y + 78.0} x2={x + w * 0.58} y2={y + 78.0} stroke={DIM} stroke-width="4" stroke-linecap="round" opacity={0.30 * line_alpha} />
+                <text x={x + 24.0} y={y + 72.0} font-family={MONO} font-size="29" fill={AQUA} opacity={text_alpha}>{format!("0{}", rank_index + 1)}</text>
+                <text x={x + 105.0} y={y + 49.0} font-family={SANS} font-size="31" fill={INK} opacity={text_alpha}>{label}</text>
+                <text x={x + 105.0} y={y + 86.0} font-family={SANS} font-size="24" fill={DIM} opacity={text_alpha}>"quokka · animal"</text>
+                <circle cx={x + w - 34.0} cy={y + h / 2.0} r="7" fill={AQUA} opacity={selected} />
+                <circle cx={x + w - 34.0} cy={y + h / 2.0} r={15.0 + 20.0 * gather} fill="none" stroke={AQUA} stroke-width="3" opacity={sparkle} />
+            </g>)
+        }).collect();
+    let intro_y = 290.0 - 25.0 * smooth(t, 0.1, 0.9);
+    fframes::svgr!(<g>
+          <g opacity={field_copy}>
+            <text x="160" y="153" font-family={MONO} font-size="26" fill={AQUA}>"TANTIVY-TURBO / SEARCH"</text>
+            <text x="160" y={intro_y} font-family={SANS} font-weight="600" font-size="82" fill={INK} opacity={opening}>"Search, faster."</text>
+            <text x="160" y="265" font-family={SANS} font-weight="600" font-size="82" fill={INK} opacity={focused}>"Your top results."</text>
+            <rect x="160" y="425" width="510" height="112" rx="22" fill={BLUE} opacity="0.14" />
+            <rect x="164" y="429" width="502" height="104" rx="20" fill={PANEL} stroke={BLUE} stroke-width="3" />
+            <circle cx="220" cy="476" r="15" fill="none" stroke={AQUA} stroke-width="5" />
+            <line x1="231" y1="487" x2="244" y2="500" stroke={AQUA} stroke-width="5" stroke-linecap="round" />
+            <text x="272" y="493" font-family={SANS} font-size="42" fill={INK}>{&query[..typed]}</text>
+            <path d={format!("M680 481 H{origin_x}")} fill="none" stroke={BLUE} stroke-width="4" opacity={(1.0 - gather) * 0.85} />
+            <circle cx={origin_x} cy="481" r="25" fill={BLUE} opacity={(1.0 - gather) * 0.22} />
+            <circle cx={origin_x} cy="481" r="7" fill={AQUA} opacity={1.0 - gather} />
+            <line x1={origin_x} y1="210" x2={origin_x} y2="860" stroke={AQUA} stroke-width="2" opacity={(1.0 - gather) * 0.55} />
+            <text x="160" y="850" font-family={MONO} font-size="26" fill={DIM}>"ILLUSTRATIVE SEARCH"</text>
+          </g>
+          <g opacity={field * gather}>
+            <rect x="824" y="245" width="792" height="580" rx="24" fill={PANEL} stroke={BORDER} stroke-width="2" opacity="0.78" />
+            <circle cx="866" cy="291" r="5" fill={AQUA} />
+            <circle cx="888" cy="291" r="5" fill={BLUE} opacity="0.6" />
+            <circle cx="910" cy="291" r="5" fill={DIM} opacity="0.5" />
+          </g>
+          {routes}
+          {docs}
+        </g>)
 }
 
 impl Video for TantivyTurboDemoVideo<'_> {
-    const FPS: usize = 30;
+    const FPS: usize = 60;
     const WIDTH: usize = WIDTH;
     const HEIGHT: usize = HEIGHT;
     const BACKGROUND_COLOR: Color = Color::BLACK;
-
     fn duration(&self) -> Duration<'_> {
-        Duration::Auto
+        Duration::Seconds(29.5)
     }
-
     fn audio(&self) -> AudioMap<'_> {
         AudioMap::none()
     }
-
-    fn define_scenes(&self) -> Scenes<'_> {
-        Scenes::from(vec![
-            &self.intro as &dyn Scene,
-            &self.upstream,
-            &self.lucene,
-            &self.trick,
-            &self.exact,
-            &self.outro,
-        ])
-    }
-
-    fn render_frame<'a>(&'a self, frame: Frame, ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
-        let progress = (frame.seconds() / total_seconds()).clamp(0.0, 1.0);
-        let bar = (progress * 1536.0).max(0.5);
-        fframes::svgr!(
-            <svg xmlns="http://www.w3.org/2000/svg" width={WIDTH} height={HEIGHT} viewBox="0 0 1920 1080">
-                <defs>{dither_defs()}</defs>
-                <rect width="1920" height="1080" fill={BG} />
-                {ctx.render_scenes(&frame)}
-                <rect x="192" y="985" width="1536" height="6" fill="url(#slate4)" />
-                <rect x="192" y="985" width={bar} height="6" fill="url(#lime12)" />
-                <text x="192" y="1040" font-family={MONO} font-weight={W_MONO} font-size="28" fill={MUTED}>"tantivy-turbo"</text>
-                <text x="1728" y="1040" text-anchor="end" font-family={MONO} font-weight={W_MONO} font-size="28" fill={MUTED}>"made with fframes"</text>
-            </svg>
-        )
-    }
-}
-
-/// 16 dither levels for each palette color, as 8x8 px tiles of 2x2 px cells.
-fn dither_defs<'a>() -> Vec<Svgr<'a>> {
-    let mut defs = Vec::new();
-    for (name, color) in [("lime", LIME), ("teal", TEAL), ("slate", SLATE), ("ink", INK)] {
-        for level in 1..=16u8 {
-            let cells: Vec<Svgr> = (0..4)
-                .flat_map(|y| (0..4).map(move |x| (x, y)))
-                .filter(|&(x, y)| BAYER[y][x] < level)
-                .map(|(x, y)| fframes::svgr!(<rect x={x * 2} y={y * 2} width="2" height="2" fill={color} />))
-                .collect();
-            defs.push(fframes::svgr!(
-                <pattern id={format!("{name}{level}")} width="8" height="8" patternUnits="userSpaceOnUse">{cells}</pattern>
-            ));
-        }
-    }
-    defs
-}
-
-/// `url(#name<level>)` for a 0..=1 coverage; `None` when nothing would be inked.
-fn dither(name: &str, coverage: f32) -> Option<String> {
-    let level = (coverage.clamp(0.0, 1.0) * 16.0).round() as u8;
-    (level > 0).then(|| format!("url(#{name}{level})"))
-}
-
-fn dithered_rect<'a>(name: &str, coverage: f32, x: f32, y: f32, w: f32, h: f32) -> Svgr<'a> {
-    match dither(name, coverage) {
-        Some(fill) if w >= 0.5 && h >= 0.5 => fframes::svgr!(<rect x={x} y={y} width={w} height={h} fill={fill} />),
-        _ => Svgr::empty(),
-    }
-}
-
-/// 0 to 1 over 0.8 s from `start` (seconds into the scene).
-fn ramp(frame: &Frame, start: f32) -> f32 {
-    frame.animate_runtime(AnimateRuntimeInput { on_second: start, from: 0.0, to: 1.0, animation_runtime: &EASE })
-}
-
-/// 0 to 1 over 1.1 s with ease-in-out, for growing bars.
-fn grow(frame: &Frame, start: f32) -> f32 {
-    frame.animate_runtime(AnimateRuntimeInput { on_second: start, from: 0.0, to: 1.0, animation_runtime: &GROW })
-}
-
-fn rise(frame: &Frame, start: f32) -> f32 {
-    frame.animate_runtime(AnimateRuntimeInput { on_second: start, from: 48.0, to: 0.0, animation_runtime: &SPRING })
-}
-
-/// Opacity of a cross-faded scene of `length` seconds (plus the overlap in front of it):
-/// fade in over the overlap, fade out over the last 0.3 s.
-fn scene_alpha(frame: &Frame, length: f32) -> f32 {
-    let t = frame.seconds();
-    (t / XFADE).min((length + XFADE - t) / 0.3).clamp(0.0, 1.0)
-}
-
-fn heading<'a>(kicker: &'a str, title: &'a str, frame: &Frame) -> Svgr<'a> {
-    fframes::svgr!(<g opacity={ramp(frame, 0.1)} transform={Transform::translate(0.0, rise(frame, 0.1))}>
-        <text x="192" y="190" font-family={MONO} font-weight={W_MONO} font-size="30" fill={LIME}>{kicker}</text>
-        <text x="186" y="290" font-family={SANS} font-weight={W_SANS} font-size="92" letter-spacing="-3" fill={INK}>{title}</text>
-    </g>)
-}
-
-#[derive(Debug)]
-struct Intro;
-
-impl Scene for Intro {
-    fn duration(&self) -> Duration<'_> {
-        Duration::Seconds(SCENES[0])
-    }
-
     fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
-        let t = frame.seconds();
-        // A dither wave sweeps diagonally across a 16x9 grid of tiles and settles to a faint texture.
-        let tiles: Vec<Svgr> = (0..9)
-            .flat_map(|row| (0..16).map(move |col| (col, row)))
-            .map(|(col, row)| {
-                let front = t * 16.0 - (col + row) as f32;
-                let coverage = if front < 0.0 {
-                    0.0
-                } else if front < 3.0 {
-                    front / 3.0
-                } else {
-                    (1.0 - (front - 3.0) * 0.18).max(0.12)
-                };
-                let name = if (col + row) % 7 == 0 { "teal" } else { "lime" };
-                dithered_rect(name, coverage, col as f32 * 120.0, row as f32 * 120.0, 118.0, 118.0)
-            })
-            .collect();
-        let alpha = (t / 0.2).min((SCENES[0] - t) / 0.3).clamp(0.0, 1.0);
-        let title = ramp(&frame, 1.1);
-        let sub = ramp(&frame, 1.6);
-        fframes::svgr!(<g opacity={alpha}>
-            {tiles}
-            <rect x="140" y="330" width="1640" height="400" rx="24" fill={BG} opacity={0.88 * title} />
-            <g opacity={title} transform={Transform::translate(0.0, rise(&frame, 1.1))}>
-                <text x="960" y="520" text-anchor="middle" font-family={SANS} font-weight={W_SANS} font-size="176" letter-spacing="-6" fill={INK}>"tantivy-turbo"</text>
-            </g>
-            <g opacity={sub} transform={Transform::translate(0.0, rise(&frame, 1.6))}>
-                <text x="960" y="630" text-anchor="middle" font-family={SANS} font-weight={W_SANS} font-size="52" fill={MUTED}>"A faster Tantivy. Same API. Same results."</text>
-            </g>
-        </g>)
-    }
-}
-
-#[derive(Debug)]
-struct VsUpstream;
-
-impl Scene for VsUpstream {
-    fn duration(&self) -> Duration<'_> {
-        Duration::Seconds(SCENES[1])
-    }
-
-    fn overlap(&self) -> Overlap {
-        Overlap::Previous(XFADE)
-    }
-
-    fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
-        // Speedup over Tantivy 0.27, TOP-10, summed time, mean of both run orders.
-        let rows = [
-            ("Wikipedia 20, total time", 5.2_f32, "5.2x"),
-            ("OR, 2 terms", 2.17, "2.2x"),
-            ("OR, 3+ terms", 2.01, "2.0x"),
-            ("All 1,201 queries", 1.36, "1.36x"),
-            ("Phrase", 1.28, "1.3x"),
-            ("AND", 0.71, "1.4x slower"),
-        ];
-        let bars: Vec<Svgr> = rows
-            .iter()
-            .enumerate()
-            .map(|(i, &(name, speedup, label))| {
-                let start = 0.6 + i as f32 * 0.12;
-                let p = grow(&frame, start);
-                let y = 380.0 + i as f32 * 92.0;
-                let width = (speedup / 5.4 * 980.0 * p).max(0.5);
-                let (fill, coverage) = if speedup < 1.0 { ("slate", 0.6) } else if i == 0 { ("lime", 1.0) } else { ("lime", 0.75) };
-                // The fill dissolves in while the bar grows.
-                let coverage = coverage * ramp(&frame, start).max(0.15);
-                let tone = if speedup < 1.0 { MUTED } else { INK };
-                fframes::svgr!(<g opacity={ramp(&frame, start)}>
-                    <text x="192" y={y + 40.0} font-family={SANS} font-weight={W_SANS} font-size="40" fill={tone}>{name}</text>
-                    {dithered_rect(fill, coverage, 680.0, y, width, 56.0)}
-                    <text x={696.0 + width} y={y + 42.0} font-family={MONO} font-weight={W_MONO} font-size="40" fill={tone}>{label}</text>
-                </g>)
-            })
-            .collect();
-        fframes::svgr!(<g opacity={scene_alpha(&frame, SCENES[1])}>
-            {heading("vs TANTIVY 0.27", "2x faster OR queries", &frame)}
-            {bars}
-            <text x="192" y="940" font-family={MONO} font-weight={W_MONO} font-size="28" fill={MUTED} opacity={ramp(&frame, 1.8)}>"top-10, summed time; same 1M docs and machine; identical match counts"</text>
-        </g>)
-    }
-}
-
-#[derive(Debug)]
-struct VsLucene;
-
-impl Scene for VsLucene {
-    fn duration(&self) -> Duration<'_> {
-        Duration::Seconds(SCENES[2])
-    }
-
-    fn overlap(&self) -> Overlap {
-        Overlap::Previous(XFADE)
-    }
-
-    fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
-        let stats = [("2.0x", "faster TOP-10", LIME), ("1.3x", "faster COUNT", TEAL), ("20 / 20", "queries faster", INK)];
-        let cards: Vec<Svgr> = stats
-            .iter()
-            .enumerate()
-            .map(|(i, &(value, what, color))| {
-                let start = 0.5 + i as f32 * 0.15;
-                let x = 192.0 + i as f32 * 524.0;
-                let fill = if i == 2 { "ink" } else if i == 1 { "teal" } else { "lime" };
-                fframes::svgr!(<g opacity={ramp(&frame, start)} transform={Transform::translate(0.0, rise(&frame, start))}>
-                    {dithered_rect(fill, 0.1 * ramp(&frame, start + 0.2), x, 380.0, 488.0, 330.0)}
-                    <rect x={x} y="380" width="488" height="330" fill="none" stroke={color} stroke-width="2" />
-                    <text x={x + 40.0} y="555" font-family={SANS} font-weight={W_SANS} font-size="120" letter-spacing="-4" fill={color}>{value}</text>
-                    <text x={x + 44.0} y="650" font-family={SANS} font-weight={W_SANS} font-size="44" fill={INK}>{what}</text>
-                </g>)
-            })
-            .collect();
-        fframes::svgr!(<g opacity={scene_alpha(&frame, SCENES[2])}>
-            {heading("vs APACHE LUCENE 10.4", "Beats Lucene on its own scoring", &frame)}
-            {cards}
-            <text x="192" y="800" font-family={SANS} font-weight={W_SANS} font-size="40" fill={INK} opacity={ramp(&frame, 1.4)}>"~15 MiB resident vs ~617 MiB for the default JVM"</text>
-            <text x="192" y="940" font-family={MONO} font-weight={W_MONO} font-size="28" fill={MUTED} opacity={ramp(&frame, 1.6)}>"matched BM25 (k1 1.2, b 0.75), Wikipedia 1M, both process orders"</text>
-        </g>)
-    }
-}
-
-#[derive(Debug)]
-struct Trick;
-
-impl Scene for Trick {
-    fn duration(&self) -> Duration<'_> {
-        Duration::Seconds(SCENES[3])
-    }
-
-    fn overlap(&self) -> Overlap {
-        Overlap::Previous(XFADE)
-    }
-
-    fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
-        // Regions on one 21-term query: many thin slivers merge into a few wide blocks.
-        let merge = grow(&frame, 1.6);
-        let count = 30242.0 + (362.0 - 30242.0) * merge;
-        let thin = 96;
-        let slivers: Vec<Svgr> = (0..thin)
-            .map(|i| {
-                let w = 1536.0 / thin as f32;
-                let coverage = (0.35 + 0.5 * ((i * 7 % 5) as f32 / 4.0)) * (1.0 - merge);
-                dithered_rect("slate", coverage * ramp(&frame, 0.5), 192.0 + i as f32 * w, 520.0, w - 3.0, 150.0)
-            })
-            .collect();
-        let wide = [0.0, 0.18, 0.31, 0.52, 0.66, 0.87, 1.0];
-        let blocks: Vec<Svgr> = wide
-            .windows(2)
-            .enumerate()
-            .map(|(i, edge)| {
-                let x = 192.0 + edge[0] * 1536.0;
-                let w = (edge[1] - edge[0]) * 1536.0 - 6.0;
-                let name = if i % 2 == 0 { "lime" } else { "teal" };
-                dithered_rect(name, 0.8 * merge, x, 520.0, w, 150.0)
-            })
-            .collect();
-        let digits = format_thousands(count.round() as u64);
-        fframes::svgr!(<g opacity={scene_alpha(&frame, SCENES[3])}>
-            {heading("THE TRICK", "Fewer, wider MaxScore regions", &frame)}
-            {slivers}
-            {blocks}
-            <text x="430" y="460" text-anchor="end" font-family={MONO} font-weight={W_MONO} font-size="64" fill={LIME} opacity={ramp(&frame, 0.5)}>{digits}</text>
-            <text x="460" y="460" font-family={SANS} font-weight={W_SANS} font-size="40" fill={INK} opacity={ramp(&frame, 0.5)}>"regions for one 21-term query"</text>
-            <text x="192" y="770" font-family={SANS} font-weight={W_SANS} font-size="44" fill={INK} opacity={ramp(&frame, 2.6)}>"Coarse bounds from skip data the index already stores."</text>
-            <text x="192" y="840" font-family={SANS} font-weight={W_SANS} font-size="44" fill={INK} opacity={ramp(&frame, 2.9)}>"Switched on only when bookkeeping dominates. 2x faster."</text>
-        </g>)
-    }
-}
-
-fn format_thousands(n: u64) -> String {
-    let s = n.to_string();
-    let mut out = String::new();
-    for (i, c) in s.chars().enumerate() {
-        if i > 0 && (s.len() - i) % 3 == 0 {
-            out.push(',');
-        }
-        out.push(c);
-    }
-    out
-}
-
-#[derive(Debug)]
-struct Exact;
-
-impl Scene for Exact {
-    fn duration(&self) -> Duration<'_> {
-        Duration::Seconds(SCENES[4])
-    }
-
-    fn overlap(&self) -> Overlap {
-        Overlap::Previous(XFADE)
-    }
-
-    fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
-        let rows = [
-            ("Bit-identical top-10 and scores", "3 x 1,227 queries"),
-            ("Index format unchanged", "0 bytes"),
-            ("Peak memory", "+0.23%"),
-        ];
-        let items: Vec<Svgr> = rows
-            .iter()
-            .enumerate()
-            .map(|(i, &(what, value))| {
-                let start = 0.5 + i as f32 * 0.25;
-                let y = 420.0 + i as f32 * 150.0;
-                let draw = ramp(&frame, start + 0.15);
-                fframes::svgr!(<g opacity={ramp(&frame, start)} transform={Transform::translate(0.0, rise(&frame, start))}>
-                    {dithered_rect("lime", 0.3, 192.0, y - 60.0, 88.0, 88.0)}
-                    <path d={format!("M{} {} l20 20 l40 -44", 214.0, y - 12.0)} stroke={LIME} stroke-width="8" fill="none"
-                        stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="90" stroke-dashoffset={90.0 * (1.0 - draw)} />
-                    <text x="320" y={y} font-family={SANS} font-weight={W_SANS} font-size="56" fill={INK}>{what}</text>
-                    <text x="1728" y={y} text-anchor="end" font-family={MONO} font-weight={W_MONO} font-size="44" fill={LIME}>{value}</text>
-                </g>)
-            })
-            .collect();
-        fframes::svgr!(<g opacity={scene_alpha(&frame, SCENES[4])}>
-            {heading("NO TRADE-OFFS HIDDEN", "Faster, not different", &frame)}
-            {items}
-        </g>)
-    }
-}
-
-#[derive(Debug)]
-struct Outro;
-
-impl Scene for Outro {
-    fn duration(&self) -> Duration<'_> {
-        Duration::Seconds(SCENES[5])
-    }
-
-    fn overlap(&self) -> Overlap {
-        Overlap::Previous(XFADE)
-    }
-
-    fn render_frame<'a>(&'a self, frame: Frame, _ctx: &FFramesContext<'a, '_>) -> Svgr<'a> {
-        let t = frame.seconds();
-        let card = ramp(&frame, 0.3);
-        // Faint, steady dither texture behind the code card (stepping levels full-screen flickers).
-        let shimmer = 0.12;
-        fframes::svgr!(<g opacity={(t / XFADE).clamp(0.0, 1.0)}>
-            {dithered_rect("lime", shimmer, 0.0, 0.0, 1920.0, 940.0)}
-            <rect x="192" y="250" width="1536" height="420" rx="20" fill={BG} opacity={card} />
-            <rect x="192" y="250" width="1536" height="420" rx="20" fill="none" stroke={SLATE} stroke-width="2" opacity={card} />
-            <g opacity={card} transform={Transform::translate(0.0, rise(&frame, 0.3))} font-family={MONO} font-weight={W_MONO} font-size="44">
-                <text x="250" y="350" fill={MUTED}>"[dependencies]"</text>
-                <text x="250" y="430" fill={INK}>"tantivy = { package = "<tspan fill={LIME}>"\"tantivy-turbo\""</tspan>","</text>
-                <text x="250" y="510" fill={INK}>"            git = "<tspan fill={TEAL}>"\"https://github.com/"</tspan></text>
-                <text x="250" y="590" fill={TEAL}>"            Priyansh4444/tantivy-turbo\""<tspan fill={INK}>" }"</tspan></text>
-            </g>
-            <g opacity={ramp(&frame, 1.0)} transform={Transform::translate(0.0, rise(&frame, 1.0))}>
-                <text x="960" y="810" text-anchor="middle" font-family={SANS} font-weight={W_SANS} font-size="64" fill={INK}>"Drop-in. Your code keeps using tantivy::"</text>
-            </g>
-        </g>)
+        let absolute_time = frame.seconds();
+        let t = absolute_time - 6.5;
+        let java = window(t, 0.0, 0.55, 5.0, 5.65);
+        let memory = window(t, 5.65, 6.25, 10.3, 10.95);
+        let proof = window(t, 10.95, 11.55, 13.8, 14.45);
+        let port = window(t, 14.45, 15.05, 19.1, 19.75);
+        let finish = smooth(t, 19.75, 20.4);
+        let j = smooth(t, 0.7, 2.3);
+        let m = smooth(t, 6.3, 7.9);
+        let p1 = smooth(t, 15.15, 16.85);
+        let p2 = smooth(t, 15.15, 16.53);
+        let check = smooth(t, 11.5, 12.5);
+        let stars:Vec<Svgr>=(0..64).map(|i| {
+   let x=110.0+((i*397)%1690) as f32; let y=90.0+((i*193)%860) as f32;
+   let a=0.10+0.06*(t*0.22+i as f32*1.37).sin();
+   fframes::svgr!(<circle cx={x} cy={y} r={if i%9==0 {2.0} else {1.2}} fill={AQUA} opacity={a}/>)
+  }).collect();
+        let glow:Vec<Svgr>=(0..8).map(|i| {
+   let r=470.0-i as f32*48.0;
+   fframes::svgr!(<circle cx={1260.0+35.0*(t*0.14).sin()} cy="500" r={r} fill={BLUE} opacity="0.012"/>)
+  }).collect();
+        let jw = (700.0 * j).max(0.1);
+        let bw = (700.0 * 0.478 * j).max(0.1);
+        let band = (700.0 * 0.071 * j).max(0.1);
+        let mw = (700.0 * m).max(0.1);
+        let tw = (700.0 * (14.9 / 346.27) * m).max(0.1);
+        let pw1 = (700.0 * p1).max(0.1);
+        let pw2 = (700.0 * (136.2 / 168.5) * p2).max(0.1);
+        fframes::svgr!(<svg xmlns="http://www.w3.org/2000/svg" width={WIDTH} height={HEIGHT} viewBox="0 0 1920 1080">
+   <rect width="1920" height="1080" fill="#000000" />{glow}{stars}
+   <path d="M140 948 H1780" stroke={BORDER} stroke-width="1" opacity="0.48"/>
+   {intro(absolute_time)}
+   <g opacity={java}>
+    <text x="160" y="150" font-family={MONO} font-size="27" fill={AQUA}>"APACHE LUCENE 10.4 / JAVA"</text>
+    <text x="160" y="255" font-family={SANS} font-weight="600" font-size="70" fill={INK}>"Search, faster."</text>
+    <text x="160" y="315" font-family={SANS} font-size="32" fill={DIM}>"Top 10 results · less time is better"</text>
+    <text x="160" y="390" font-family={SANS} font-size="36" fill={DIM}>"Lucene"</text>
+    <rect x="160" y="412" width="700" height="62" rx="31" fill={PANEL}/>
+    <rect x="160" y="412" width={jw} height="62" rx="31" fill={DIM}/>
+    <text x="160" y="560" font-family={SANS} font-size="36" fill={INK}>"tantivy-turbo"</text>
+    <rect x="160" y="582" width="700" height="62" rx="31" fill={PANEL}/>
+    <rect x="160" y="582" width={bw} height="62" rx="31" fill={BLUE}/>
+    <rect x={160.0+bw} y="582" width={band} height="62" fill={AQUA} opacity="0.55"/>
+    <g opacity={smooth(t,1.6,2.5)}>
+     <text x="1070" y="460" font-family={SANS} font-weight="600" font-size="86" fill={INK}>"1.82–2.09×"</text>
+     <text x="1075" y="525" font-family={SANS} font-size="43" fill={AQUA}>"faster"</text>
+    </g>
+    <text x="160" y="824" font-family={MONO} font-size="29" fill={DIM}>"20 searches · older build · Oct 4"</text>
+    <text x="160" y="869" font-family={MONO} font-size="25" fill={DIM}>"geometric mean · two process orders"</text>
+   </g>
+   <g opacity={memory}>
+    <text x="160" y="150" font-family={MONO} font-size="27" fill={AQUA}>"APACHE LUCENE / MEMORY"</text>
+    <text x="160" y="255" font-family={SANS} font-weight="600" font-size="70" fill={INK}>"A smaller footprint."</text>
+    <text x="160" y="315" font-family={SANS} font-size="32" fill={DIM}>"Warmed search process · resident memory"</text>
+    <text x="160" y="390" font-family={SANS} font-size="36" fill={DIM}>"Lucene"</text>
+    <rect x="160" y="412" width="700" height="62" rx="31" fill={PANEL}/>
+    <rect x="160" y="412" width={mw} height="62" rx="31" fill={DIM}/>
+    <text x="895" y="459" font-family={MONO} font-size="36" fill={DIM} opacity={smooth(t,7.0,7.8)}>"346 MiB"</text>
+    <text x="160" y="560" font-family={SANS} font-size="36" fill={INK}>"tantivy-turbo"</text>
+    <rect x="160" y="582" width="700" height="62" rx="31" fill={PANEL}/>
+    <rect x="160" y="582" width={tw} height="62" rx="31" fill={BLUE}/>
+    <circle cx={160.0+tw} cy="613" r="7" fill={AQUA}/>
+    <text x="895" y="629" font-family={MONO} font-size="36" fill={INK} opacity={smooth(t,7.0,7.8)}>"15 MiB"</text>
+    <text x="160" y="824" font-family={MONO} font-size="29" fill={DIM}>"older build · Oct 4 · default JVM heap"</text>
+    <text x="160" y="869" font-family={MONO} font-size="25" fill={DIM}>"includes mapped pages · not a controlled-heap test"</text>
+   </g>
+   <g opacity={proof}>
+    <circle cx="960" cy="400" r="202" fill={BLUE} opacity="0.08"/>
+    <circle cx="960" cy="400" r="160" fill={PANEL} stroke={BLUE} stroke-width="3"/>
+    <path d="M 900 401 l 42 42 l 79 -93" fill="none" stroke={AQUA} stroke-width="14" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="215" stroke-dashoffset={215.0*(1.0-check)}/>
+    <text x="960" y="690" text-anchor="middle" font-family={SANS} font-weight="600" font-size="76" fill={INK}>"14,400 checks"</text>
+    <text x="960" y="765" text-anchor="middle" font-family={SANS} font-size="40" fill={DIM}>"against a full scan"</text>
+   </g>
+   <g opacity={port}>
+    <text x="160" y="150" font-family={MONO} font-size="27" fill={AQUA}>"ALSO / LUCENE-RS RUST PORT"</text>
+    <text x="160" y="255" font-family={SANS} font-weight="600" font-size="70" fill={INK}>"Against lucene-rs."</text>
+    <text x="160" y="315" font-family={SANS} font-size="32" fill={DIM}>"Top 10 results · less time is better"</text>
+    <text x="160" y="390" font-family={SANS} font-size="36" fill={DIM}>"lucene-rs"</text>
+    <rect x="160" y="412" width="700" height="62" rx="31" fill={PANEL}/>
+    <rect x="160" y="412" width={pw1} height="62" rx="31" fill={DIM}/>
+    <text x="160" y="560" font-family={SANS} font-size="36" fill={INK}>"tantivy-turbo"</text>
+    <rect x="160" y="582" width="700" height="62" rx="31" fill={PANEL}/>
+    <rect x="160" y="582" width={pw2} height="62" rx="31" fill={BLUE}/>
+    <g opacity={smooth(t,16.3,17.1)}>
+     <text x="895" y="459" font-family={MONO} font-size="34" fill={DIM}>"168.5 µs"</text>
+     <text x="895" y="629" font-family={MONO} font-size="34" fill={INK}>"136.2 µs"</text>
+     <text x="1250" y="470" font-family={SANS} font-weight="600" font-size="90" fill={INK}>"1.24×"</text>
+     <text x="1255" y="535" font-family={SANS} font-size="42" fill={AQUA}>"faster"</text>
+    </g>
+    <text x="160" y="824" font-family={MONO} font-size="29" fill={DIM}>"1,201 searches · warm · 1 core · Oct 28"</text>
+    <text x="160" y="869" font-family={MONO} font-size="25" fill={DIM}>"mean query medians · animated scale"</text>
+   </g>
+   <g opacity={finish}>
+    <circle cx="960" cy="415" r="235" fill={BLUE} opacity="0.07"/>
+    <text x="960" y="430" text-anchor="middle" font-family={SANS} font-weight="600" font-size="92" fill={INK}>"tantivy"<tspan fill={BLUE}>"-turbo"</tspan></text>
+    <text x="960" y="515" text-anchor="middle" font-family={SANS} font-size="48" fill={INK}>"Faster search. Same Tantivy API."</text>
+    <text x="960" y="815" text-anchor="middle" font-family={MONO} font-size="35" fill={AQUA}>"github.com/Priyansh4444/tantivy-turbo"</text>
+   </g>
+  </svg>)
     }
 }

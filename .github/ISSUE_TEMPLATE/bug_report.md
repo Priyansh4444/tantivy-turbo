@@ -1,19 +1,18 @@
 ---
 name: Bug report
-about: Create a report to help us improve
-
+about: Report something that does not work as expected
 ---
 
-**Describe the bug**
-- What did you do?
-- What happened?
-- What was expected?
+## What happened?
 
-**Which version of tantivy are you using?**
-If "master",  ideally give the specific sha1 revision.
+Describe the actual and expected behavior.
 
-**To Reproduce**
+## How can we reproduce it?
 
-If your bug is deterministic, can you give a minimal reproducing code?
-Some bugs are not deterministic. Can you describe with precision in which context it happened?
-If this is possible, can you share your code?
+Include a minimal example, steps, and any relevant error output.
+
+## Environment
+
+- tantivy-turbo version or commit:
+- Rust version and operating system:
+- Relevant features or configuration:

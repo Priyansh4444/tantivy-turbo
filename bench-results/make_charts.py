@@ -1,11 +1,16 @@
-"""Render the README's charts (light and dark SVG variants) from measured data.
+"""Render the README's charts and diagrams (light and dark SVG variants) from measured data.
 
 Inputs
   turbo-vs-tantivy-0.27/summary.json   measured by turbo-vs-tantivy-0.27/compare.py
   turbo-vs-lucene-rs/summary.json      measured by turbo-vs-lucene-rs/compare.py
   doc/performance/lucene-10.4/results/2026-10-04-native/*.json   published Lucene 10.4 report
 
-Outputs: assets/*-{light,dark}.svg. Fills use 4x4 ordered (Bayer) dithering.
+Outputs: assets/*-{light,dark}.svg.
+
+Style: blue = TOP-10 and cyan/green = COUNT; "slower" uses a contrasting red.
+Text always uses text tokens, never a
+series color. Bars are at most 16px thick with a 4px rounded data end and a
+square baseline; grids are 1px hairlines.
 """
 import json
 import math
@@ -16,26 +21,16 @@ ROOT = HERE.parent
 OUT = ROOT / "assets"
 LUCENE = ROOT / "doc/performance/lucene-10.4/results/2026-10-04-native"
 
-SANS = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
-MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace"
+SANS = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif"
+MONO = "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
 THEMES = {
-    "dark": dict(bg="#0d1117", card="#11161d", ink="#e6edf3", muted="#8b949e", grid="#21262d",
-                 axis="#3d444d", fast="#b8e550", fast2="#4fc3b0", slow="#f08a7e", neutral="#6e7681"),
-    "light": dict(bg="#ffffff", card="#f6f8fa", ink="#1f2328", muted="#59636e", grid="#e6e9ec",
-                  axis="#b7bdc4", fast="#4d7c0f", fast2="#0f766e", slow="#c2410c", neutral="#8c959f"),
+    "light": dict(surface="#fcfcfb", band="#f4f3f0", border="#e4e2dd", grid="#e7e5e0", axis="#a9a7a0",
+                  ink="#0b0b0b", ink2="#52514e", muted="#696863",
+                  top10="#2a78d6", count="#1baf7a", slow="#e34948", neutral="#a9a7a0", track="#ebe9e4"),
+    "dark": dict(surface="#000000", band="#141719", border="#2a3035", grid="#292e33", axis="#7b858e",
+                 ink="#f7f9f9", ink2="#ccd3da", muted="#aab5bf",
+                 top10="#329cff", count="#00d8c5", slow="#ff7a90", neutral="#7b858e", track="#292e33"),
 }
-BAYER = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]
-LEVELS = (6, 10, 13, 16)
-
-
-def defs(t):
-    out = []
-    for name in ("fast", "fast2", "slow", "neutral", "ink"):
-        for level in LEVELS:
-            cells = "".join(f'<rect x="{x*2}" y="{y*2}" width="2" height="2" fill="{t[name]}"/>'
-                            for y in range(4) for x in range(4) if BAYER[y][x] < level)
-            out.append(f'<pattern id="{name}{level}" width="8" height="8" patternUnits="userSpaceOnUse">{cells}</pattern>')
-    return "<defs>" + "".join(out) + "</defs>"
 
 
 def esc(s):
@@ -45,80 +40,109 @@ def esc(s):
 class Svg:
     def __init__(self, t, w, h):
         self.t, self.w, self.h, self.parts = t, w, h, []
+        self.title, self.description = "Benchmark chart", ""
 
     def add(self, s):
         self.parts.append(s)
 
-    def text(self, x, y, s, size=14, fill=None, anchor="start", weight=400, mono=False, opacity=1):
-        self.add(f'<text x="{x:.1f}" y="{y:.1f}" font-size="{size}" font-weight="{weight}" fill="{fill or self.t["ink"]}" '
-                 f'text-anchor="{anchor}" font-family="{MONO if mono else SANS}" opacity="{opacity}">{esc(s)}</text>')
+    def text(self, x, y, s, size=14, fill=None, anchor="start", weight=400, mono=False, spacing=0):
+        ls = f' letter-spacing="{spacing}"' if spacing else ""
+        self.add(f'<text x="{x:.1f}" y="{y:.1f}" font-size="{size}" font-weight="{weight}" '
+                 f'fill="{fill or self.t["ink"]}" text-anchor="{anchor}"{ls} '
+                 f'font-family="{MONO if mono else SANS}">{esc(s)}</text>')
 
-    def header(self, title, subtitle):
-        self.text(36, 50, title, 22, weight=650)
-        self.text(36, 76, subtitle, 13.5, self.t["muted"])
+    def header(self, eyebrow, title, subtitle):
+        self.title = f"{eyebrow}: {title}"
+        self.description = subtitle
+        self.text(40, 46, eyebrow.upper(), 11.5, self.t["muted"], weight=600, spacing=1.2)
+        self.text(40, 76, title, 26, weight=700)
+        self.text(40, 102, subtitle, 15, self.t["ink2"])
+
+    def hbar(self, x0, x1, y, h, fill, radius=4):
+        """Horizontal bar from the baseline x0 to x1: square at the baseline,
+        rounded at the data end (either direction)."""
+        a, b = sorted((x0, x1))
+        width = max(b - a, 1.5)
+        r = min(radius, width / 2, h / 2)
+        if x1 >= x0:   # data end on the right
+            d = (f"M{a:.1f},{y:.1f} H{a + width - r:.1f} Q{a + width:.1f},{y:.1f} {a + width:.1f},{y + r:.1f} "
+                 f"V{y + h - r:.1f} Q{a + width:.1f},{y + h:.1f} {a + width - r:.1f},{y + h:.1f} H{a:.1f} Z")
+        else:          # data end on the left
+            d = (f"M{b:.1f},{y:.1f} H{a + r:.1f} Q{a:.1f},{y:.1f} {a:.1f},{y + r:.1f} "
+                 f"V{y + h - r:.1f} Q{a:.1f},{y + h:.1f} {a + r:.1f},{y + h:.1f} H{b:.1f} Z")
+        self.add(f'<path d="{d}" fill="{fill}"/>')
 
     def save(self, name):
-        body = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{self.w}" height="{self.h}" viewBox="0 0 {self.w} {self.h}">'
-                f'{defs(self.t)}<rect x="0.5" y="0.5" width="{self.w-1}" height="{self.h-1}" rx="16" fill="{self.t["card"]}" '
-                f'stroke="{self.t["grid"]}"/>' + "".join(self.parts) + "</svg>")
+        t = self.t
+        body = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{self.w}" height="{self.h}" '
+                f'viewBox="0 0 {self.w} {self.h}" role="img" aria-labelledby="chart-title chart-description">'
+                f'<title id="chart-title">{esc(self.title)}</title>'
+                f'<desc id="chart-description">{esc(self.description)}</desc>'
+                f'<rect x="0.5" y="0.5" width="{self.w - 1}" height="{self.h - 1}" rx="14" '
+                f'fill="{t["surface"]}" stroke="{t["border"]}"/>' + "".join(self.parts) + "</svg>")
         (OUT / name).write_text(body)
 
 
 def legend(s, x, y, items):
+    """Swatch + label in text ink (identity never by colored text alone)."""
     for label, fill in items:
-        s.add(f'<rect x="{x}" y="{y-10}" width="14" height="12" rx="2" fill="{fill}"/>')
-        s.text(x + 20, y, label, 12.5, s.t["muted"])
-        x += 34 + 7.2 * len(label)
+        s.add(f'<rect x="{x}" y="{y - 9}" width="12" height="10" rx="2.5" fill="{fill}"/>')
+        s.text(x + 18, y, label, 12.5, s.t["ink2"])
+        x += 36 + 7.0 * len(label)
 
 
-def diverging(theme, name, title, subtitle, rows, series, note, lo=0.5, hi=4.0, ticks=(0.5, 1, 2, 4)):
+def fmt_ratio(v):
+    return f"{v:.0f}×" if v >= 20 else (f"{v:.1f}×" if v >= 10 else f"{v:.2f}×")
+
+
+def diverging(theme, name, eyebrow, title, subtitle, rows, series, note, lo=0.5, hi=4.0, ticks=(0.5, 1, 2, 4)):
     """Log2 axis centred on 1x: faster to the right, slower to the left.
     rows: [(label, sublabel, [time ratio per series])], ratio = candidate time / baseline time."""
     t = THEMES[theme]
-    per = 24
-    row_h = per * len(series) + 22
-    left, right, top = 250, 110, 128
+    bar, gap = 14, 6
+    row_h = (bar + gap) * len(series) + 24
+    left, right, top = 236, 120, 150
     w = 900
-    h = top + row_h * len(rows) + 84
+    h = top + row_h * len(rows) + 70
     s = Svg(t, w, h)
-    s.header(title, subtitle)
-    legend(s, 36, 108, [(lab, f"url(#{pat}16)") for lab, pat in series] + [("slower", "url(#slow13)")])
+    s.header(eyebrow, title, subtitle)
+    items = [(label, t[key]) for label, key in series]
+    if len(series) > 1:
+        legend(s, 40, 132, items)
     plot = w - left - right
-    clamp = lambda v: min(max(v, lo), hi)
-    lx = lambda r: left + (math.log2(clamp(1 / r)) - math.log2(lo)) / (math.log2(hi) - math.log2(lo)) * plot
+    for label, _, values in rows:
+        for r in values:
+            if not lo <= 1 / r <= hi:
+                raise ValueError(f"{name}: {label} speedup {1 / r:.3g} falls outside [{lo}, {hi}]")
+    lx = lambda r: left + (math.log2(1 / r) - math.log2(lo)) / (math.log2(hi) - math.log2(lo)) * plot
     x1 = lx(1.0)
+    bottom = top + row_h * len(rows) - 8
     for v in ticks:
         if lo <= v <= hi:
             x = lx(1 / v)
-            s.add(f'<line x1="{x:.1f}" y1="{top-6}" x2="{x:.1f}" y2="{h-66}" stroke="{t["axis"] if v == 1 else t["grid"]}" '
-                  f'stroke-width="{1.4 if v == 1 else 1}"/>')
-            lab = "same" if v == 1 else (f"{v:g}x faster" if v > 1 else f"{1/v:g}x slower")
-            s.text(x, h - 46, lab, 12, t["muted"], "middle")
+            s.add(f'<line x1="{x:.1f}" y1="{top - 8}" x2="{x:.1f}" y2="{bottom:.1f}" '
+                  f'stroke="{t["axis"] if v == 1 else t["grid"]}" stroke-width="1"/>')
+            lab = "1× · same speed" if v == 1 else (f"{v:g}× faster" if v > 1 else f"{1 / v:g}× slower")
+            s.text(x, bottom + 22, lab, 13, t["muted"], "middle")
     for i, (label, sub, values) in enumerate(rows):
         y0 = top + i * row_h
-        if i % 2 == 0:
-            s.add(f'<rect x="16" y="{y0-2}" width="{w-32}" height="{row_h-6}" rx="8" fill="{t["bg"]}" opacity="0.55"/>')
-        mid = y0 + (row_h - 6) / 2
-        s.text(left - 18, mid - (2 if sub else -4), label, 14.5, anchor="end", weight=550)
+        block = (bar + gap) * len(series) - gap
+        mid = y0 + 6 + block / 2
+        s.text(left - 20, mid + (-1 if sub else 5), label, 16, anchor="end", weight=600)
         if sub:
-            s.text(left - 18, mid + 15, sub, 11.5, t["muted"], "end")
-        for j, ((_, pat), r) in enumerate(zip(series, values)):
-            y = y0 + 9 + j * per
+            s.text(left - 20, mid + 16, sub, 13, t["muted"], "end")
+        for j, ((_, key), r) in enumerate(zip(series, values)):
+            y = y0 + 6 + j * (bar + gap)
             x = lx(r)
-            slower = r > 1.01
-            same = abs(r - 1) <= 0.01
-            fill = "url(#slow13)" if slower else f"url(#{pat}16)"
-            a, b = sorted((x1, x))
-            s.add(f'<rect x="{a:.1f}" y="{y}" width="{max(b-a, 2):.1f}" height="16" rx="2" fill="{fill}"/>')
-            fmt = (lambda v: f"{v:.0f}x" if v >= 20 else (f"{v:.1f}x" if v >= 10 else f"{v:.2f}x"))
-            txt = "about the same" if same else (fmt(1 / r) if not slower else f"{r:.2f}x slower")
-            if slower and a - 8 - 7.6 * len(txt) < left - 6:
-                s.text(x1 + 8, y + 12.5, txt, 12.5, t["slow"], mono=True)
-            elif slower:
-                s.text(a - 8, y + 12.5, txt, 12.5, t["slow"], "end", mono=True)
+            slower = r > 1.005
+            same = abs(r - 1) <= 0.005
+            s.hbar(x1, x, y, bar, t["slow"] if slower else t[key])
+            txt = "same" if same else (fmt_ratio(1 / r) if not slower else f"{r:.2f}× slower")
+            if slower:
+                s.text(min(x, x1) - 8, y + 11.5, txt, 12.5, t["ink2"], "end", mono=True, weight=600)
             else:
-                s.text(b + 8, y + 12.5, txt, 12.5, t["ink"], mono=True, weight=600)
-    s.text(w - 36, h - 18, note, 11.5, t["muted"], "end")
+                s.text(max(x, x1) + 8, y + 11.5, txt, 12.5, t["ink"], mono=True, weight=600)
+    s.text(w - 40, h - 20, note, 11, t["muted"], "end")
     s.save(f"{name}-{theme}.svg")
 
 
@@ -136,31 +160,38 @@ def lucene_per_query(theme):
         return math.sqrt(r1 * r2)
 
     rows = sorted(((q, speed(top10, top10b, q), speed(count, countb, q)) for q in queries), key=lambda r: -r[1])
-    left, right, top, row = 230, 60, 128, 26
+    left, right, top, row = 236, 60, 150, 26
     w = 900
-    h = top + row * len(rows) + 80
+    h = top + row * len(rows) + 72
     s = Svg(t, w, h)
-    s.header("Every query, vs Apache Lucene 10.4",
-             "Per-query speedup (Lucene median / fork median), geometric mean of both process orders.")
-    legend(s, 36, 108, [("TOP-10", t["fast"]), ("COUNT", t["fast2"])])
+    s.header("vs Apache Lucene 10.4 · earlier fork build", "Faster on every query",
+             "Per-query speedup (Lucene median ÷ fork median), geometric mean of both process orders.")
+    legend(s, 40, 132, [("TOP-10", t["top10"]), ("COUNT", t["count"])])
     lo, hi = 0.8, 8.0
     plot = w - left - right
     sx = lambda v: left + (math.log2(v) - math.log2(lo)) / (math.log2(hi) - math.log2(lo)) * plot
+    bottom = top + row * len(rows) - 6
+    for i in range(len(rows)):
+        y = top + i * row + 6
+        if i % 2 == 0:
+            s.add(f'<rect x="40" y="{y - 12}" width="{w - 80}" height="{row - 2}" rx="5" fill="{t["band"]}"/>')
+    for q, a, c in rows:
+        if not (lo <= a <= hi and lo <= c <= hi):
+            raise ValueError(f"lucene-per-query: {q} has a speedup outside [{lo}, {hi}]")
     for v in (1, 2, 4, 8):
         x = sx(v)
-        s.add(f'<line x1="{x:.1f}" y1="{top-8}" x2="{x:.1f}" y2="{h-64}" stroke="{t["axis"] if v == 1 else t["grid"]}" '
-              f'stroke-width="{1.4 if v == 1 else 1}"/>')
-        s.text(x, h - 44, "same" if v == 1 else f"{v}x faster", 12, t["muted"], "middle")
+        s.add(f'<line x1="{x:.1f}" y1="{top - 10}" x2="{x:.1f}" y2="{bottom}" '
+              f'stroke="{t["axis"] if v == 1 else t["grid"]}" stroke-width="1"/>')
+        s.text(x, bottom + 22, "same speed" if v == 1 else f"{v}× faster", 11.5, t["muted"], "middle")
     for i, (q, a, c) in enumerate(rows):
-        y = top + i * row + 8
-        if i % 2 == 0:
-            s.add(f'<rect x="16" y="{y-12}" width="{w-32}" height="{row}" rx="6" fill="{t["bg"]}" opacity="0.55"/>')
-        s.text(left - 16, y + 5, q, 13, anchor="end", mono=True)
+        y = top + i * row + 6
+        s.text(left - 18, y + 4.5, q, 12.5, t["ink2"], "end", mono=True)
         xa, xc = sx(a), sx(c)
-        s.add(f'<line x1="{min(xa, xc):.1f}" y1="{y}" x2="{max(xa, xc):.1f}" y2="{y}" stroke="{t["axis"]}" stroke-width="2"/>')
-        s.add(f'<circle cx="{xc:.1f}" cy="{y}" r="6" fill="{t["fast2"]}" stroke="{t["card"]}" stroke-width="2"/>')
-        s.add(f'<circle cx="{xa:.1f}" cy="{y}" r="6.5" fill="{t["fast"]}" stroke="{t["card"]}" stroke-width="2"/>')
-    s.text(w - 36, h - 18, "Wikipedia 1M, native BM25 on both engines; report 2026-10-04-native", 11.5, t["muted"], "end")
+        s.add(f'<line x1="{xa:.1f}" y1="{y - 5}" x2="{xc:.1f}" y2="{y + 5}" stroke="{t["axis"]}" '
+              f'stroke-width="2" stroke-linecap="round"/>')
+        s.add(f'<circle cx="{xa:.1f}" cy="{y - 5}" r="4.5" fill="{t["top10"]}" stroke="{t["surface"]}" stroke-width="1.5"/>')
+        s.add(f'<circle cx="{xc:.1f}" cy="{y + 5}" r="4.5" fill="{t["count"]}" stroke="{t["surface"]}" stroke-width="1.5"/>')
+    s.text(w - 40, h - 20, "Wikipedia 1M, native BM25 on both engines; report 2026-10-04-native", 11, t["muted"], "end")
     s.save(f"lucene-per-query-{theme}.svg")
 
 
@@ -171,82 +202,147 @@ def resources(theme, lucene_rs_rss_mib):
     kib = lambda v: int(v.split()[0]) / 1024
     groups = [
         ("Resident memory, warmed query process", "MiB", [
-            ("tantivy-turbo", kib(mem["tantivy"]["status"]["VmRSS"]), "fast"),
-            ("Lucene 10.4 (default JVM heap)", kib(mem["lucene"]["status"]["VmRSS"]), "slow"),
+            ("tantivy-turbo", kib(mem["tantivy"]["status"]["VmRSS"]), "top10"),
+            ("Lucene 10.4 (default JVM heap)", kib(mem["lucene"]["status"]["VmRSS"]), "neutral"),
         ]),
         ("Index size on disk", "MB", [
-            ("tantivy-turbo", storage["tantivy"]["total_bytes"] / 1e6, "fast"),
+            ("tantivy-turbo", storage["tantivy"]["total_bytes"] / 1e6, "top10"),
             ("Lucene 10.4", storage["lucene"]["total_bytes"] / 1e6, "neutral"),
         ]),
     ]
-    w, left, right = 900, 270, 120
-    h = 122 + sum(40 + 34 * len(g[2]) for g in groups) + 6
+    w, left, right = 900, 270, 130
+    h = 140 + sum(44 + 30 * len(g[2]) for g in groups) + 10
     s = Svg(t, w, h)
-    s.header("Memory and disk vs Apache Lucene 10.4", "Same Wikipedia 1M corpus and 20 queries; RSS includes mapped index pages.")
-    y = 122
+    s.header("vs Apache Lucene 10.4 · earlier fork build", "Memory and disk",
+             "Same Wikipedia 1M corpus and 20 queries; resident memory includes mapped index pages.")
+    y = 140
     for title, unit, bars in groups:
-        s.text(36, y + 4, title, 14.5, weight=600)
-        y += 22
+        s.text(40, y + 4, title, 13.5, t["ink2"], weight=600)
+        y += 20
         vmax = max(v for _, v, _ in bars)
-        for label, v, pat in bars:
-            s.text(left - 16, y + 13, label, 13.5, anchor="end")
+        for label, v, key in bars:
+            s.text(left - 18, y + 12, label, 13, t["ink"], "end")
             width = max(v / vmax * (w - left - right), 3)
-            s.add(f'<rect x="{left}" y="{y}" width="{width:.1f}" height="18" rx="2" fill="url(#{pat}16)"/>')
-            s.text(left + width + 8, y + 14, f"{v:,.1f} {unit}", 13, mono=True, weight=600)
-            y += 34
-        y += 18
+            s.hbar(left, left + width, y, 16, t[key])
+            s.text(left + width + 8, y + 12.5, f"{v:,.1f} {unit}", 12.5, mono=True, weight=600)
+            y += 30
+        y += 24
     s.save(f"resources-{theme}.svg")
 
 
+def blocks_lane(s, x0, x1, y, h, cuts, fill, label, note):
+    """A doc-ID lane split at `cuts` (fractions), each piece a rounded tile."""
+    t = s.t
+    s.text(x0, y - 10, label, 13, weight=600)
+    s.text(x1, y - 10, note, 12, t["ink2"], "end")
+    edges = [0.0] + sorted(cuts) + [1.0]
+    for a, b in zip(edges, edges[1:]):
+        xa = x0 + a * (x1 - x0)
+        xb = x0 + b * (x1 - x0)
+        if xb - xa < 1.2:
+            continue
+        s.add(f'<rect x="{xa + 0.75:.1f}" y="{y}" width="{max(xb - xa - 1.5, 0.6):.1f}" height="{h}" '
+              f'rx="{min(3, (xb - xa) / 3):.1f}" fill="{fill}"/>')
+
+
 def regions(theme):
-    """Schematic of the attempt-34 change on q920 (21 terms): fine regions vs adaptive coarse regions."""
+    """OR: fine MaxScore regions (any term's block boundary) vs coarse regions."""
     t = THEMES[theme]
-    w, h = 900, 330
+    w, h = 900, 366
     s = Svg(t, w, h)
-    s.header("How the OR speedup works", "MaxScore splits the doc-ID space into regions and re-derives score bounds per region.")
-    x0, x1 = 36, w - 36
-    rows = [("Tantivy 0.27", "30,242 regions on q920: every term's 128-doc block ends one", 220, "neutral", 10),
-            ("tantivy-turbo", "362 regions: wide ranges, bounds from cached skip-data maxima", 70, "fast", 16)]
-    y = 112
-    for label, sub, n, pat, level in rows:
-        s.text(36, y + 4, label, 14.5, weight=600)
-        s.text(36 + 8.6 * len(label) + 12, y + 4, sub, 12.5, t["muted"])
-        y += 16
-        if n > 100:
-            step = (x1 - x0) / n
-            for i in range(n):
-                s.add(f'<rect x="{x0 + i*step:.2f}" y="{y}" width="{max(step-1.2, 0.8):.2f}" height="56" '
-                      f'fill="url(#{pat}{LEVELS[i*7 % 4]})"/>')
-        else:
-            edges = [0, 0.11, 0.2, 0.34, 0.43, 0.58, 0.66, 0.79, 0.88, 1.0]
-            for i in range(len(edges) - 1):
-                a = x0 + edges[i] * (x1 - x0)
-                b = x0 + edges[i + 1] * (x1 - x0)
-                fill = f"url(#{'fast' if i % 2 == 0 else 'fast2'}16)"
-                s.add(f'<rect x="{a:.1f}" y="{y}" width="{b-a-4:.1f}" height="56" rx="3" fill="{fill}"/>')
-        y += 84
-    s.text(36, h - 26, "Switched on per query only when region bookkeeping outweighs candidate work; results stay bit-identical.",
-           12.5, t["muted"])
+    s.header("How it works · OR", "Fewer, wider MaxScore regions",
+             "MaxScore re-derives every term's score bound per region. Fewer regions mean less bookkeeping.")
+    x0, x1 = 40, w - 40
+    fine = [i / 230 + (0.0016 if i % 3 else 0) for i in range(1, 230)]
+    blocks_lane(s, x0, x1, 158, 46, fine, t["neutral"], "Earlier turbo · fine regions",
+                "a region ends at every term's 128-doc block: 30,242 on the 21-term query")
+    coarse = [0.12, 0.21, 0.36, 0.45, 0.6, 0.68, 0.81, 0.9]
+    blocks_lane(s, x0, x1, 248, 46, coarse, t["top10"], "tantivy-turbo",
+                "regions follow the essential terms; others bounded by cached ranges: 362")
+    s.text(40, h - 42, "Chosen per query by measured cost; candidates are scored in Lucene-style bulk windows.", 12, t["muted"])
+    s.text(40, h - 20, "Schematic, not to scale; counts measured for one query.", 12, t["muted"])
+    s.text(w - 40, h - 20, "Document IDs →", 12, t["muted"], "end")
     s.save(f"regions-{theme}.svg")
+
+
+def and_windows(theme):
+    """AND: block-max windows cut at any term's block vs following the rare term."""
+    t = THEMES[theme]
+    w, h = 900, 410
+    s = Svg(t, w, h)
+    s.header("How it works · AND", "Windows follow the rarest term",
+             "Block-max conjunctions score a window at a time, but most windows held no rare-term posting at all.")
+    x0, x1 = 40, w - 40
+    span = x1 - x0
+    rare = [0.07, 0.31, 0.335, 0.62, 0.86]   # rare-term postings
+    rare_blocks = [0.2, 0.5, 0.75]
+    dense_blocks = [i / 34 for i in range(1, 34)]
+
+    def term_rows(y):
+        for label, cuts, dots in (("rare term", rare_blocks, rare), ("common term", dense_blocks, None)):
+            s.text(x0, y + 11, label, 12, t["ink2"])
+            lx0 = x0 + 110
+            s.add(f'<line x1="{lx0}" y1="{y + 7}" x2="{x1}" y2="{y + 7}" stroke="{t["axis"]}"/>')
+            for c in cuts:
+                xc = lx0 + c * (x1 - lx0)
+                s.add(f'<line x1="{xc:.1f}" y1="{y + 1}" x2="{xc:.1f}" y2="{y + 13}" stroke="{t["axis"]}"/>')
+            if dots:
+                for d in dots:
+                    xd = lx0 + d * (x1 - lx0)
+                    s.add(f'<circle cx="{xd:.1f}" cy="{y + 7}" r="4.5" fill="{t["ink"]}" '
+                          f'stroke="{t["surface"]}" stroke-width="2"/>')
+            y += 24
+        return lx0
+
+    # Before: windows end at every block boundary of any term.
+    y = 146
+    s.text(x0, y, "Tantivy 0.27 and Lucene", 13, weight=600)
+    s.text(x1, y, "a window ends at the nearest block boundary of any term: many tiny windows", 12, t["ink2"], "end")
+    lx0 = term_rows(y + 12)
+    cuts = sorted(set(rare_blocks + dense_blocks))
+    edges = [0.0] + cuts + [1.0]
+    for a, b in zip(edges, edges[1:]):
+        xa, xb = lx0 + a * (x1 - lx0), lx0 + b * (x1 - lx0)
+        s.add(f'<rect x="{xa + 0.75:.1f}" y="{y + 64}" width="{xb - xa - 1.5:.1f}" height="20" rx="2.5" fill="{t["neutral"]}"/>')
+    # After: windows are the rare term's blocks, starting at its next posting.
+    y = 268
+    s.text(x0, y, "tantivy-turbo", 13, weight=600)
+    s.text(x1, y, "a window is the rare term's block, starting at its next posting", 12, t["ink2"], "end")
+    lx0 = term_rows(y + 12)
+    redges = [0.0] + rare_blocks + [1.0]
+    for a, b in zip(redges, redges[1:]):
+        inside = [d for d in rare if a <= d < b]
+        if not inside:
+            continue
+        start = min(inside)
+        xa, xb = lx0 + start * (x1 - lx0), lx0 + b * (x1 - lx0)
+        s.add(f'<rect x="{xa - 4:.1f}" y="{y + 64}" width="{xb - xa + 2.5:.1f}" height="20" rx="4" fill="{t["top10"]}"/>')
+    s.text(40, h - 22, "Other terms are bounded over each window by cached range maxima. "
+           "About a third less time on AND queries, identical results.", 12, t["muted"])
+    s.save(f"and-windows-{theme}.svg")
 
 
 def banner(theme, stats):
     t = THEMES[theme]
-    w, h = 900, 250
+    w, h = 900, 260
     s = Svg(t, w, h)
-    # Dithered gradient strip: coverage steps left to right.
-    cols = 36
-    for i in range(cols):
-        lvl = LEVELS[1 + min(2, i * 3 // cols)]  # denser levels only: the sparsest reads as crosses
-        s.add(f'<rect x="{36 + i*(w-72)/cols:.1f}" y="24" width="{(w-72)/cols - 3:.1f}" height="6" rx="1" fill="url(#fast{lvl})"/>')
-    s.text(36, 92, "tantivy-turbo", 44, weight=700)
-    s.text(36, 124, "A faster Tantivy. Same API, same results, Lucene-equivalent scoring.", 16, t["muted"])
-    tile_w = (w - 72 - 3 * 14) / 4
+    s.title = "tantivy-turbo benchmark overview"
+    s.description = ("TOP-10 results from October 23 over 1,201 queries; "
+                     "Lucene comparison from October 4 over 20 queries. " +
+                     "; ".join(f"{label}: {value}" for value, label in stats))
+    # Accent rule: the two series hues, side by side.
+    s.add(f'<rect x="40" y="32" width="56" height="5" rx="2.5" fill="{t["top10"]}"/>')
+    s.add(f'<rect x="100" y="32" width="28" height="5" rx="2.5" fill="{t["count"]}"/>')
+    s.text(40, 92, "tantivy-turbo", 46, weight=750)
+    s.text(40, 124, "TOP-10: Oct 23 run, 1,201 queries; Lucene: Oct 4, 20 queries.", 16, t["ink2"])
+    gap = 14
+    tile_w = (w - 80 - 3 * gap) / 4
     for i, (value, label) in enumerate(stats):
-        x = 36 + i * (tile_w + 14)
-        s.add(f'<rect x="{x:.1f}" y="148" width="{tile_w:.1f}" height="76" rx="10" fill="{t["bg"]}" stroke="{t["grid"]}"/>')
-        s.text(x + 16, 184, value, 26, t["fast"], weight=700, mono=True)
-        s.text(x + 16, 208, label, 12.5, t["muted"])
+        x = 40 + i * (tile_w + gap)
+        s.add(f'<rect x="{x:.1f}" y="152" width="{tile_w:.1f}" height="80" rx="12" fill="{t["band"]}"/>')
+        s.add(f'<rect x="{x + 18:.1f}" y="168" width="18" height="3" rx="1.5" fill="{t["top10"]}"/>')
+        s.text(x + 18, 202, value, 28, t["ink"], weight=700)
+        s.text(x + 18, 222, label, 12, t["ink2"])
     s.save(f"banner-{theme}.svg")
 
 
@@ -254,32 +350,60 @@ def ratio(entry):
     return math.sqrt(entry["AB"]["sum_ratio"] * entry["BA"]["sum_ratio"])
 
 
+def lucene_rs_mobile(theme, rows):
+    """A portrait version of the same measured TOP-10 data for narrow screens."""
+    t = THEMES[theme]
+    s = Svg(t, 480, 650)
+    s.header("vs lucene-rs · Oct 23", "Best 10 results",
+             "1,201 searches · geometric mean of both orders")
+    s.description += "; " + "; ".join(f"{name}: {fmt_ratio(1 / r)}" for name, _, r in rows)
+    left, right = 40, 430
+    s.text(left, 139, "1× same speed", 14, t["ink2"])
+    s.text(right, 139, "2× faster", 14, t["muted"], "end")
+    for i, (name, sub, r) in enumerate(rows):
+        speed = 1 / r
+        if not 1 <= speed <= 2:
+            raise ValueError(f"mobile benchmark speedup outside [1, 2]: {name}: {speed}")
+        y = 166 + i * 72
+        s.text(left, y, name, 19, weight=600)
+        s.text(right, y, fmt_ratio(speed), 18, t["ink"], "end", mono=True)
+        s.text(left, y + 19, sub, 13, t["muted"])
+        s.add(f'<rect x="{left}" y="{y + 29}" width="{right - left}" height="12" rx="4" fill="{t["track"]}"/>')
+        s.hbar(left, left + math.log2(speed) * (right - left), y + 29, 12, t["top10"])
+    s.text(left, 625, "Log scale · before later skip-reader fix", 14, t["muted"])
+    s.save(f"vs-lucene-rs-mobile-{theme}.svg")
+
+
 def main():
     OUT.mkdir(exist_ok=True)
     up = json.loads((HERE / "turbo-vs-tantivy-0.27/summary.json").read_text())
     rs = json.loads((HERE / "turbo-vs-lucene-rs/summary.json").read_text())
-    groups = [("OR, 3+ terms", "103 queries", "OR3+"), ("OR, 2 terms", "198 queries", "OR2"), ("Phrase", "300 queries", "PHRASE"),
-              ("Single term", "300 queries", "TERM"), ("AND", "300 queries", "AND"), ("All 1,201 queries", "port-style suite", "ALL")]
-    series = [("TOP-10", "fast"), ("COUNT", "fast2")]
+    groups = [("Any 3+ words", "103 searches", "OR3+"), ("Any 2 words", "198 searches", "OR2"),
+              ("Exact phrase", "300 searches", "PHRASE"), ("One word", "300 searches", "TERM"),
+              ("All words", "300 searches", "AND"), ("All 1,201 searches", "port-style suite", "ALL")]
+    series = [("BEST 10", "top10"), ("COUNT", "count")]
     rss = rs["rss"]["port"]["VmHWM"]
     for theme in THEMES:
-        diverging(theme, "vs-tantivy", "tantivy-turbo vs Tantivy 0.27",
-                  "Summed query time, mean of both run orders. Same 1M Wikipedia docs, same machine, identical match counts.",
+        diverging(theme, "vs-tantivy", "vs Tantivy 0.27", "Every query type, faster in total",
+                  "Summed query time, geometric mean of both orders. Same 1M Wikipedia docs and machine, identical counts.",
                   [(a, b, [ratio(up[f"top10/{g}"]), ratio(up[f"count/{g}"])]) for a, b, g in groups], series,
-                  "bench-results/turbo-vs-tantivy-0.27")
-        diverging(theme, "vs-lucene-rs", "TOP-10 vs lucene-rs (Rust port of Lucene 10)",
-                  "Summed query time, mean of both run orders. Identical top-10 IDs, score bits and counts on every query.",
-                  [(a, b, [ratio(rs[f"top10/{g}"])]) for a, b, g in groups], [("TOP-10", "fast")],
-                  "bench-results/turbo-vs-lucene-rs")
-        diverging(theme, "vs-lucene-rs-count", "COUNT vs lucene-rs",
-                  "lucene-rs counts by visiting every match; tantivy-turbo uses doc frequencies and SIMD-style counting lanes.",
-                  [(a, b, [ratio(rs[f"count/{g}"])]) for a, b, g in groups], [("COUNT", "fast2")],
-                  "log scale; bench-results/turbo-vs-lucene-rs", lo=0.5, hi=512, ticks=(1, 4, 16, 64, 256))
+                  "Oct 23 run · log scale · bench-results/turbo-vs-tantivy-0.27", lo=0.8, hi=4.5, ticks=(1, 2, 4))
+        diverging(theme, "vs-lucene-rs", "vs lucene-rs (Rust port of Lucene 10)", "Best 10 results",
+                  "Summed query time, geometric mean of both orders. Identical top-10 IDs, score bits and counts on checked queries.",
+                  [(a, b, [ratio(rs[f"top10/{g}"])]) for a, b, g in groups], [("TOP-10", "top10")],
+                  "Oct 23 run · log scale · bench-results/turbo-vs-lucene-rs", lo=0.8, hi=2.5, ticks=(1, 1.5, 2))
+        lucene_rs_mobile(theme, [(a, b, ratio(rs[f"top10/{g}"])) for a, b, g in groups])
+        diverging(theme, "vs-lucene-rs-count", "vs lucene-rs (Rust port of Lucene 10)", "COUNT",
+                  "lucene-rs counts by visiting every match; tantivy-turbo uses doc frequencies, bitset lanes and probes.",
+                  [(a, b, [ratio(rs[f"count/{g}"])]) for a, b, g in groups], [("COUNT", "count")],
+                  "Oct 23 run · log scale · bench-results/turbo-vs-lucene-rs", lo=0.5, hi=512, ticks=(1, 4, 16, 64, 256))
         lucene_per_query(theme)
         resources(theme, rss)
         regions(theme)
-        banner(theme, [("3x", "faster long OR vs Tantivy 0.27"), ("1.8x", "faster top-10, all queries"),
-                       ("~2x", "faster than Lucene 10.4"), ("0", "changed results")])
+        and_windows(theme)
+        banner(theme, [(f"{1 / ratio(up['top10/ALL']):.1f}×", "TOP-10 vs Tantivy"),
+                       (f"{1 / ratio(rs['top10/ALL']):.2f}×", "TOP-10 vs lucene-rs"),
+                       ("1.8–2.1×", "TOP-10 vs Lucene"), ("3 × 1,227", "checks vs prior build")])
     print("charts written:", sorted(p.name for p in OUT.glob("*.svg")))
 
 
