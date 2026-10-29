@@ -52,3 +52,22 @@ Self-review: **8/10 for visual explanation, 7/10 for small-screen reading**.
 The search example now has a visible sequence and less text, while the source
 date and methodology still need small type on the benchmark screens. The
 32.5-second cut remains silent and viewers can pause for details.
+
+## Shorter motion-led cut
+
+The prior cut felt like slides: two similar benchmark screens and a document
+example that mostly changed outlines. The new cut is 21.7 seconds, with one
+benchmark scene, no persistent progress bar, a moving search pulse, and
+matching cards that lift while non-matches recede. The measured comparison
+uses the October 28 warm top-10 data; its bars are an animated scale.
+
+My comparison: **motion 5/10 → 7/10; reading load 6/10 → 8/10; explanation
+for a new viewer 6/10 → 7/10**. These are subjective scores, not user-test
+results. Remaining limitations: the timing-method note and repository address
+are small on a phone, and the clip is silent. A dedicated portrait layout
+could improve mobile viewing without cropping the landscape version.
+
+Reviewers of the first draft identified a misleading early match outline and
+an unclear shorter-time cue; the final cut reserves the bright outline for
+actual matches and explicitly says less time is better. The reported times
+were independently recalculated from the retained benchmark summary.

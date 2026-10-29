@@ -14,7 +14,9 @@ timing samples are repetitions, not distinct queries.
 | Wikipedia, all | 20 | 0.848 | 0.846 |
 
 Each entry is the ratio of the two engines' **mean per-query medians**; lower
-means less time for Tantivy-turbo. On the longer OR cases, 30 of 103 were
+means less time for Tantivy-turbo. For all 1,201 port-style searches, the
+averages of the two order-specific mean query medians were 136.2 µs for
+Tantivy-turbo and 168.5 µs for lucene-rs (rounded to one decimal). On the longer OR cases, 30 of 103 were
 slower in both orders. The target of 1.7× faster would require a ratio of
 about 0.588. The small long-OR aggregate advantage is not a firm conclusion:
 the candidate self-control's geometric-mean A/B ratios were 0.986 and 0.967
