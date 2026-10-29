@@ -7,9 +7,8 @@ Inputs
 
 Outputs: assets/*-{light,dark}.svg.
 
-Style: series colors are categorical slots 1 and 3 of a palette validated for
-color-vision deficiency in both modes (blue = TOP-10, aqua = COUNT); "slower" is
-the red pole of a blue/red diverging pair. Text always uses text tokens, never a
+Style: blue = TOP-10 and cyan/green = COUNT; "slower" uses a contrasting red.
+Text always uses text tokens, never a
 series color. Bars are at most 16px thick with a 4px rounded data end and a
 square baseline; grids are 1px hairlines.
 """
@@ -28,9 +27,9 @@ THEMES = {
     "light": dict(surface="#fcfcfb", band="#f4f3f0", border="#e4e2dd", grid="#e7e5e0", axis="#a9a7a0",
                   ink="#0b0b0b", ink2="#52514e", muted="#696863",
                   top10="#2a78d6", count="#1baf7a", slow="#e34948", neutral="#a9a7a0", track="#ebe9e4"),
-    "dark": dict(surface="#1a1a19", band="#222220", border="#30302d", grid="#2c2c29", axis="#5f5e59",
-                 ink="#f0efec", ink2="#c3c2b7", muted="#8f8e86",
-                 top10="#3987e5", count="#199e70", slow="#e66767", neutral="#5f5e59", track="#2a2a27"),
+    "dark": dict(surface="#000000", band="#141719", border="#2a3035", grid="#292e33", axis="#7b858e",
+                 ink="#f7f9f9", ink2="#ccd3da", muted="#aab5bf",
+                 top10="#329cff", count="#00d8c5", slow="#ff7a90", neutral="#7b858e", track="#292e33"),
 }
 
 
@@ -41,6 +40,7 @@ def esc(s):
 class Svg:
     def __init__(self, t, w, h):
         self.t, self.w, self.h, self.parts = t, w, h, []
+        self.title, self.description = "Benchmark chart", ""
 
     def add(self, s):
         self.parts.append(s)
@@ -52,9 +52,11 @@ class Svg:
                  f'font-family="{MONO if mono else SANS}">{esc(s)}</text>')
 
     def header(self, eyebrow, title, subtitle):
+        self.title = f"{eyebrow}: {title}"
+        self.description = subtitle
         self.text(40, 46, eyebrow.upper(), 11.5, self.t["muted"], weight=600, spacing=1.2)
-        self.text(40, 76, title, 24, weight=700)
-        self.text(40, 102, subtitle, 13.5, self.t["ink2"])
+        self.text(40, 76, title, 26, weight=700)
+        self.text(40, 102, subtitle, 15, self.t["ink2"])
 
     def hbar(self, x0, x1, y, h, fill, radius=4):
         """Horizontal bar from the baseline x0 to x1: square at the baseline,
@@ -73,7 +75,9 @@ class Svg:
     def save(self, name):
         t = self.t
         body = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{self.w}" height="{self.h}" '
-                f'viewBox="0 0 {self.w} {self.h}" role="img">'
+                f'viewBox="0 0 {self.w} {self.h}" role="img" aria-labelledby="chart-title chart-description">'
+                f'<title id="chart-title">{esc(self.title)}</title>'
+                f'<desc id="chart-description">{esc(self.description)}</desc>'
                 f'<rect x="0.5" y="0.5" width="{self.w - 1}" height="{self.h - 1}" rx="14" '
                 f'fill="{t["surface"]}" stroke="{t["border"]}"/>' + "".join(self.parts) + "</svg>")
         (OUT / name).write_text(body)
@@ -118,17 +122,15 @@ def diverging(theme, name, eyebrow, title, subtitle, rows, series, note, lo=0.5,
             x = lx(1 / v)
             s.add(f'<line x1="{x:.1f}" y1="{top - 8}" x2="{x:.1f}" y2="{bottom:.1f}" '
                   f'stroke="{t["axis"] if v == 1 else t["grid"]}" stroke-width="1"/>')
-            lab = "same speed" if v == 1 else (f"{v:g}× faster" if v > 1 else f"{1 / v:g}× slower")
-            s.text(x, bottom + 22, lab, 11.5, t["muted"], "middle")
+            lab = "1× · same speed" if v == 1 else (f"{v:g}× faster" if v > 1 else f"{1 / v:g}× slower")
+            s.text(x, bottom + 22, lab, 13, t["muted"], "middle")
     for i, (label, sub, values) in enumerate(rows):
         y0 = top + i * row_h
-        if i:
-            s.add(f'<line x1="40" y1="{y0 - 6:.1f}" x2="{w - 40}" y2="{y0 - 6:.1f}" stroke="{t["grid"]}"/>')
         block = (bar + gap) * len(series) - gap
         mid = y0 + 6 + block / 2
-        s.text(left - 20, mid + (-1 if sub else 5), label, 14.5, anchor="end", weight=600)
+        s.text(left - 20, mid + (-1 if sub else 5), label, 16, anchor="end", weight=600)
         if sub:
-            s.text(left - 20, mid + 16, sub, 11.5, t["muted"], "end")
+            s.text(left - 20, mid + 16, sub, 13, t["muted"], "end")
         for j, ((_, key), r) in enumerate(zip(series, values)):
             y = y0 + 6 + j * (bar + gap)
             x = lx(r)
@@ -324,6 +326,10 @@ def banner(theme, stats):
     t = THEMES[theme]
     w, h = 900, 260
     s = Svg(t, w, h)
+    s.title = "tantivy-turbo benchmark overview"
+    s.description = ("TOP-10 results from October 23 over 1,201 queries; "
+                     "Lucene comparison from October 4 over 20 queries. " +
+                     "; ".join(f"{label}: {value}" for value, label in stats))
     # Accent rule: the two series hues, side by side.
     s.add(f'<rect x="40" y="32" width="56" height="5" rx="2.5" fill="{t["top10"]}"/>')
     s.add(f'<rect x="100" y="32" width="28" height="5" rx="2.5" fill="{t["count"]}"/>')
@@ -344,24 +350,49 @@ def ratio(entry):
     return math.sqrt(entry["AB"]["sum_ratio"] * entry["BA"]["sum_ratio"])
 
 
+def lucene_rs_mobile(theme, rows):
+    """A portrait version of the same measured TOP-10 data for narrow screens."""
+    t = THEMES[theme]
+    s = Svg(t, 480, 650)
+    s.header("vs lucene-rs · Oct 23", "Best 10 results",
+             "1,201 searches · geometric mean of both orders")
+    s.description += "; " + "; ".join(f"{name}: {fmt_ratio(1 / r)}" for name, _, r in rows)
+    left, right = 40, 430
+    s.text(left, 139, "1× same speed", 14, t["ink2"])
+    s.text(right, 139, "2× faster", 14, t["muted"], "end")
+    for i, (name, sub, r) in enumerate(rows):
+        speed = 1 / r
+        if not 1 <= speed <= 2:
+            raise ValueError(f"mobile benchmark speedup outside [1, 2]: {name}: {speed}")
+        y = 166 + i * 72
+        s.text(left, y, name, 19, weight=600)
+        s.text(right, y, fmt_ratio(speed), 18, t["ink"], "end", mono=True)
+        s.text(left, y + 19, sub, 13, t["muted"])
+        s.add(f'<rect x="{left}" y="{y + 29}" width="{right - left}" height="12" rx="4" fill="{t["track"]}"/>')
+        s.hbar(left, left + math.log2(speed) * (right - left), y + 29, 12, t["top10"])
+    s.text(left, 625, "Log scale · before later skip-reader fix", 14, t["muted"])
+    s.save(f"vs-lucene-rs-mobile-{theme}.svg")
+
+
 def main():
     OUT.mkdir(exist_ok=True)
     up = json.loads((HERE / "turbo-vs-tantivy-0.27/summary.json").read_text())
     rs = json.loads((HERE / "turbo-vs-lucene-rs/summary.json").read_text())
-    groups = [("OR, 3+ terms", "103 queries", "OR3+"), ("OR, 2 terms", "198 queries", "OR2"),
-              ("Phrase", "300 queries", "PHRASE"), ("Single term", "300 queries", "TERM"),
-              ("AND", "300 queries", "AND"), ("All 1,201 queries", "port-style suite", "ALL")]
-    series = [("TOP-10", "top10"), ("COUNT", "count")]
+    groups = [("Any 3+ words", "103 searches", "OR3+"), ("Any 2 words", "198 searches", "OR2"),
+              ("Exact phrase", "300 searches", "PHRASE"), ("One word", "300 searches", "TERM"),
+              ("All words", "300 searches", "AND"), ("All 1,201 searches", "port-style suite", "ALL")]
+    series = [("BEST 10", "top10"), ("COUNT", "count")]
     rss = rs["rss"]["port"]["VmHWM"]
     for theme in THEMES:
         diverging(theme, "vs-tantivy", "vs Tantivy 0.27", "Every query type, faster in total",
                   "Summed query time, geometric mean of both orders. Same 1M Wikipedia docs and machine, identical counts.",
                   [(a, b, [ratio(up[f"top10/{g}"]), ratio(up[f"count/{g}"])]) for a, b, g in groups], series,
                   "Oct 23 run · log scale · bench-results/turbo-vs-tantivy-0.27", lo=0.8, hi=4.5, ticks=(1, 2, 4))
-        diverging(theme, "vs-lucene-rs", "vs lucene-rs (Rust port of Lucene 10)", "TOP-10 search",
+        diverging(theme, "vs-lucene-rs", "vs lucene-rs (Rust port of Lucene 10)", "Best 10 results",
                   "Summed query time, geometric mean of both orders. Identical top-10 IDs, score bits and counts on checked queries.",
                   [(a, b, [ratio(rs[f"top10/{g}"])]) for a, b, g in groups], [("TOP-10", "top10")],
                   "Oct 23 run · log scale · bench-results/turbo-vs-lucene-rs", lo=0.8, hi=2.5, ticks=(1, 1.5, 2))
+        lucene_rs_mobile(theme, [(a, b, ratio(rs[f"top10/{g}"])) for a, b, g in groups])
         diverging(theme, "vs-lucene-rs-count", "vs lucene-rs (Rust port of Lucene 10)", "COUNT",
                   "lucene-rs counts by visiting every match; tantivy-turbo uses doc frequencies, bitset lanes and probes.",
                   [(a, b, [ratio(rs[f"count/{g}"])]) for a, b, g in groups], [("COUNT", "count")],

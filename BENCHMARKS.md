@@ -102,6 +102,8 @@ Data: [`bench-results/turbo-vs-tantivy-0.27`](bench-results/turbo-vs-tantivy-0.2
 
 <p align="center">
   <picture>
+    <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/vs-lucene-rs-mobile-dark.svg">
+    <source media="(max-width: 600px)" srcset="assets/vs-lucene-rs-mobile-light.svg">
     <source media="(prefers-color-scheme: dark)" srcset="assets/vs-lucene-rs-dark.svg">
     <img alt="tantivy-turbo vs lucene-rs, TOP-10" src="assets/vs-lucene-rs-light.svg" width="860">
   </picture>
@@ -270,7 +272,7 @@ Speed changes are only accepted if results are **bit-identical**:
 
 - **Exact gates:** top-10 document IDs, f32 score bits and match counts are compared against the previous accepted build on three 1,227-query gates (default BM25, k1 0.9/b 0.4, and k1 2/b 1). They are also compared against an exhaustive scorer. The level-1 build passes them on the re-encoded index against results recorded on the original index.
 - **Tests:** the full workspace suite passes (2,185 tests with every feature enabled, 9 ignored). That includes exhaustive-equality fixtures that force the coarse-region path, and forced hand-backs to fine regions, on every OR fixture, plus fixtures with repeated terms.
-- **End-to-end differential test** ([`tests/pruning_exactness.rs`](tests/pruning_exactness.rs)): on random multi-segment indexes with dense and sparse terms, deletions, repeated query terms and three BM25 parameter sets, the pruned top-1/10/100 of random term, OR, AND, phrase and mixed queries must equal scoring every match, document for document and bit for bit, and both count paths must equal the match count. Deliberately planted pruning bugs in the OR and AND paths make it fail.
+- **End-to-end differential test** ([`tests/pruning_exactness.rs`](tests/pruning_exactness.rs)): eight generated multi-segment indexes, with and without deletions, exercise dense and sparse terms, duplicates, longer ORs, exclusions, and three BM25 parameter sets. In release mode, 14,400 query/configuration checks compare pruned top-1/10/100 results and score bits with a full scan, and both count paths with the match count. Deliberately planted pruning bugs in the OR and AND paths make it fail.
 - **Index robustness:** level-1 skip records are only used when their offsets move forward and stay inside the term's postings; corrupted offsets fall back to block-by-block skipping (tested).
 - **Upstream CI:** all of Tantivy's CI workflows (unit tests across feature sets, long-running tests, coverage) pass on this repository.
 - **Security:** the fork adds no `unsafe` code to Tantivy 0.27. `cargo audit` reports no vulnerabilities; its only warnings are unmaintained crates inherited from upstream's optional or dev dependencies (`atty`, `proc-macro-error`, `paste`).
@@ -304,7 +306,7 @@ What you need to know to rerun them:
 
 ## Demo video
 
-The demo is a 45-second, eight-scene video written in Rust with [fframes](https://github.com/dmtrKovalenko/fframes). Its benchmark figures come from the tables above; the AND window-count animation is illustrative.
+The demo is a 32.5-second video. Its benchmark figures come from the tables above; the search example is illustrative.
 
 ```bash
 cd demo

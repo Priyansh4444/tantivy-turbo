@@ -12,9 +12,13 @@ Drop-in: your code keeps using the `tantivy` crate and API.
 tantivy = { package = "tantivy-turbo", git = "https://github.com/Priyansh4444/tantivy-turbo" }
 ```
 
+Issues, questions, and pull requests are welcome. See the
+[contribution guide](CONTRIBUTING.md) to get started, or open an
+[issue](https://github.com/Priyansh4444/tantivy-turbo/issues/new/choose).
+
 <p align="center">
   <a href="demo/tantivy-turbo-demo.mp4"><img alt="Demo video" src="demo/poster.png" width="720"></a>
-  <br><sub>▶ <a href="demo/tantivy-turbo-demo.mp4">45 s demo</a>, made with <a href="https://github.com/dmtrKovalenko/fframes">fframes</a></sub>
+  <br><sub>▶ <a href="demo/tantivy-turbo-demo.mp4">29.5 s demo</a></sub>
 </p>
 
 ## Results
@@ -41,6 +45,8 @@ Top-10 search on 1M Wikipedia docs, 1,201 queries. The saved Tantivy and lucene-
 
 <p align="center">
   <picture>
+    <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/vs-lucene-rs-mobile-dark.svg">
+    <source media="(max-width: 600px)" srcset="assets/vs-lucene-rs-mobile-light.svg">
     <source media="(prefers-color-scheme: dark)" srcset="assets/vs-lucene-rs-dark.svg">
     <img alt="vs lucene-rs" src="assets/vs-lucene-rs-light.svg" width="800">
   </picture>
