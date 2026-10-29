@@ -32,38 +32,36 @@ fn window(t: f32, a: f32, b: f32, c: f32, d: f32) -> f32 {
     smooth(t, a, b) * (1.0 - smooth(t, c, d))
 }
 // The earlier illustrative document-field sequence, sped up to fit the short cut.
-fn intro_ease(t: f32, a: f32, b: f32) -> f32 {
-    smooth(t, a, b)
-}
-fn intro_window(t: f32, a: (f32, f32), b: (f32, f32)) -> f32 {
-    window(t, a.0, a.1, b.0, b.1)
-}
-fn intro_mix(a: f32, b: f32, p: f32) -> f32 {
+fn lerp(a: f32, b: f32, p: f32) -> f32 {
     a + (b - a) * p
 }
 fn intro<'a>(seconds: f32) -> Svgr<'a> {
+    // The last intro element has faded out by this point.
+    if seconds >= 7.0 {
+        return Svgr::empty();
+    }
     let t = seconds / 0.75;
-    let field = intro_window(t, (0.0, 0.45), (8.35, 9.15));
-    let field_copy = intro_window(t, (0.0, 0.45), (7.35, 8.1));
-    let opening = intro_window(t, (0.15, 0.8), (3.45, 3.85));
-    let focused = intro_window(t, (3.85, 4.25), (7.5, 8.6));
-    let gather = intro_ease(t, 3.8, 5.6);
-    let scan = intro_ease(t, 1.45, 3.65);
+    let field = window(t, 0.0, 0.45, 8.35, 9.15);
+    let field_copy = window(t, 0.0, 0.45, 7.35, 8.1);
+    let opening = window(t, 0.15, 0.8, 3.45, 3.85);
+    let focused = window(t, 3.85, 4.25, 7.5, 8.6);
+    let gather = smooth(t, 3.8, 5.6);
+    let scan = smooth(t, 1.45, 3.65);
     let origin_x = 750.0 + scan * 870.0;
     let query = "quokka + animal";
-    let typed = (query.len() as f32 * intro_ease(t, 0.35, 1.45)) as usize;
+    let typed = (query.len() as f32 * smooth(t, 0.35, 1.45)) as usize;
     let routes: Vec<Svgr> = (0..3)
         .map(|i| {
             let x = 860.0;
             let y = 390.0 + i as f32 * 145.0;
-            let guide = intro_window(t, (3.9, 4.6), (6.6, 7.6));
-            let travel = intro_ease(t, 4.0 + i as f32 * 0.12, 5.55 + i as f32 * 0.12);
-            let px = intro_mix(685.0, x, travel);
+            let guide = window(t, 3.9, 4.6, 6.6, 7.6);
+            let travel = smooth(t, 4.0 + i as f32 * 0.12, 5.55 + i as f32 * 0.12);
+            let px = lerp(685.0, x, travel);
             let control_y = 280.0 - 96.0 * i as f32;
             let py = 481.0 * (1.0 - travel).powi(2)
                 + 2.0 * control_y * travel * (1.0 - travel)
                 + y * travel * travel;
-            let arc = format!("M685 481 Q{} {control_y} {x} {y}", intro_mix(685.0, x, 0.5));
+            let arc = format!("M685 481 Q{} {control_y} {x} {y}", lerp(685.0, x, 0.5));
             fframes::svgr!(<g opacity={guide * field}>
                 <path d={arc} fill="none" stroke={BLUE} stroke-width="2" opacity="0.46" />
                 <circle cx={px} cy={py} r="24" fill={BLUE} opacity="0.16" />
@@ -84,16 +82,16 @@ fn intro<'a>(seconds: f32) -> Svgr<'a> {
             let rank_index = order.unwrap_or(0);
             let rank = rank_index as f32;
             let label = ["Quokka habitat", "Quokka animal facts", "Quokka field notes"][rank_index];
-            let selected = if is_hit { intro_ease(t, 1.55 + col as f32 * 0.30, 2.05 + col as f32 * 0.30) } else { 0.0 };
-            let arrival = if is_hit { intro_ease(t, 3.7 + rank * 0.12, 5.45 + rank * 0.12) } else { gather };
-            let x = if is_hit { intro_mix(base_x, 860.0, arrival) } else { base_x + (base_x - 1130.0) * 0.13 * gather };
-            let y = if is_hit { intro_mix(base_y, 330.0 + rank * 145.0, arrival) } else { base_y + 100.0 * gather };
-            let w = if is_hit { intro_mix(112.0, 720.0, arrival) } else { 112.0 };
-            let h = if is_hit { intro_mix(118.0, 120.0, arrival) } else { 118.0 };
+            let selected = if is_hit { smooth(t, 1.55 + col as f32 * 0.30, 2.05 + col as f32 * 0.30) } else { 0.0 };
+            let arrival = if is_hit { smooth(t, 3.7 + rank * 0.12, 5.45 + rank * 0.12) } else { gather };
+            let x = if is_hit { lerp(base_x, 860.0, arrival) } else { base_x + (base_x - 1130.0) * 0.13 * gather };
+            let y = if is_hit { lerp(base_y, 330.0 + rank * 145.0, arrival) } else { base_y + 100.0 * gather };
+            let w = if is_hit { lerp(112.0, 720.0, arrival) } else { 112.0 };
+            let h = if is_hit { lerp(118.0, 120.0, arrival) } else { 118.0 };
             let opacity = if is_hit { field } else { field * (1.0 - 0.92 * gather) };
-            let text_alpha = intro_ease(t, 5.3 + rank * 0.12, 5.8 + rank * 0.12) * selected;
-            let line_alpha = if is_hit { 1.0 - intro_ease(t, 4.9 + rank * 0.12, 5.2 + rank * 0.12) } else { 1.0 };
-            let sparkle = (1.0 - intro_ease(t, 5.15, 6.2)) * gather * selected;
+            let text_alpha = smooth(t, 5.3 + rank * 0.12, 5.8 + rank * 0.12) * selected;
+            let line_alpha = if is_hit { 1.0 - smooth(t, 4.9 + rank * 0.12, 5.2 + rank * 0.12) } else { 1.0 };
+            let sparkle = (1.0 - smooth(t, 5.15, 6.2)) * gather * selected;
             fframes::svgr!(<g opacity={opacity}>
                 <rect x={x - 7.0} y={y - 7.0} width={w + 14.0} height={h + 14.0} rx="19" fill={BLUE} opacity={selected * 0.18} />
                 <rect x={x} y={y} width={w} height={h} rx="14" fill={PANEL} stroke={BORDER} stroke-width="2" />
@@ -108,7 +106,7 @@ fn intro<'a>(seconds: f32) -> Svgr<'a> {
                 <circle cx={x + w - 34.0} cy={y + h / 2.0} r={15.0 + 20.0 * gather} fill="none" stroke={AQUA} stroke-width="3" opacity={sparkle} />
             </g>)
         }).collect();
-    let intro_y = 290.0 - 25.0 * intro_ease(t, 0.1, 0.9);
+    let intro_y = 290.0 - 25.0 * smooth(t, 0.1, 0.9);
     fframes::svgr!(<g>
           <g opacity={field_copy}>
             <text x="160" y="153" font-family={MONO} font-size="26" fill={AQUA}>"TANTIVY-TURBO / SEARCH"</text>

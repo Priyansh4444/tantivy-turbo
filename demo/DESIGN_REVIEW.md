@@ -1,5 +1,8 @@
 # Visual review
 
+This is a chronological record of earlier design passes. For the current
+video, transcript, and rendering instructions, see [README.md](README.md).
+
 Self-review, October 28. The criteria are drawn from the referenced notes work: a short reading path, diagrams and numbers beside their explanation, consistent alignment, calm dark styling, and motion that explains one change at a time. Scores are my judgment, not an independent user study.
 
 | Criterion | Before | After | Evidence and remaining issue |
