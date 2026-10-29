@@ -1,7 +1,8 @@
 ---
 name: Question
-about: Ask any question about tantivy's usage...
-
+about: Ask about using or contributing to tantivy-turbo
 ---
 
-Try to be specific about your use case...
+## What would you like to know?
+
+Share your use case, relevant configuration and what you have already tried.

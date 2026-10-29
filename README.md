@@ -12,6 +12,10 @@ Drop-in: your code keeps using the `tantivy` crate and API.
 tantivy = { package = "tantivy-turbo", git = "https://github.com/Priyansh4444/tantivy-turbo" }
 ```
 
+Issues, questions, and pull requests are welcome. See the
+[contribution guide](CONTRIBUTING.md) to get started, or open an
+[issue](https://github.com/Priyansh4444/tantivy-turbo/issues/new/choose).
+
 <p align="center">
   <a href="demo/tantivy-turbo-demo.mp4"><img alt="Demo video" src="demo/poster.png" width="720"></a>
   <br><sub>▶ <a href="demo/tantivy-turbo-demo.mp4">29.5 s demo</a></sub>
