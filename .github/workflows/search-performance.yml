@@ -1,0 +1,39 @@
+name: Search performance
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: search-performance-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  paired-search:
+    name: paired-search-performance
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out merge candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: candidate
+      - name: Check out base revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+      - name: Install stable Rust
+        run: rustup toolchain install stable --profile minimal
+      - name: Compare paired search workloads
+        shell: bash
+        run: |
+          # Use the base's fixed harness for both builds. The candidate copy is
+          # used only during bootstrap, before the gate first reaches main.
+          harness=base/ci/search-perf/compare.py
+          if [ ! -f "$harness" ]; then harness=candidate/ci/search-perf/compare.py; fi
+          python3 "$(dirname "$harness")/test_compare.py"
+          python3 "$harness" base candidate

@@ -37,5 +37,14 @@ measurement method and correctness checks. Report regressions and relevant
 limitations as well as wins. [BENCHMARKS.md](BENCHMARKS.md) explains the
 existing measurements and links to their evidence.
 
+The pull request performance check compares the merge candidate with its base
+on the same runner using a shared synthetic index. It alternates seven paired
+runs of warm term, AND, OR, phrase and count queries, checks result fingerprints,
+and fails a case if its median slowdown exceeds 25% or its measurements are too
+noisy. A failed or inconclusive run needs investigation and may be rerun. This
+gate catches large changes in these workloads; it does not cover cold starts,
+indexing, memory, or all search configurations. Use the broader benchmarks for
+performance claims and changes outside this scope.
+
 Please report security vulnerabilities privately as described in
 [SECURITY.md](SECURITY.md), rather than opening a public issue.
