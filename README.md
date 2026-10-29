@@ -14,7 +14,7 @@ tantivy = { package = "tantivy-turbo", git = "https://github.com/Priyansh4444/ta
 
 <p align="center">
   <a href="demo/tantivy-turbo-demo.mp4"><img alt="Demo video" src="demo/poster.png" width="720"></a>
-  <br><sub>▶ <a href="demo/tantivy-turbo-demo.mp4">26 s demo</a></sub>
+  <br><sub>▶ <a href="demo/tantivy-turbo-demo.mp4">21 s demo</a></sub>
 </p>
 
 ## Results

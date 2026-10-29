@@ -112,3 +112,16 @@ core. It labels the October 4 result as a 20-query, older-build comparison
 and shows the geometric-mean range across process orders. This is distinct
 from the newer 1,201-query lucene-rs (Rust) comparison. GitHub's code-search
 engine is Blackbird, so the video does not attribute that engine to Lucene.
+
+## Fresh storyboard
+
+This is a new 21-second composition rather than a revision of the earlier
+layout: a centered search interface leads into an animated Lucene diagram,
+the lucene-rs time comparison, a correctness check and the Tantivy API pitch.
+The result entries are fictional and marked illustrative. Captions fade on
+separate beats to keep transitions readable; the video remains 60 fps.
+
+Self-review: the visual hierarchy and opening are clearer than the previous
+cut, and the Lucene section explains why the comparison matters. The
+benchmark details still need the linked report and a user can judge the
+visual appeal more reliably than a self-assigned score.

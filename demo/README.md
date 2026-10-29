@@ -1,6 +1,6 @@
 # tantivy-turbo demo video
 
-A 26-second, 60-fps 1080p launch video for tantivy-turbo, with no audio.
+A 21-second, 60-fps 1080p launch video for tantivy-turbo, with no audio.
 It uses one continuous timeline; the search example is illustrative and the
 comparison is from the expanded October 28 benchmark.
 
@@ -22,8 +22,8 @@ rendered outputs.
 
 ## Transcript
 
-- An illustrative search finds and ranks documents containing both “quokka”
-  and “animal.” The document titles are fictional; the visual sequence
+- An illustrative search finds and ranks documents about quokkas. The document
+  titles are fictional; the visual sequence
   simplifies how the index performs that work.
 - For the best ten results on 1,201 warm port-style searches, the October 28
   comparison measured an average of the two order-specific mean query medians
