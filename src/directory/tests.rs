@@ -225,7 +225,10 @@ fn test_lock_non_blocking(directory: &dyn Directory) {
             filepath: PathBuf::from("a.lock"),
             is_blocking: false,
         });
-        assert!(lock_a_res2.is_err());
+        assert!(matches!(
+            lock_a_res2,
+            Err(crate::directory::error::LockError::LockBusy)
+        ));
     }
     let lock_a_res = directory.acquire_lock(&Lock {
         filepath: PathBuf::from("a.lock"),
