@@ -125,3 +125,13 @@ Self-review: the visual hierarchy and opening are clearer than the previous
 cut, and the Lucene section explains why the comparison matters. The
 benchmark details still need the linked report and a user can judge the
 visual appeal more reliably than a self-assigned score.
+
+## Lucene-first comparison
+
+The 23-second cut leads with the Java Lucene top-10 speed comparison, follows
+with the measured warmed-process resident memory, and places the lucene-rs
+comparison near the end. The Lucene speed band represents the two measured
+process-order ratios. Memory is shown as measured RSS with the default JVM
+heap and mapped pages, not as a universal memory ratio. Both Lucene scenes
+identify the October 4 older build; the lucene-rs scene identifies the later
+1,201-query run. No storage comparison is shown.
