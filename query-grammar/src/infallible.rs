@@ -1,9 +1,23 @@
 //! nom combinators for infallible operations
 
-use std::convert::Infallible;
-
-use nom::{AsChar, IResult, InputLength, InputTakeAtPosition};
+use nom::{AsChar, IResult, Input};
 use serde::Serialize;
+
+// nom 8 requires its parser error to implement ParseError, even for a parser
+// that cannot return an error. Keep this error uninhabited so callers retain
+// the same infallibility guarantee.
+#[derive(Debug)]
+pub(crate) enum Infallible {}
+
+impl<I> nom::error::ParseError<I> for Infallible {
+    fn from_error_kind(_input: I, _kind: nom::error::ErrorKind) -> Self {
+        unreachable!("an infallible parser cannot construct an error")
+    }
+
+    fn append(_input: I, _kind: nom::error::ErrorKind, other: Self) -> Self {
+        match other {}
+    }
+}
 
 pub(crate) type ErrorList = Vec<LenientErrorInternal>;
 pub(crate) type JResult<I, O> = IResult<I, (O, ErrorList), Infallible>;
@@ -40,13 +54,13 @@ fn unwrap_infallible<T>(res: Result<T, nom::Err<Infallible>>) -> T {
 }
 
 // when rfcs#1733 get stabilized, this can make things clearer
-// trait InfallibleParser<I, O> = nom::Parser<I, (O, ErrorList), std::convert::Infallible>;
+// trait InfallibleParser<I, O> = nom::Parser<I, Output = (O, ErrorList), Error = Infallible>;
 
 /// A variant of the classical `opt` parser, except it returns an infallible error type.
 ///
 /// It's less generic than the original to ease type resolution in the rest of the code.
 pub(crate) fn opt_i<I: Clone, O, F>(mut f: F) -> impl FnMut(I) -> JResult<I, Option<O>>
-where F: nom::Parser<I, O, nom::error::Error<I>> {
+where F: nom::Parser<I, Output = O, Error = nom::error::Error<I>> {
     move |input: I| {
         let i = input.clone();
         match f.parse(input) {
@@ -56,12 +70,12 @@ where F: nom::Parser<I, O, nom::error::Error<I>> {
     }
 }
 
-pub(crate) fn opt_i_err<'a, I: Clone + InputLength, O, F>(
+pub(crate) fn opt_i_err<'a, I: Clone + Input, O, F>(
     mut f: F,
     message: impl ToString + 'a,
 ) -> impl FnMut(I) -> JResult<I, Option<O>> + 'a
 where
-    F: nom::Parser<I, O, nom::error::Error<I>> + 'a,
+    F: nom::Parser<I, Output = O, Error = nom::error::Error<I>> + 'a,
 {
     move |input: I| {
         let i = input.clone();
@@ -80,8 +94,8 @@ where
 
 pub(crate) fn space0_infallible<T>(input: T) -> JResult<T, T>
 where
-    T: InputTakeAtPosition + Clone,
-    <T as InputTakeAtPosition>::Item: AsChar + Clone,
+    T: Input,
+    <T as Input>::Item: AsChar + Clone,
 {
     opt_i(nom::character::complete::multispace0)(input)
         .map(|(left, (spaces, errors))| (left, (spaces.expect("multispace0 can't fail"), errors)))
@@ -89,8 +103,8 @@ where
 
 pub(crate) fn space1_infallible<T>(input: T) -> JResult<T, Option<T>>
 where
-    T: InputTakeAtPosition + Clone + InputLength,
-    <T as InputTakeAtPosition>::Item: AsChar + Clone,
+    T: Input,
+    <T as Input>::Item: AsChar + Clone,
 {
     opt_i(nom::character::complete::multispace1)(input).map(|(left, (spaces, mut errors))| {
         if spaces.is_none() {
@@ -106,7 +120,7 @@ where
 pub(crate) fn fallible<I, O, E: nom::error::ParseError<I>, F>(
     mut f: F,
 ) -> impl FnMut(I) -> IResult<I, O, E>
-where F: nom::Parser<I, (O, ErrorList), Infallible> {
+where F: nom::Parser<I, Output = (O, ErrorList), Error = Infallible> {
     use nom::Err;
     move |input: I| match f.parse(input) {
         Ok((input, (output, _err))) => Ok((input, output)),
@@ -122,8 +136,8 @@ pub(crate) fn terminated_infallible<I, O1, O2, F, G>(
     mut second: G,
 ) -> impl FnMut(I) -> JResult<I, O1>
 where
-    F: nom::Parser<I, (O1, ErrorList), Infallible>,
-    G: nom::Parser<I, (O2, ErrorList), Infallible>,
+    F: nom::Parser<I, Output = (O1, ErrorList), Error = Infallible>,
+    G: nom::Parser<I, Output = (O2, ErrorList), Error = Infallible>,
 {
     move |input: I| {
         let (input, (o1, mut err)) = first.parse(input)?;
@@ -139,9 +153,9 @@ pub(crate) fn delimited_infallible<I, O1, O2, O3, F, G, H>(
     mut third: H,
 ) -> impl FnMut(I) -> JResult<I, O2>
 where
-    F: nom::Parser<I, (O1, ErrorList), Infallible>,
-    G: nom::Parser<I, (O2, ErrorList), Infallible>,
-    H: nom::Parser<I, (O3, ErrorList), Infallible>,
+    F: nom::Parser<I, Output = (O1, ErrorList), Error = Infallible>,
+    G: nom::Parser<I, Output = (O2, ErrorList), Error = Infallible>,
+    H: nom::Parser<I, Output = (O3, ErrorList), Error = Infallible>,
 {
     move |input: I| {
         let (input, (_, mut err)) = first.parse(input)?;
@@ -163,7 +177,7 @@ pub(crate) trait TupleInfallible<I, O> {
     fn parse(&mut self, input: I) -> JResult<I, O>;
 }
 
-impl<Input, Output, F: nom::Parser<Input, (Output, ErrorList), Infallible>>
+impl<Input, Output, F: nom::Parser<Input, Output = (Output, ErrorList), Error = Infallible>>
     TupleInfallible<Input, (Output,)> for (F,)
 {
     fn parse(&mut self, input: Input) -> JResult<Input, (Output,)> {
@@ -190,7 +204,7 @@ macro_rules! tuple_trait_impl(
   ($($name:ident $ty: ident),+) => (
     impl<
       Input: Clone, $($ty),+ ,
-      $($name: nom::Parser<Input, ($ty, ErrorList), Infallible>),+
+      $($name: nom::Parser<Input, Output = ($ty, ErrorList), Error = Infallible>),+
     > TupleInfallible<Input, ( $($ty),+ )> for ( $($name),+ ) {
 
       fn parse(&mut self, input: Input) -> JResult<Input, ( $($ty),+ )> {
@@ -269,9 +283,9 @@ pub(crate) fn separated_list_infallible<I, O, O2, F, G>(
     mut f: F,
 ) -> impl FnMut(I) -> JResult<I, Vec<O>>
 where
-    I: Clone + InputLength,
-    F: nom::Parser<I, (O, ErrorList), Infallible>,
-    G: nom::Parser<I, (O2, ErrorList), Infallible>,
+    I: Clone + Input,
+    F: nom::Parser<I, Output = (O, ErrorList), Error = Infallible>,
+    G: nom::Parser<I, Output = (O2, ErrorList), Error = Infallible>,
 {
     move |i: I| {
         let mut res: Vec<O> = Vec::new();
@@ -328,8 +342,8 @@ macro_rules! alt_trait_impl(
       $(
           // () are to make things easier on me, but I'm not entirely sure whether we can do better
           // with rule E0207
-          $id_cond: nom::Parser<Input, (), ()>,
-          $id: nom::Parser<Input, (Output, ErrorList), Infallible>
+          $id_cond: nom::Parser<Input, Output = (), Error = ()>,
+          $id: nom::Parser<Input, Output = (Output, ErrorList), Error = Infallible>
       ),+
     > Alt<Input, Output> for ( $(($id_cond, $id),)+ ) {
 
@@ -367,7 +381,7 @@ pub(crate) fn alt_infallible<I: Clone, O, F, List: Alt<I, O>>(
     mut default: F,
 ) -> impl FnMut(I) -> JResult<I, O>
 where
-    F: nom::Parser<I, (O, ErrorList), Infallible>,
+    F: nom::Parser<I, Output = (O, ErrorList), Error = Infallible>,
 {
     move |i: I| l.choice(i.clone()).unwrap_or_else(|| default.parse(i))
 }
