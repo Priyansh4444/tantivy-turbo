@@ -26,6 +26,9 @@ runs its feature matrix, formatting, compilation, linting and the release
 search-correctness test. Run the most relevant checks locally and describe
 anything you could not run in the pull request. The demo is a separate Cargo
 project; its build and render instructions are in [demo/README.md](demo/README.md).
+The coverage workflow runs on `main` and stores its `lcov.info` report as the
+`coverage-lcov` artifact on the GitHub Actions run; it requires no coverage
+service account or token.
 
 ## Correctness and performance
 
