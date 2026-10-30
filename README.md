@@ -6,7 +6,8 @@
 </p>
 
 A faster fork of [Tantivy](https://github.com/quickwit-oss/tantivy) with Lucene 10's BM25 scoring.
-Drop-in: your code keeps using the `tantivy` crate and API.
+The library keeps the `tantivy` crate name and aims for API compatibility.
+See the index-format and scoring caveats below when switching.
 
 ```toml
 tantivy = { package = "tantivy-turbo", git = "https://github.com/Priyansh4444/tantivy-turbo" }

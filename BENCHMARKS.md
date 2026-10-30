@@ -45,9 +45,9 @@ Back to the [README](README.md).
 - **Warm, persistent workers.** Each engine runs as a long-lived process pinned to one core, with the query cache disabled.
 - **Interleaved, both orders.** For every query, both engines run back-to-back in rounds of 12 iterations, first in A→B order and then B→A. Ratios use summed per-query medians. "Typical query" is the geometric mean of per-query ratios.
 - **Results are checked during timing.** Every timed call's checksum is compared against a frozen correctness dump.
-- **Machine:** Intel Core Ultra 7 255H laptop on AC power, Rust 1.99, `-C target-cpu=native`, fat LTO.
+- **Machine:** Intel Core Ultra 7 255H laptop, Rust 1.99, `-C target-cpu=native`, fat LTO.
 
-Absolute microseconds are only comparable within one table, because each table is a separate run. The saved comparisons with Tantivy and lucene-rs were measured on October 23, before the October 26 skip-reader fix, and have not been remeasured at the current HEAD. The tables were measured on battery, and ratios between separate runs vary by a few percent; typical-query ratios of very short queries (a few microseconds) vary the most. tantivy-turbo's index is the same 1M-document index re-encoded by a single-segment merge to add level-1 skip data; documents and doc IDs are unchanged.
+Absolute microseconds are only comparable within one table, because each table is a separate run. The saved comparisons with Tantivy and lucene-rs were measured on October 23, before the October 26 skip-reader fix, and have not been remeasured at the current HEAD. Earlier descriptions disagreed about the laptop's power source, so it is not established for these tables. Ratios between separate runs vary by a few percent; typical-query ratios of very short queries (a few microseconds) vary the most. tantivy-turbo's index is the same 1M-document index re-encoded by a single-segment merge to add level-1 skip data; documents and doc IDs are unchanged.
 
 <br>
 
@@ -257,7 +257,7 @@ Short OR queries that mix a stopword with rarer terms gained the most: `medal of
 ## Compatibility
 
 - **API:** the Tantivy 0.27 API, imported as `tantivy`. Additions include per-searcher BM25 parameters and exact field statistics.
-- **Rust:** 1.87 or newer, the same as Tantivy 0.27.
+- **Rust:** 1.87 is the declared minimum; compiler requirements can vary with enabled features and dependency versions.
 - **Reading old indexes:** **tantivy-turbo reads indexes written by Tantivy 0.27.**
 - **Not the other way round:** Tantivy 0.27 cannot read indexes written by tantivy-turbo, because they carry extra field statistics and block-bound metadata. Switching is easy; switching back means reindexing.
 - **Level-1 skip data:** written for new and merged segments. Older segments work without it, at lower long-OR speed; a merge (for example `tantivy::indexer::merge_indices`) rewrites them.
@@ -268,14 +268,14 @@ Short OR queries that mix a stopword with rarer terms gained the most: `medal of
 
 ## Correctness
 
-Speed changes are only accepted if results are **bit-identical**:
+The recorded within-fork optimization gates compared results **bit-for-bit**:
 
 - **Exact gates:** top-10 document IDs, f32 score bits and match counts are compared against the previous accepted build on three 1,227-query gates (default BM25, k1 0.9/b 0.4, and k1 2/b 1). They are also compared against an exhaustive scorer. The level-1 build passes them on the re-encoded index against results recorded on the original index.
-- **Tests:** the full workspace suite passes (2,185 tests with every feature enabled, 9 ignored). That includes exhaustive-equality fixtures that force the coarse-region path, and forced hand-backs to fine regions, on every OR fixture, plus fixtures with repeated terms.
+- **Tests:** a recorded full workspace run passed 2,185 tests with every feature enabled (9 ignored). That included exhaustive-equality fixtures that force the coarse-region path, and forced hand-backs to fine regions, on every OR fixture, plus fixtures with repeated terms.
 - **End-to-end differential test** ([`tests/pruning_exactness.rs`](tests/pruning_exactness.rs)): eight generated multi-segment indexes, with and without deletions, exercise dense and sparse terms, duplicates, longer ORs, exclusions, and three BM25 parameter sets. In release mode, 14,400 query/configuration checks compare pruned top-1/10/100 results and score bits with a full scan, and both count paths with the match count. Deliberately planted pruning bugs in the OR and AND paths make it fail.
 - **Index robustness:** level-1 skip records are only used when their offsets move forward and stay inside the term's postings; corrupted offsets fall back to block-by-block skipping (tested).
-- **Upstream CI:** all of Tantivy's CI workflows (unit tests across feature sets, long-running tests, coverage) pass on this repository.
-- **Security:** the fork adds no `unsafe` code to Tantivy 0.27. `cargo audit` reports no vulnerabilities; its only warnings are unmaintained crates inherited from upstream's optional or dev dependencies (`atty`, `proc-macro-error`, `paste`).
+- **CI:** the fork runs feature-matrix tests, release-mode search correctness, a paired search-performance check, long-running tests and coverage. See the [current Actions runs](https://github.com/Priyansh4444/tantivy-turbo/actions) for their results.
+- **Security reports:** use the private reporting process in [SECURITY.md](SECURITY.md). Dependency and audit results change over time and should be checked against the revision being used.
 - **One frozen ruler:** every optimization attempt, kept or reverted, was judged by the same frozen benchmark ruler. 34 attempts and their raw samples are published under [`doc/performance/lucene-10.4/results`](doc/performance/lucene-10.4/results).
 
 <br>
@@ -306,7 +306,7 @@ What you need to know to rerun them:
 
 ## Demo video
 
-The demo is a 32.5-second video. Its benchmark figures come from the tables above; the search example is illustrative.
+The [demo video](demo/tantivy-turbo-demo.mp4) uses historical benchmark results; its search example is illustrative. See [the demo notes](demo/README.md) for each displayed measurement and its limitations.
 
 ```bash
 cd demo
