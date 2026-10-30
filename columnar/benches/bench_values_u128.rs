@@ -5,7 +5,7 @@ use binggan::{InputGroup, black_box};
 use common::OwnedBytes;
 use rand::rngs::StdRng;
 use rand::seq::SliceRandom;
-use rand::{Rng, SeedableRng, random};
+use rand::{RngExt, SeedableRng, random};
 use tantivy_columnar::ColumnValues;
 
 // TODO does this make sense for IPv6 ?

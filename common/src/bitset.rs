@@ -452,7 +452,7 @@ mod tests {
     use ownedbytes::OwnedBytes;
     use rand::distr::Bernoulli;
     use rand::rngs::StdRng;
-    use rand::{Rng, SeedableRng};
+    use rand::{RngExt, SeedableRng};
 
     use super::{BitSet, ReadOnlyBitSet, TinySet};
 

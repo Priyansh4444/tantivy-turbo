@@ -570,7 +570,7 @@ pub(crate) mod tests {
 mod bench {
     use once_cell::sync::Lazy;
     use rand::rngs::StdRng;
-    use rand::{Rng, SeedableRng};
+    use rand::{RngExt, SeedableRng};
     use test::{self, Bencher};
 
     use crate::docset::TERMINATED;

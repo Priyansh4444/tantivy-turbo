@@ -775,7 +775,7 @@ pub(crate) mod tests {
 mod bench {
 
     use rand::rngs::StdRng;
-    use rand::{Rng, SeedableRng};
+    use rand::{RngExt, SeedableRng};
     use test::Bencher;
 
     use super::*;

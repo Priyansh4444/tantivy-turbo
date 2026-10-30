@@ -403,7 +403,7 @@ mod tests {
 
     use common::OwnedBytes;
     use rand::rngs::StdRng;
-    use rand::{Rng, SeedableRng};
+    use rand::{RngExt, SeedableRng};
 
     use super::{MultiValueIndex, MultiValueIndexV1, MultiValueIndexV2};
     use crate::column_index::Set;
