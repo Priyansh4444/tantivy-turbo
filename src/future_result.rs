@@ -1,6 +1,7 @@
-use std::future::Future;
+use std::future::{Future, IntoFuture};
 use std::pin::Pin;
-use std::task::Poll;
+use std::sync::Arc;
+use std::task::{Context, Poll, Wake, Waker};
 
 use crate::TantivyError;
 
@@ -21,9 +22,40 @@ pub struct FutureResult<T> {
 enum Inner<T> {
     FailedBeforeStart(Option<TantivyError>),
     InProgress {
-        receiver: oneshot::Receiver<crate::Result<T>>,
+        receiver: ReceiverState<T>,
         error_msg_if_failure: &'static str,
     },
+}
+
+enum ReceiverState<T> {
+    Blocking(oneshot::Receiver<crate::Result<T>>),
+    Async(oneshot::AsyncReceiver<crate::Result<T>>),
+    Consumed,
+}
+
+struct ThreadWake(std::thread::Thread);
+
+impl Wake for ThreadWake {
+    fn wake(self: Arc<Self>) {
+        self.0.unpark();
+    }
+
+    fn wake_by_ref(self: &Arc<Self>) {
+        self.0.unpark();
+    }
+}
+
+// A receiver already polled as a future cannot be converted back to a blocking
+// receiver. Park the current thread using its async waker in that rare case.
+fn wait_for_async<T>(mut receiver: oneshot::AsyncReceiver<T>) -> Result<T, oneshot::RecvError> {
+    let waker = Waker::from(Arc::new(ThreadWake(std::thread::current())));
+    let mut context = Context::from_waker(&waker);
+    loop {
+        match Pin::new(&mut receiver).poll(&mut context) {
+            Poll::Ready(result) => return result,
+            Poll::Pending => std::thread::park(),
+        }
+    }
 }
 
 impl<T> From<TantivyError> for FutureResult<T> {
@@ -40,7 +72,7 @@ impl<T> FutureResult<T> {
     ) -> (Self, oneshot::Sender<crate::Result<T>>) {
         let (sender, receiver) = oneshot::channel();
         let inner: Inner<T> = Inner::InProgress {
-            receiver,
+            receiver: ReceiverState::Blocking(receiver),
             error_msg_if_failure,
         };
         (FutureResult { inner }, sender)
@@ -55,7 +87,12 @@ impl<T> FutureResult<T> {
             Inner::InProgress {
                 receiver,
                 error_msg_if_failure,
-            } => receiver.recv().unwrap_or_else(|_| {
+            } => match receiver {
+                ReceiverState::Blocking(receiver) => receiver.recv(),
+                ReceiverState::Async(receiver) => wait_for_async(receiver),
+                ReceiverState::Consumed => panic!("future polled after completion"),
+            }
+            .unwrap_or_else(|_| {
                 Err(crate::TantivyError::SystemError(
                     error_msg_if_failure.to_string(),
                 ))
@@ -68,13 +105,24 @@ impl<T> Future for FutureResult<T> {
     type Output = crate::Result<T>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Self::Output> {
-        unsafe {
-            match &mut Pin::get_unchecked_mut(self).inner {
-                Inner::FailedBeforeStart(err) => Poll::Ready(Err(err.take().unwrap())),
-                Inner::InProgress {
-                    receiver,
-                    error_msg_if_failure,
-                } => match Future::poll(Pin::new_unchecked(receiver), cx) {
+        match &mut self.get_mut().inner {
+            Inner::FailedBeforeStart(err) => Poll::Ready(Err(err.take().unwrap())),
+            Inner::InProgress {
+                receiver,
+                error_msg_if_failure,
+            } => {
+                if matches!(receiver, ReceiverState::Blocking(_)) {
+                    let ReceiverState::Blocking(blocking) =
+                        std::mem::replace(receiver, ReceiverState::Consumed)
+                    else {
+                        unreachable!()
+                    };
+                    *receiver = ReceiverState::Async(blocking.into_future());
+                }
+                let ReceiverState::Async(receiver) = receiver else {
+                    panic!("future polled after completion");
+                };
+                match Future::poll(Pin::new(receiver), cx) {
                     Poll::Ready(oneshot_res) => {
                         let res = oneshot_res.unwrap_or_else(|_| {
                             Err(crate::TantivyError::SystemError(
@@ -84,7 +132,7 @@ impl<T> Future for FutureResult<T> {
                         Poll::Ready(res)
                     }
                     Poll::Pending => Poll::Pending,
-                },
+                }
             }
         }
     }
@@ -92,6 +140,13 @@ impl<T> Future for FutureResult<T> {
 
 #[cfg(test)]
 mod tests {
+    use std::future::Future;
+    use std::pin::Pin;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::Arc;
+    use std::task::{Context, Poll, Wake, Waker};
+    use std::time::Duration;
+
     use futures::executor::block_on;
 
     use super::FutureResult;
@@ -126,5 +181,73 @@ mod tests {
         tx.send(Err(TantivyError::Poisoned)).unwrap();
         let res = block_on(scheduled_result);
         assert!(matches!(res, Err(TantivyError::Poisoned)));
+    }
+
+    #[test]
+    fn wait_without_poll_receives_value_and_sender_drop() {
+        let (result, tx) = FutureResult::create("failed");
+        tx.send(Ok(42)).unwrap();
+        assert_eq!(result.wait().unwrap(), 42);
+
+        let (result, tx): (FutureResult<()>, _) = FutureResult::create("sender dropped");
+        drop(tx);
+        assert!(matches!(result.wait(), Err(TantivyError::SystemError(_))));
+    }
+
+    #[test]
+    fn wait_after_pending_poll_blocks_until_sent() {
+        let (mut result, tx) = FutureResult::create("failed");
+        let mut context = Context::from_waker(Waker::noop());
+        assert!(matches!(
+            Pin::new(&mut result).poll(&mut context),
+            Poll::Pending
+        ));
+        let sender = std::thread::spawn(move || {
+            std::thread::sleep(Duration::from_millis(20));
+            tx.send(Ok(42)).unwrap();
+        });
+        assert_eq!(result.wait().unwrap(), 42);
+        sender.join().unwrap();
+    }
+
+    #[test]
+    fn wait_after_pending_poll_reports_sender_drop() {
+        let (mut result, tx): (FutureResult<()>, _) = FutureResult::create("sender dropped");
+        let mut context = Context::from_waker(Waker::noop());
+        assert!(matches!(
+            Pin::new(&mut result).poll(&mut context),
+            Poll::Pending
+        ));
+        drop(tx);
+        assert!(matches!(result.wait(), Err(TantivyError::SystemError(_))));
+    }
+
+    struct WakeCounter(AtomicUsize);
+
+    impl Wake for WakeCounter {
+        fn wake(self: Arc<Self>) {
+            self.0.fetch_add(1, Ordering::SeqCst);
+        }
+        fn wake_by_ref(self: &Arc<Self>) {
+            self.0.fetch_add(1, Ordering::SeqCst);
+        }
+    }
+
+    #[test]
+    fn pending_future_is_woken_when_result_arrives() {
+        let (mut result, tx) = FutureResult::create("failed");
+        let counter = Arc::new(WakeCounter(AtomicUsize::new(0)));
+        let waker = Waker::from(counter.clone());
+        let mut context = Context::from_waker(&waker);
+        assert!(matches!(
+            Pin::new(&mut result).poll(&mut context),
+            Poll::Pending
+        ));
+        tx.send(Ok(42)).unwrap();
+        assert_eq!(counter.0.load(Ordering::SeqCst), 1);
+        assert!(matches!(
+            Pin::new(&mut result).poll(&mut context),
+            Poll::Ready(Ok(42))
+        ));
     }
 }
