@@ -8,6 +8,15 @@ updates:
   open-pull-requests-limit: 10
   cooldown:
     default-days: 2
+  groups:
+    cranelift:
+      patterns:
+        - "cranelift"
+        - "cranelift-*"
+    rand-family:
+      patterns:
+        - "rand"
+        - "rand_distr"
 
 - package-ecosystem: "github-actions"
   directory: "/"
