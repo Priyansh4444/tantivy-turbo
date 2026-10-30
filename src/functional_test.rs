@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use rand::{rng, Rng};
+use rand::{rng, RngExt};
 
 use crate::indexer::index_writer::MEMORY_BUDGET_NUM_BYTES_MIN;
 use crate::schema::*;

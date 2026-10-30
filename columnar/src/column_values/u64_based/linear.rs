@@ -203,7 +203,7 @@ impl ColumnCodec for LinearCodec {
 
 #[cfg(test)]
 mod tests {
-    use rand::RngCore;
+    use rand::Rng;
 
     use super::*;
     use crate::column_values::u64_based::tests::{create_and_validate, get_codec_test_datasets};

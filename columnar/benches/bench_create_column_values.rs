@@ -1,6 +1,6 @@
 use binggan::{InputGroup, black_box};
 use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
+use rand::{RngExt, SeedableRng};
 use tantivy_columnar::column_values::{CodecType, serialize_u64_based_column_values};
 
 fn get_data() -> Vec<u64> {

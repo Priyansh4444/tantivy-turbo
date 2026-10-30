@@ -86,7 +86,7 @@ mod tests {
     use once_cell::sync::Lazy;
     use rand::prelude::SliceRandom;
     use rand::rngs::StdRng;
-    use rand::{Rng, SeedableRng};
+    use rand::{RngExt, SeedableRng};
 
     use super::*;
     use crate::directory::{Directory, RamDirectory, WritePtr};

@@ -5,7 +5,7 @@ use std::io;
 use common::file_slice::FileSlice;
 use criterion::{Criterion, criterion_group, criterion_main};
 use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
+use rand::{Rng, RngExt, SeedableRng};
 use tantivy_fst::Automaton;
 use tantivy_sstable::{Dictionary, MonotonicU64SSTable};
 
