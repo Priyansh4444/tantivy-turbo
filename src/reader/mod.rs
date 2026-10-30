@@ -35,7 +35,7 @@ pub enum ReloadPolicy {
     /// `commit()` can therefore still observe the pre-commit state. If you need a search to
     /// deterministically reflect a commit you just made, use [`ReloadPolicy::Manual`] and call
     /// [`IndexReader::reload()`] yourself right after `commit()` (see the
-    /// [`reload_after_commit`](https://github.com/quickwit-oss/tantivy/blob/main/examples/reload_after_commit.rs)
+    /// [`reload_after_commit`](https://github.com/Priyansh4444/tantivy-turbo/blob/main/examples/reload_after_commit.rs)
     /// example).
     OnCommitWithDelay, // TODO add NEAR_REAL_TIME(target_ms)
 }
@@ -299,7 +299,7 @@ impl IndexReader {
     /// search immediately after a commit and deterministically see its results, build the
     /// reader with [`ReloadPolicy::Manual`] and call `reload()` explicitly after `commit()`
     /// instead of relying on the automatic reload's timing (see the
-    /// [`reload_after_commit`](https://github.com/quickwit-oss/tantivy/blob/main/examples/reload_after_commit.rs)
+    /// [`reload_after_commit`](https://github.com/Priyansh4444/tantivy-turbo/blob/main/examples/reload_after_commit.rs)
     /// example).
     pub fn reload(&self) -> crate::Result<()> {
         self.inner.reload()

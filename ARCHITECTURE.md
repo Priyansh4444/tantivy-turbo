@@ -7,7 +7,7 @@ This is not fortuitous.
 
 Tantivy's bread and butter is to address the problem of full-text search :
 
-Given a large set of textual documents, and a text query, return the K-most relevant documents in a very efficient way. To execute these queries rapidly, the tantivy needs to build an index beforehand. The relevance score implemented in the tantivy is not configurable. Tantivy uses the same score as the default similarity used in Lucene / Elasticsearch, called [BM25](https://en.wikipedia.org/wiki/Okapi_BM25).
+Given a large set of textual documents and a text query, return the K most relevant documents efficiently. To execute these queries rapidly, tantivy-turbo builds an index beforehand. Its default relevance scoring uses [BM25](https://en.wikipedia.org/wiki/Okapi_BM25), the default similarity in Lucene and Elasticsearch. The BM25 `k1` and `b` parameters can be configured on a searcher with `Bm25Parameters`.
 
 But tantivy's scope does not stop there. Numerous features are required to power rich-search applications. For instance, one may want to:
 

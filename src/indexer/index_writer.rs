@@ -673,7 +673,7 @@ impl<D: Document> IndexWriter<D> {
     /// [`ReloadPolicy::Manual`](crate::ReloadPolicy::Manual) with an explicit
     /// [`IndexReader::reload()`](crate::IndexReader::reload) call if you need the search to
     /// deterministically reflect this commit (see the
-    /// [`reload_after_commit`](https://github.com/quickwit-oss/tantivy/blob/main/examples/reload_after_commit.rs)
+    /// [`reload_after_commit`](https://github.com/Priyansh4444/tantivy-turbo/blob/main/examples/reload_after_commit.rs)
     /// example).
     pub fn commit(&mut self) -> crate::Result<Opstamp> {
         self.prepare_commit()?.commit()
