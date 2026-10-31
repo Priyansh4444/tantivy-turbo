@@ -19,23 +19,23 @@ Issues, questions, and pull requests are welcome. See the
 
 <p align="center">
   <a href="demo/tantivy-turbo-demo.mp4"><img alt="Demo video" src="demo/poster.png" width="720"></a>
-  <br><sub>▶ <a href="demo/tantivy-turbo-demo.mp4">29.5 s demo</a></sub>
+  <br><sub>▶ <a href="demo/tantivy-turbo-demo.mp4">29.5 s demo</a> · historical benchmark figures</sub>
 </p>
 
 ## Results
 
-Top-10 search on 1M Wikipedia docs, 1,201 queries. The saved Tantivy and lucene-rs comparisons were measured on October 23, before a later skip-reader fix; the Lucene comparison uses an earlier build and 20 queries. Each number is the speedup in its recorded run.
+Top-10 search on 1M Wikipedia documents, measured October 30 with background load; AC power was disconnected when checked before the run. The Tantivy and lucene-rs comparisons use 1,201 queries; the Java Lucene comparison uses 20 queries and includes parsing and pipe latency. Numbers describe this run, not every workload.
 
 | | vs Tantivy 0.27 | vs [lucene-rs](https://github.com/pc-style/lucene-rs) | vs Lucene 10.4 |
 | --- | :---: | :---: | :---: |
 | All queries (total time) | **1.79×** | **1.25×** | — |
-| Typical query | **1.34×** | **1.49×** | **1.8–2.1×** |
-| Single term | **1.18×** | **1.85×** | — |
-| OR | **2.3–3.3×** | **1.02×** (2 terms), **1.04×** (3+ terms) | — |
-| AND | **1.35×** | **1.58×** | faster on all |
-| Phrase | **1.37×** | **1.24×** | — |
-| COUNT | **1.6×** | **7.1×** | **1.3×** |
-| Same results? | same matches | identical top-10 & scores | identical scores |
+| Typical query | **1.34×** | **1.48×** | **1.96–1.98×** |
+| Single term | **1.20×** | **1.84×** | — |
+| OR | **2.29–3.17×** | **1.03×** (2 terms), **1.04×** (3+ terms) | — |
+| AND | **1.36×** | **1.58×** | faster on all 6 |
+| Phrase | **1.37×** | **1.25×** | — |
+| COUNT | **1.61×** | **6.86×** | **1.34–1.41×** |
+| Checked results | same match counts | identical checked top-10 IDs, score bits and counts | matching counts and top-10 ID sets; scores within tolerance |
 
 <p align="center">
   <picture>

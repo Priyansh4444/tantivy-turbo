@@ -1,9 +1,10 @@
 """Render the README's charts and diagrams (light and dark SVG variants) from measured data.
 
 Inputs
-  turbo-vs-tantivy-0.27/summary.json   measured by turbo-vs-tantivy-0.27/compare.py
-  turbo-vs-lucene-rs/summary.json      measured by turbo-vs-lucene-rs/compare.py
-  doc/performance/lucene-10.4/results/2026-10-04-native/*.json   published Lucene 10.4 report
+  2026-10-30-current/{upstream,port}/summary.json   current Rust comparisons
+  2026-10-30-current/java/*.json                      current Lucene timings
+  2026-10-30-current/java/memory-current.json          refreshed memory snapshot
+  doc/performance/lucene-10.4/results/2026-10-04-native/   historical disk measurements
 
 Outputs: assets/*-{light,dark}.svg.
 
@@ -12,6 +13,7 @@ Text always uses text tokens, never a
 series color. Bars are at most 16px thick with a 4px rounded data end and a
 square baseline; grids are 1px hairlines.
 """
+import gzip
 import json
 import math
 from pathlib import Path
@@ -19,7 +21,14 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 OUT = ROOT / "assets"
-LUCENE = ROOT / "doc/performance/lucene-10.4/results/2026-10-04-native"
+CURRENT = HERE / "2026-10-30-current"
+LUCENE = CURRENT / "java"
+LUCENE_RESOURCES = ROOT / "doc/performance/lucene-10.4/results/2026-10-04-native"
+
+
+def read_compressed_json(path):
+    with gzip.open(path, "rt", encoding="utf-8") as file:
+        return json.load(file)
 
 SANS = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif"
 MONO = "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
@@ -148,10 +157,10 @@ def diverging(theme, name, eyebrow, title, subtitle, rows, series, note, lo=0.5,
 
 def lucene_per_query(theme):
     t = THEMES[theme]
-    top10 = json.loads((LUCENE / "top_10-tantivy-first.json").read_text())
-    top10b = json.loads((LUCENE / "top_10-lucene-first.json").read_text())
-    count = json.loads((LUCENE / "count-tantivy-first.json").read_text())
-    countb = json.loads((LUCENE / "count-lucene-first.json").read_text())
+    top10 = read_compressed_json(LUCENE / "TOP_10-tantivy-first.json.gz")
+    top10b = read_compressed_json(LUCENE / "TOP_10-lucene-first.json.gz")
+    count = read_compressed_json(LUCENE / "COUNT-tantivy-first.json.gz")
+    countb = read_compressed_json(LUCENE / "COUNT-lucene-first.json.gz")
     queries = top10["queries"]
 
     def speed(d1, d2, q):
@@ -164,7 +173,7 @@ def lucene_per_query(theme):
     w = 900
     h = top + row * len(rows) + 72
     s = Svg(t, w, h)
-    s.header("vs Apache Lucene 10.4 · earlier fork build", "Faster on every query",
+    s.header("vs Apache Lucene 10.4 · Oct 30", "Faster on every checked query",
              "Per-query speedup (Lucene median ÷ fork median), geometric mean of both process orders.")
     legend(s, 40, 132, [("TOP-10", t["top10"]), ("COUNT", t["count"])])
     lo, hi = 0.8, 8.0
@@ -191,14 +200,14 @@ def lucene_per_query(theme):
               f'stroke-width="2" stroke-linecap="round"/>')
         s.add(f'<circle cx="{xa:.1f}" cy="{y - 5}" r="4.5" fill="{t["top10"]}" stroke="{t["surface"]}" stroke-width="1.5"/>')
         s.add(f'<circle cx="{xc:.1f}" cy="{y + 5}" r="4.5" fill="{t["count"]}" stroke="{t["surface"]}" stroke-width="1.5"/>')
-    s.text(w - 40, h - 20, "Wikipedia 1M, native BM25 on both engines; report 2026-10-04-native", 11, t["muted"], "end")
+    s.text(w - 40, h - 20, "Wikipedia 1M, native BM25 on both engines; Oct 30 run", 11, t["muted"], "end")
     s.save(f"lucene-per-query-{theme}.svg")
 
 
 def resources(theme, lucene_rs_rss_mib):
     t = THEMES[theme]
-    mem = json.loads((LUCENE / "memory.json").read_text())["engines"]
-    storage = json.loads((LUCENE / "storage.json").read_text())
+    mem = json.loads((LUCENE / "memory-current.json").read_text())["engines"]
+    storage = json.loads((LUCENE_RESOURCES / "storage.json").read_text())
     kib = lambda v: int(v.split()[0]) / 1024
     groups = [
         ("Resident memory, warmed query process", "MiB", [
@@ -213,8 +222,8 @@ def resources(theme, lucene_rs_rss_mib):
     w, left, right = 900, 270, 130
     h = 140 + sum(44 + 30 * len(g[2]) for g in groups) + 10
     s = Svg(t, w, h)
-    s.header("vs Apache Lucene 10.4 · earlier fork build", "Memory and disk",
-             "Same Wikipedia 1M corpus and 20 queries; resident memory includes mapped index pages.")
+    s.header("vs Apache Lucene 10.4", "Memory and disk",
+             "RSS: Oct 31 snapshot; disk: Oct 4. Memory includes mapped pages; default JVM heap.")
     y = 140
     for title, unit, bars in groups:
         s.text(40, y + 4, title, 13.5, t["ink2"], weight=600)
@@ -327,14 +336,14 @@ def banner(theme, stats):
     w, h = 900, 260
     s = Svg(t, w, h)
     s.title = "tantivy-turbo benchmark overview"
-    s.description = ("TOP-10 results from October 23 over 1,201 queries; "
-                     "Lucene comparison from October 4 over 20 queries. " +
+    s.description = ("TOP-10 results from October 30 over 1,201 queries; "
+                     "Lucene comparison from October 30 over 20 queries. " +
                      "; ".join(f"{label}: {value}" for value, label in stats))
     # Accent rule: the two series hues, side by side.
     s.add(f'<rect x="40" y="32" width="56" height="5" rx="2.5" fill="{t["top10"]}"/>')
     s.add(f'<rect x="100" y="32" width="28" height="5" rx="2.5" fill="{t["count"]}"/>')
     s.text(40, 92, "tantivy-turbo", 46, weight=750)
-    s.text(40, 124, "TOP-10: Oct 23 run, 1,201 queries; Lucene: Oct 4, 20 queries.", 16, t["ink2"])
+    s.text(40, 124, "Oct 30: 1,201 searches; Lucene: 20 searches, separate protocol.", 16, t["ink2"])
     gap = 14
     tile_w = (w - 80 - 3 * gap) / 4
     for i, (value, label) in enumerate(stats):
@@ -354,7 +363,7 @@ def lucene_rs_mobile(theme, rows):
     """A portrait version of the same measured TOP-10 data for narrow screens."""
     t = THEMES[theme]
     s = Svg(t, 480, 650)
-    s.header("vs lucene-rs · Oct 23", "Best 10 results",
+    s.header("vs lucene-rs · Oct 30", "Best 10 results",
              "1,201 searches · geometric mean of both orders")
     s.description += "; " + "; ".join(f"{name}: {fmt_ratio(1 / r)}" for name, _, r in rows)
     left, right = 40, 430
@@ -370,40 +379,45 @@ def lucene_rs_mobile(theme, rows):
         s.text(left, y + 19, sub, 13, t["muted"])
         s.add(f'<rect x="{left}" y="{y + 29}" width="{right - left}" height="12" rx="4" fill="{t["track"]}"/>')
         s.hbar(left, left + math.log2(speed) * (right - left), y + 29, 12, t["top10"])
-    s.text(left, 625, "Log scale · before later skip-reader fix", 14, t["muted"])
+    s.text(left, 625, "Log scale · Oct 30 measurements", 14, t["muted"])
     s.save(f"vs-lucene-rs-mobile-{theme}.svg")
 
 
 def main():
     OUT.mkdir(exist_ok=True)
-    up = json.loads((HERE / "turbo-vs-tantivy-0.27/summary.json").read_text())
-    rs = json.loads((HERE / "turbo-vs-lucene-rs/summary.json").read_text())
+    up = json.loads((CURRENT / "upstream/summary.json").read_text())
+    rs = json.loads((CURRENT / "port/summary.json").read_text())
+    lucene_speeds = [
+        1 / read_compressed_json(LUCENE / f"TOP_10-{order}.json.gz")["geomean_ratio"]
+        for order in ("tantivy-first", "lucene-first")
+    ]
     groups = [("Any 3+ words", "103 searches", "OR3+"), ("Any 2 words", "198 searches", "OR2"),
               ("Exact phrase", "300 searches", "PHRASE"), ("One word", "300 searches", "TERM"),
               ("All words", "300 searches", "AND"), ("All 1,201 searches", "port-style suite", "ALL")]
     series = [("BEST 10", "top10"), ("COUNT", "count")]
     rss = rs["rss"]["port"]["VmHWM"]
     for theme in THEMES:
-        diverging(theme, "vs-tantivy", "vs Tantivy 0.27", "Every query type, faster in total",
+        diverging(theme, "vs-tantivy", "vs Tantivy 0.27", "Search results and counts",
                   "Summed query time, geometric mean of both orders. Same 1M Wikipedia docs and machine, identical counts.",
                   [(a, b, [ratio(up[f"top10/{g}"]), ratio(up[f"count/{g}"])]) for a, b, g in groups], series,
-                  "Oct 23 run · log scale · bench-results/turbo-vs-tantivy-0.27", lo=0.8, hi=4.5, ticks=(1, 2, 4))
+                  "Oct 30 run · log scale · bench-results/2026-10-30-current", lo=0.8, hi=4.5, ticks=(1, 2, 4))
         diverging(theme, "vs-lucene-rs", "vs lucene-rs (Rust port of Lucene 10)", "Best 10 results",
                   "Summed query time, geometric mean of both orders. Identical top-10 IDs, score bits and counts on checked queries.",
                   [(a, b, [ratio(rs[f"top10/{g}"])]) for a, b, g in groups], [("TOP-10", "top10")],
-                  "Oct 23 run · log scale · bench-results/turbo-vs-lucene-rs", lo=0.8, hi=2.5, ticks=(1, 1.5, 2))
+                  "Oct 30 run · log scale · bench-results/2026-10-30-current", lo=0.8, hi=2.5, ticks=(1, 1.5, 2))
         lucene_rs_mobile(theme, [(a, b, ratio(rs[f"top10/{g}"])) for a, b, g in groups])
         diverging(theme, "vs-lucene-rs-count", "vs lucene-rs (Rust port of Lucene 10)", "COUNT",
                   "lucene-rs counts by visiting every match; tantivy-turbo uses doc frequencies, bitset lanes and probes.",
                   [(a, b, [ratio(rs[f"count/{g}"])]) for a, b, g in groups], [("COUNT", "count")],
-                  "Oct 23 run · log scale · bench-results/turbo-vs-lucene-rs", lo=0.5, hi=512, ticks=(1, 4, 16, 64, 256))
+                  "Oct 30 run · log scale · bench-results/2026-10-30-current", lo=0.5, hi=512, ticks=(1, 4, 16, 64, 256))
         lucene_per_query(theme)
         resources(theme, rss)
         regions(theme)
         and_windows(theme)
         banner(theme, [(f"{1 / ratio(up['top10/ALL']):.1f}×", "TOP-10 vs Tantivy"),
                        (f"{1 / ratio(rs['top10/ALL']):.2f}×", "TOP-10 vs lucene-rs"),
-                       ("1.8–2.1×", "TOP-10 vs Lucene"), ("3 × 1,227", "checks vs prior build")])
+                       (f"{min(lucene_speeds):.2f}–{max(lucene_speeds):.2f}×", "TOP-10 vs Lucene"),
+                       ("1,227", "correctness cases")])
     print("charts written:", sorted(p.name for p in OUT.glob("*.svg")))
 
 
