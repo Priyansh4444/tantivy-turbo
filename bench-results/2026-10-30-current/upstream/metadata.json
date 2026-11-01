@@ -1,0 +1,29 @@
+{
+  "start_utc": "2026-10-30T20:19:54Z",
+  "loadavg_before": [
+    5.8544921875,
+    4.9814453125,
+    2.494140625
+  ],
+  "uname": {
+    "system": "Linux",
+    "node": "redacted-host",
+    "release": "7.2.8-10-omarchy",
+    "version": "#1 SMP PREEMPT_DYNAMIC Wed, 21 Oct 2026 10:51:38 +0000",
+    "machine": "x86_64",
+    "processor": ""
+  },
+  "allowed_cpu": 4,
+  "controller_cpu": 6,
+  "samples_per_order": 12,
+  "orders": [
+    "AB",
+    "BA"
+  ],
+  "loadavg_after": [
+    6.54833984375,
+    5.2119140625,
+    2.650390625
+  ],
+  "end_utc": "2026-10-30T20:20:22Z"
+}
